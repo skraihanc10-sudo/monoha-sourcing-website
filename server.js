@@ -116,7 +116,7 @@ ${noindex ? '<meta name="robots" content="noindex">' : ''}<meta property="og:typ
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/css/site.css?v=5">
+<link rel="stylesheet" href="/css/site.css?v=6">
 <script type="application/ld+json">${JSON.stringify({
     '@context': 'https://schema.org', '@type': 'Organization', name: site.name, url: SITE_URL, description: site.description,
     logo: SITE_URL + '/images/logo.png', ...(c.email ? { email: c.email } : {}), ...(c.phone ? { telephone: c.phone } : {}),
@@ -161,7 +161,7 @@ ${body}
     <a href="https://monohasourcing.international">monohasourcing.international</a>
   </div>
 </footer>
-<script src="/js/site.js?v=5" defer></script>
+<script src="/js/site.js?v=6" defer></script>
 </body>
 </html>`;
 }
