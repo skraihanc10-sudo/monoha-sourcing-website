@@ -144,8 +144,6 @@ ${body}
 <footer class="footer">
   <div class="wrap footer-top">
     <div class="footer-about">
-      <a href="/" class="brand brand-light"><img src="/images/logo.png" alt="" width="58" height="40">
-        <span class="brand-text"><strong>MONOHA</strong><small>Sourcing International</small></span></a>
       <p>${esc(site.description)}</p>
       ${contactLines ? `<ul class="contact-list">${contactLines}</ul>` : ''}
       ${socials ? `<div class="socials">${socials}</div>` : ''}
