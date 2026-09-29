@@ -1,0 +1,24 @@
+{
+  "why": [
+    { "title": "Meaningful work", "text": "Help real businesses solve real sourcing problems." },
+    { "title": "Learn international business", "text": "Work across markets, suppliers and partners." },
+    { "title": "Structured environment", "text": "Clear processes, clear expectations, clear feedback." }
+  ],
+  "culture": "We value clear communication, responsibility and steady improvement. Everyone owns their part of the work.",
+  "internship": "We consider interns when we have capacity to train them properly. Send your CV through the application form and mention \"Internship\".",
+  "process": ["Apply with your CV", "Short review by our team", "Conversation or interview", "Decision and offer"],
+  "jobs": [
+    {
+      "slug": "video-editor",
+      "title": "Video Editor",
+      "type": "Full-time",
+      "location": "Bangladesh",
+      "compensation": "Discussed at interview",
+      "open": false,
+      "about": "Edit clear, professional video content for Monoha's website and social channels.",
+      "responsibilities": ["Edit short-form and long-form videos", "Prepare captions and simple motion graphics", "Keep a consistent brand look"],
+      "requirements": ["A portfolio of edited work", "Working knowledge of a professional editor", "Good sense of pacing and clarity"],
+      "apply": "Send your CV and portfolio link through the application form, subject \"Video Editor\"."
+    }
+  ]
+}

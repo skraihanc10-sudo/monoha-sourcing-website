@@ -1,0 +1,26 @@
+{
+  "articles": [
+    {
+      "slug": "how-international-sourcing-works",
+      "category": "Sourcing Insights",
+      "title": "How international sourcing works, step by step",
+      "summary": "A plain guide to the stages of a sourcing requirement — from the first brief to delivery.",
+      "date": "2026-09-29",
+      "author": "Monoha Team",
+      "cover": "",
+      "body": [
+        "Sourcing from another market can look complicated from the outside. In practice it follows a clear sequence, and knowing that sequence makes every conversation with a supplier easier.",
+        "## 1. Start with a precise requirement",
+        "Write down what you need, the quantity, the quality standard and the date you need it by. A vague brief produces vague quotations.",
+        "## 2. Research before you reach out",
+        "Understand the market: who makes the product, typical lead times, and what questions to ask.",
+        "## 3. Shortlist and compare",
+        "Compare suppliers on more than price — communication, reliability and the ability to meet your standard matter as much.",
+        "## 4. Coordinate and confirm",
+        "Agree specifications, samples and timelines in writing, and keep one clear channel of communication.",
+        "## 5. Review before you close",
+        "Check what arrives against the original requirement. That review is what makes the next order smoother."
+      ]
+    }
+  ]
+}

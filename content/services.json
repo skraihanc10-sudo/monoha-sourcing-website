@@ -1,0 +1,23 @@
+{
+  "_note": "Draft list. Confirm each service against the trade licence and real operations before launch.",
+  "services": [
+    { "slug": "international-sourcing", "icon": "globe", "title": "International Sourcing", "summary": "Sourcing-related support and supplier/business coordination.",
+      "body": ["We help businesses find and work with suppliers beyond their own market.", "From the first requirement to follow-up, we keep the process structured and the communication clear."],
+      "points": ["Requirement analysis", "Supplier identification", "Communication and follow-up"] },
+    { "slug": "product-supplier-sourcing", "icon": "box", "title": "Product & Supplier Sourcing", "summary": "Finding and coordinating suitable sourcing opportunities.",
+      "body": ["We look for products and suppliers that match your specification, budget and timeline."],
+      "points": ["Specification review", "Supplier shortlisting", "Sample coordination"] },
+    { "slug": "business-coordination", "icon": "handshake", "title": "Business Coordination", "summary": "Connecting relevant parties and supporting communication.",
+      "body": ["We act as a single, organised point of contact between the parties involved in your requirement."],
+      "points": ["Party coordination", "Meeting and message follow-up", "Status reporting"] },
+    { "slug": "sourcing-support", "icon": "clipboard", "title": "Sourcing Support", "summary": "Helping organise sourcing requirements and workflows.",
+      "body": ["We help your team turn a loose requirement into a clear, trackable sourcing workflow."],
+      "points": ["Requirement documentation", "Workflow setup", "Progress tracking"] },
+    { "slug": "business-solutions", "icon": "briefcase", "title": "Business Solutions", "summary": "Structured support based on specific business requirements.",
+      "body": ["Where a requirement does not fit a standard service, we shape the support around it."],
+      "points": ["Needs assessment", "Tailored plan", "Execution support"] },
+    { "slug": "international-business-support", "icon": "network", "title": "International Business Support", "summary": "Cross-border business coordination where applicable.",
+      "body": ["For businesses working across borders, we help keep coordination organised and communication clear."],
+      "points": ["Cross-border coordination", "Partner communication", "Follow-up"] }
+  ]
+}

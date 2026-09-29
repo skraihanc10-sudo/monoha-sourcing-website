@@ -1,0 +1,67 @@
+{
+  "name": "MONOHA SOURCING INTERNATIONAL",
+  "short": "Monoha",
+  "tagline": "Connecting Global Opportunities Through Reliable Sourcing & Business Solutions.",
+  "intro": "We connect businesses with sourcing, operational and business solutions through a structured, reliable and professional approach.",
+  "description": "MONOHA SOURCING INTERNATIONAL works to connect businesses with practical sourcing and operational solutions through structured processes, reliable communication and professional execution.",
+  "contact": {
+    "address": "",
+    "email": "",
+    "phone": "",
+    "website": ""
+  },
+  "social": {
+    "facebook": "",
+    "linkedin": "",
+    "instagram": "",
+    "youtube": ""
+  },
+  "trust": [
+    "Reliable Approach",
+    "Professional Service",
+    "Structured Process",
+    "Global Perspective",
+    "Business-Focused"
+  ],
+  "why": [
+    { "title": "Professional Approach", "text": "Every requirement is handled through a structured process." },
+    { "title": "Clear Communication", "text": "We maintain clear communication throughout the workflow." },
+    { "title": "Reliable Coordination", "text": "We focus on organized execution and responsible follow-up." },
+    { "title": "Business-Focused", "text": "Solutions are structured around practical business requirements." },
+    { "title": "Long-Term Relationships", "text": "We aim to build sustainable professional relationships." },
+    { "title": "International Perspective", "text": "Designed for businesses working across markets and borders." }
+  ],
+  "process": [
+    { "title": "Understand", "text": "We listen to the requirement in full — what is needed, by when, and to what standard." },
+    { "title": "Research", "text": "We study the market and the options before recommending anything." },
+    { "title": "Source", "text": "We identify suitable suppliers, partners or solutions for the requirement." },
+    { "title": "Coordinate", "text": "We connect the right parties and keep communication organised." },
+    { "title": "Execute", "text": "We carry the agreed plan through, step by step." },
+    { "title": "Review", "text": "We check the work against the original requirement before it is closed." },
+    { "title": "Deliver", "text": "We hand over the result and stay available for follow-up." }
+  ],
+  "solutions": [
+    { "title": "For Businesses", "text": "Sourcing and support shaped around your business requirements." },
+    { "title": "For Brands", "text": "Help with product- and supplier-related sourcing needs." },
+    { "title": "For International Partners", "text": "Coordination across borders, with one clear point of contact." },
+    { "title": "For Growing Businesses", "text": "Structured sourcing and operational support as you scale." }
+  ],
+  "about": {
+    "who": "MONOHA SOURCING INTERNATIONAL is a sourcing and business solutions company. We work between businesses and the suppliers, partners and processes they need, so that requirements are met in an organised, accountable way.",
+    "story": "Monoha began with a simple observation: businesses lose time and money when sourcing is handled informally. We set out to bring structure, clear communication and responsible follow-up to that work.",
+    "mission": "Our mission is to simplify sourcing and business coordination through reliable processes, professional communication and practical solutions.",
+    "vision": "To build a trusted international sourcing and business solutions company that connects opportunities, businesses and markets through professionalism and long-term relationships.",
+    "commitment": "We commit to honest communication, clear expectations and follow-through on everything we agree to do.",
+    "values": [
+      { "title": "Integrity", "text": "We say what we will do, and we do it." },
+      { "title": "Reliability", "text": "Deadlines and commitments are treated seriously." },
+      { "title": "Transparency", "text": "Clients know where their requirement stands at every step." },
+      { "title": "Professionalism", "text": "Every interaction is handled with care and respect." },
+      { "title": "Responsibility", "text": "We own our part of the work, including the follow-up." },
+      { "title": "Continuous Improvement", "text": "Each project teaches us to do the next one better." }
+    ],
+    "leadership": []
+  },
+  "clients": [],
+  "testimonials": []
+}
