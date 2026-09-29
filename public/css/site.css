@@ -425,6 +425,8 @@ input[type=file] { padding: 11px; }
 .svc-row h2 a { color: var(--navy); }
 .svc-row h2 a:hover { color: var(--royal); }
 .svc-row-main p { color: var(--muted); margin: 0; }
+.svc-row-main .svc-row-for { margin-top: 14px; font-size: 15px; color: var(--ink); }
+.svc-row-for .mini-label { display: block; margin-bottom: 4px; }
 .svc-row-go { align-self: center; white-space: nowrap; }
 
 /* service detail */

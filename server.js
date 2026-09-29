@@ -116,7 +116,7 @@ ${noindex ? '<meta name="robots" content="noindex">' : ''}<meta property="og:typ
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/css/site.css?v=7">
+<link rel="stylesheet" href="/css/site.css?v=8">
 <script type="application/ld+json">${JSON.stringify({
     '@context': 'https://schema.org', '@type': 'Organization', name: site.name, url: SITE_URL, description: site.description,
     logo: SITE_URL + '/images/logo.png', ...(c.email ? { email: c.email } : {}), ...(c.phone ? { telephone: c.phone } : {}),
@@ -159,7 +159,7 @@ ${body}
     <a href="https://monohasourcing.international">monohasourcing.international</a>
   </div>
 </footer>
-<script src="/js/site.js?v=7" defer></script>
+<script src="/js/site.js?v=8" defer></script>
 </body>
 </html>`;
 }
@@ -385,7 +385,7 @@ pages['/'] = (req) => {
 </section>
 <section class="trust" aria-label="How we work"><div class="wrap"><ul>${(site.trust || []).map((t) => `<li>${icon('check')}${esc(t)}</li>`).join('')}</ul></div></section>
 
-${section(`${headSplit('What We Do', 'Many requirements.<br>One professional partner.', 'From business and sourcing requirements to digital solutions, project support and institutional collaborations, MONOHA works around the specific needs of each organization.')}
+${section(`${headSplit('What We Do', 'Many requirements.<br>One professional partner.', 'From sourcing and business coordination to digital presence, content, marketing, SEO and project support, MONOHA brings practical capabilities together around the requirements of each organization.')}
   <div class="wwd">
     <div class="wwd-copy reveal">
       <ol class="areas">${(site.areas || []).map((x, i) => `<li><a href="${esc(x.href)}"><span class="areas-no">${pad2(i)}</span><span class="areas-t">${esc(x.title)}</span><span class="areas-d">${esc(x.text)}</span></a></li>`).join('')}</ol>
@@ -428,7 +428,7 @@ pages['/about'] = (req) => {
   const site = content('site');
   const a = site.about || {};
   const leaders = a.leadership || [];
-  return layout(req, { title: 'About', description: 'Who MONOHA SOURCING INTERNATIONAL is: a business-focused organisation supporting companies with business, sourcing, digital and online requirements.', body: `
+  return layout(req, { title: 'About', description: 'About MONOHA SOURCING INTERNATIONAL: a business and solutions organization working across sourcing, digital, content, marketing, SEO, project coordination and institutional collaborations.', body: `
 ${pageHero({ eyebrow: 'About Monoha', title: 'Built around practical requirements and reliable execution.', lead: a.who, crumbs: [['/about', 'About']], artKind: 'about' })}
 
 ${section(`<div class="who">
@@ -463,18 +463,18 @@ ${requestCta('Have a business requirement?', 'Describe what you need. Our team w
 // ---------------------------------------------------------------- services
 pages['/services'] = (req) => {
   const services = content('services').services || [];
-  return layout(req, { title: 'Services', description: 'How MONOHA SOURCING INTERNATIONAL supports businesses: business and sourcing, social and digital presence, websites, marketing and growth support, business solutions, and partnerships and development projects.', body: `
-${pageHero({ eyebrow: 'Services', title: 'Capabilities built around real business requirements.', lead: 'Broad areas of work, not a fixed list. Choose the one closest to your need, or describe your requirement and we will identify what it needs.', crumbs: [['/services', 'Services']], artKind: 'services' })}
+  return layout(req, { title: 'Services', description: 'MONOHA SOURCING INTERNATIONAL services: international sourcing and business solutions, website development, content creation, digital marketing, SEO services, and NGO, institutional and partnership project support.', body: `
+${pageHero({ eyebrow: 'Services', title: 'Capabilities built around real business requirements.', lead: 'Six capability areas, each handled by people with the relevant expertise. Choose the one closest to your need, or describe your requirement and we will identify what it needs.', crumbs: [['/services', 'Services']], artKind: 'services' })}
 
 ${section(`<div class="svc-list">${services.map((x, i) => `
   <article class="svc-row reveal" id="${esc(x.slug)}">
     <span class="svc-row-no">${pad2(i)}</span>
-    <div class="svc-row-main"><h2><a href="/services/${esc(x.slug)}">${esc(x.title)}</a></h2><p>${esc(x.summary)}</p></div>
-    <div class="svc-row-areas"><p class="mini-label">Capabilities may include</p><ul class="pills">${(x.points || []).map((p) => `<li>${esc(p)}</li>`).join('')}</ul></div>
+    <div class="svc-row-main"><h2><a href="/services/${esc(x.slug)}">${esc(x.title)}</a></h2><p>${esc(x.summary)}</p>${x.for ? `<p class="svc-row-for"><span class="mini-label">Who it is for</span>${esc(x.for)}</p>` : ''}</div>
+    <div class="svc-row-areas"><p class="mini-label">Key areas</p><ul class="pills">${(x.points || []).map((p) => `<li>${esc(p)}</li>`).join('')}</ul></div>
     <a class="btn btn-outline svc-row-go" href="/services/${esc(x.slug)}" aria-label="Explore ${esc(x.title)}">Explore ${icon('arrow')}</a>
   </article>`).join('')}</div>`)}
 
-${section(`${headSplit('One process', 'Every requirement runs the same seven steps.', 'Whatever the work, the requirement is written down, researched, planned, reviewed and supported after delivery.')}
+${section(`${headSplit('One process', 'Every requirement runs the same seven steps.', 'Whether it is a website, a campaign or a supply requirement, the work is understood, researched, planned, built or sourced, coordinated, reviewed and supported.')}
   ${chain((content('site').process || []).map((p) => p.title))}
   <p class="center-link"><a href="/process" class="link-arrow link-light">How each step works ${icon('arrow')}</a></p>`, 'dark')}
 
@@ -524,7 +524,7 @@ ${requestCta(`Request ${x.title}`, 'Tell us what you need. Our team will review 
 // ---------------------------------------------------------------- solutions
 pages['/solutions'] = (req) => {
   const site = content('site');
-  return layout(req, { title: 'Solutions', description: 'How MONOHA SOURCING INTERNATIONAL supports businesses, brands, digital presence, sourcing requirements, growing businesses and international partners.', body: `
+  return layout(req, { title: 'Solutions', description: 'Solutions for businesses, brands, growing businesses, sourcing requirements, NGOs and development organizations, institutions and project partners, from MONOHA SOURCING INTERNATIONAL.', body: `
 ${pageHero({ eyebrow: 'Solutions', title: 'Structured support for different business needs.', lead: 'The process stays the same. How we apply it depends on who you are and what you need. Find the description closest to you.', crumbs: [['/solutions', 'Solutions']], artKind: 'solutions' })}
 
 ${section(`<div class="solx-list">${(site.solutions || []).map((x, i) => `
@@ -544,7 +544,7 @@ ${requestCta('Recognise your situation?', 'Tell us about your requirement and we
 // ---------------------------------------------------------------- process
 pages['/process'] = (req) => {
   const steps = content('site').process || [];
-  return layout(req, { title: 'Our Process', description: 'The seven-step process MONOHA SOURCING INTERNATIONAL uses on every requirement, and what you hear from us at each step.', body: `
+  return layout(req, { title: 'Our Process', description: 'The seven-step process MONOHA SOURCING INTERNATIONAL uses on websites, content, marketing, SEO, sourcing and project work, and what you hear from us at each step.', body: `
 ${pageHero({ eyebrow: 'Our Process', title: 'A clear process from requirement to delivery.', lead: 'Seven steps, the same every time, so you always know where your requirement stands and when you will hear from us.', crumbs: [['/process', 'Our Process']], artKind: 'process' })}
 
 ${section(`${headSplit('Overview', 'Seven steps at a glance', 'Each step has a purpose and a point where we report back to you.')}${processSteps(steps)}`)}
@@ -836,7 +836,7 @@ app.use((req, res, next) => {
 
 for (const [p, fn] of Object.entries(pages)) app.get(p, (req, res) => res.send(fn(req)));
 app.get('/request', (req, res) => res.redirect(301, '/request-service' + req.originalUrl.slice(req.path.length)));
-const OLD_SERVICES = { 'international-sourcing': 'business-sourcing', 'product-supplier-sourcing': 'business-sourcing', 'business-coordination': 'business-sourcing', 'sourcing-support': 'business-sourcing', 'international-business-support': 'business-sourcing' };
+const OLD_SERVICES = { 'international-sourcing': 'business-sourcing', 'product-supplier-sourcing': 'business-sourcing', 'business-coordination': 'business-sourcing', 'sourcing-support': 'business-sourcing', 'international-business-support': 'business-sourcing', 'business-solutions': 'business-sourcing', 'professional-websites': 'digital-online-solutions', 'social-digital-presence': 'content-creative' };
 app.get('/services/:slug', (req, res, next) => (OLD_SERVICES[req.params.slug] ? res.redirect(301, '/services/' + OLD_SERVICES[req.params.slug]) : next()), servicePage);
 app.get('/insights/:slug', articlePage);
 app.get('/careers/:slug', jobPage);

@@ -1,5 +1,5 @@
 {
-  "_rev": 4,
+  "_rev": 6,
   "articles": [
     {
       "slug": "how-international-sourcing-works",
@@ -25,13 +25,17 @@
     }
   ],
   "categories": [
-    "Business",
     "Sourcing",
+    "Business",
     "Digital",
+    "Website",
     "Marketing",
-    "Technology",
+    "SEO",
+    "Content",
+    "Social Media",
+    "Online Business",
     "Operations",
-    "International Trade",
+    "Development Projects",
     "Company Updates"
   ]
 }

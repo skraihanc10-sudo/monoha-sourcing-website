@@ -1,29 +1,31 @@
 {
-  "_rev": 5,
-  "_note": "Broad capability groups, not a fixed list. 'area' groups them on the home page. 'process': 'sourcing' uses site.sourcingProcess, otherwise site.process. No guarantees, statistics, clients or certifications.",
+  "_rev": 6,
+  "_note": "Six capability categories, not a fixed list. \"for\" is the short who-it-is-for line. \"process\": \"sourcing\" uses site.sourcingProcess, otherwise site.process. No guarantees, statistics, clients or certifications.",
   "services": [
     {
       "slug": "business-sourcing",
-      "area": "Business & Sourcing",
+      "area": "Sourcing & Business Solutions",
       "icon": "globe",
-      "title": "Business & Sourcing",
-      "summary": "Sourcing, research, coordination and practical business support, kept structured from the first brief to follow-up.",
+      "title": "Sourcing & Business Solutions",
+      "summary": "International and product sourcing, supplier search, supply-related support, business coordination and operational support, kept structured from the first brief to follow-up.",
       "process": "sourcing",
       "body": [
         "Some requirements are about finding the right product, supplier or partner. Others are about keeping several parties moving in the same direction. Both need the same things: a clear brief, careful research and someone who follows up.",
-        "We take the requirement, research the options, coordinate the people involved and report back with what is confirmed and what is still open, so decisions stay with you and the legwork stays with us."
+        "We take the requirement, research the options, coordinate the people involved and report back with what is confirmed and what is still open. Where a requirement crosses several areas or is operational rather than sourcing, we assess what it needs and support its execution in the same structured way."
       ],
       "points": [
-        "Product & supplier sourcing",
-        "Market and online research",
-        "Business coordination",
-        "Operational support",
-        "Cross-border communication"
+        "International Sourcing",
+        "Product & Supplier Sourcing",
+        "Supply-related Support",
+        "Project-based Sourcing",
+        "Business Coordination",
+        "Operational Support"
       ],
       "audience": [
         "Businesses that need a product, material or supplier found and compared",
         "Teams managing several external parties on one requirement",
-        "International partners working with businesses in Bangladesh, and the reverse"
+        "International partners working with businesses in Bangladesh, and the reverse",
+        "Businesses with an operational requirement that does not fit a single category"
       ],
       "handle": [
         "Clarifying the requirement: specification, quantity, standard and timeline",
@@ -51,25 +53,85 @@
         {
           "q": "Which countries do you work with?",
           "a": "We review each requirement individually. Tell us the markets involved and we will confirm whether we can support it."
+        },
+        {
+          "q": "What if my requirement doesn't match any listed service?",
+          "a": "That is common. Describe it in the request form and choose \"Other / Custom Requirement\". We will review it and tell you honestly whether and how we can help."
         }
-      ]
+      ],
+      "for": "Businesses and organizations with sourcing, supply, coordination or operational requirements."
     },
     {
-      "slug": "social-digital-presence",
-      "area": "Digital & Online",
-      "icon": "network",
-      "title": "Social & Digital Presence",
-      "summary": "Content, creative, video and social media handled as one joined-up piece of work, planned around how your business wants to be seen.",
+      "slug": "digital-online-solutions",
+      "area": "Digital & Online Solutions",
+      "icon": "web",
+      "title": "Digital & Online Solutions",
+      "summary": "From professional websites and deployment to ongoing digital operations, MONOHA helps businesses establish and maintain a reliable online presence.",
       "body": [
-        "A business's online presence is usually built from many small pieces: posts, visuals, videos, captions, replies and the planning behind them. When those pieces are handled separately, the result feels scattered.",
-        "We handle them together. Depending on the requirement, that can mean researching and planning content, producing it, editing video, publishing and managing channels, and promoting the work to the right audience."
+        "A professional website is a core part of a modern business presence. MONOHA provides website development, deployment, optimization and ongoing support to help businesses establish a reliable online platform.",
+        "Beyond the website, we support the practical side of operating online: setting up an online business presence, improving what already exists, and handling day-to-day digital operations where that support is needed. Sites are built with an SEO-ready structure from the start."
       ],
       "points": [
-        "Content planning & research",
-        "Content & creative production",
-        "Video editing",
-        "Publishing & channel management",
-        "Promotion & optimisation"
+        "Website Development",
+        "Website Deployment",
+        "Website Maintenance",
+        "Digital Presence",
+        "Online Business Support",
+        "Digital Operations"
+      ],
+      "audience": [
+        "Businesses without a website, or with one that no longer represents them",
+        "Teams that need a site deployed and maintained, not only designed",
+        "Businesses setting up or expanding their online operations"
+      ],
+      "handle": [
+        "Agreeing what the website or online setup needs to do, and for whom",
+        "Structuring pages and content with an SEO-ready foundation",
+        "Design, development and deployment to a live domain",
+        "Maintenance, improvements and technical upkeep",
+        "Ongoing digital operations and online business support where agreed"
+      ],
+      "approach": "We build for the business, not for a template. The site is planned around what your visitors need to find, built to load quickly and structured so it can be maintained without starting again.",
+      "expect": [
+        "A written scope before design or development starts",
+        "Review points before the site goes live",
+        "A properly deployed site on your own domain",
+        "Clear information on how updates are handled afterwards"
+      ],
+      "faqs": [
+        {
+          "q": "Do you only design, or also put the site live?",
+          "a": "Both. We can take a site from planning through development to deployment, and support it afterwards where required."
+        },
+        {
+          "q": "Will the website bring guaranteed business?",
+          "a": "No website can guarantee that. We build a clear, professional, well-structured site; what it achieves also depends on your offer, market and promotion."
+        },
+        {
+          "q": "Can you update a website someone else built?",
+          "a": "Often, yes. It depends on how the site was built. Tell us about it and we will review it first."
+        }
+      ],
+      "for": "Businesses setting up, improving or running their presence online."
+    },
+    {
+      "slug": "content-creative",
+      "area": "Content & Creative Solutions",
+      "icon": "clipboard",
+      "title": "Content & Creative Solutions",
+      "summary": "Content planning, creation, video editing, creative design and ongoing content operations for businesses and organizations.",
+      "body": [
+        "Strong digital presence starts with useful, consistent and professionally produced content. MONOHA supports businesses and organizations with content planning, creation, editing, creative production and ongoing content operations.",
+        "Depending on the requirement, that can mean researching and planning what to publish, producing written, visual and video content, designing creative assets, and managing content on an ongoing basis."
+      ],
+      "points": [
+        "Content Creation",
+        "Video Editing",
+        "Social Media Content",
+        "Creative Design",
+        "Content Planning",
+        "Content Management",
+        "Content Operations"
       ],
       "audience": [
         "Businesses that want a consistent, professional presence online",
@@ -78,9 +140,9 @@
       ],
       "handle": [
         "Understanding the audience and agreeing a content direction",
-        "Planning what is published, where and when",
-        "Producing written, visual and video content",
-        "Publishing and managing channels where agreed",
+        "Planning what is produced, where and when",
+        "Producing written content, creative design and video",
+        "Managing and publishing content where agreed",
         "Reviewing what works and adjusting the plan"
       ],
       "approach": "Content starts from the business, not the platform. We agree what you want to say and to whom, then produce and publish to that plan, reviewing it as we go.",
@@ -103,88 +165,39 @@
           "q": "Who approves content before it goes live?",
           "a": "You do. Nothing is published on your behalf without the approval process we agree at the start."
         }
-      ]
-    },
-    {
-      "slug": "professional-websites",
-      "area": "Digital & Online",
-      "icon": "web",
-      "title": "Professional Digital Presence",
-      "summary": "Websites planned, designed, developed and deployed properly, then kept up to date, from the first requirement to a live site.",
-      "body": [
-        "For many businesses, the website is the first place a customer or partner checks. It should be clear, fast, reliable and easy to keep current.",
-        "We take a website from requirement to a professionally deployed site: planning what it needs to say, designing and developing it, putting it live, and supporting updates and maintenance afterwards where required."
       ],
-      "points": [
-        "Website planning",
-        "Design",
-        "Development",
-        "Deployment",
-        "Updates & maintenance",
-        "Optimisation"
-      ],
-      "audience": [
-        "Businesses without a website, or with one that no longer represents them",
-        "Teams that need a site deployed and maintained, not only designed",
-        "Businesses that need regular updates to an existing site"
-      ],
-      "handle": [
-        "Agreeing what the site needs to do and who it is for",
-        "Structuring pages and content",
-        "Design and development",
-        "Deployment to a live domain",
-        "Updates, maintenance and technical upkeep where agreed"
-      ],
-      "approach": "We build for the business, not for a template. The site is planned around what your visitors need to find, built to load quickly and structured so it can be maintained without starting again.",
-      "expect": [
-        "A written scope before design or development starts",
-        "Review points before the site goes live",
-        "A properly deployed site on your own domain",
-        "Clear information on how updates are handled afterwards"
-      ],
-      "faqs": [
-        {
-          "q": "Do you only design, or also put the site live?",
-          "a": "Both. We can take a site from planning through development to deployment, and support it afterwards where required."
-        },
-        {
-          "q": "Will the website bring guaranteed business?",
-          "a": "No website can guarantee that. We build a clear, professional, well-structured site; what it achieves also depends on your offer, market and promotion."
-        },
-        {
-          "q": "Can you update a website someone else built?",
-          "a": "Often, yes. It depends on how the site was built. Tell us about it and we will review it first."
-        }
-      ]
+      "for": "Businesses and organizations that need consistent, professionally produced content."
     },
     {
       "slug": "marketing-growth",
-      "area": "Marketing & Growth Support",
+      "area": "Marketing & Growth Solutions",
       "icon": "arrow",
-      "title": "Marketing & Growth Support",
-      "summary": "Promotion, audience-focused activity, search visibility and digital optimisation, planned around the audience you actually want to reach.",
+      "title": "Marketing & Growth Solutions",
+      "summary": "MONOHA supports businesses in reaching the right audience through structured digital promotion, social media activity, audience targeting and growth-focused marketing support.",
       "body": [
-        "Good work still has to be found. Marketing and growth support is about putting the right message in front of the right people and improving how easily you are found online.",
-        "Search visibility, content structure and website optimisation are part of the broader digital support we provide, alongside audience research, targeting and support for online campaigns."
+        "Good work still has to be found by the right people. Marketing and growth support is about putting a clear message in front of a defined audience, consistently.",
+        "We support social media management and marketing, promotion, audience targeting and digital campaigns, with a strategy agreed at the start and optimization based on what the results show."
       ],
       "points": [
-        "Audience research & targeting",
-        "Digital promotion",
-        "Online campaign support",
-        "SEO & search visibility",
-        "Content optimisation"
+        "Social Media Management",
+        "Social Media Marketing",
+        "Promotion",
+        "Audience Targeting",
+        "Digital Campaign Support",
+        "Brand Awareness",
+        "Online Growth"
       ],
       "audience": [
         "Businesses that want to reach a clearer, better-defined audience",
-        "Teams running or planning online promotion",
-        "Businesses whose website is hard to find in search"
+        "Teams running or planning social media and online promotion",
+        "Brands building awareness in a new market or channel"
       ],
       "handle": [
         "Researching who the audience is and where they are",
-        "Planning promotion and campaign activity",
-        "Supporting campaigns while they run",
-        "Improving search visibility and content structure",
-        "Reviewing results and adjusting the approach"
+        "Agreeing a strategy for promotion and social media activity",
+        "Managing channels and supporting campaigns while they run",
+        "Reporting plainly on what was done and what it showed",
+        "Optimizing the approach based on results"
       ],
       "approach": "We start with the audience and the goal, not the tactic. Activity is planned, measured where possible and adjusted based on what the results show.",
       "expect": [
@@ -194,62 +207,73 @@
       ],
       "faqs": [
         {
-          "q": "Do you guarantee search rankings?",
-          "a": "No. Nobody can honestly guarantee rankings. We improve the things that influence visibility, such as structure, content and technical quality, and report plainly on progress."
+          "q": "Do you guarantee sales, followers or leads?",
+          "a": "No. We plan and run promotion carefully, optimize based on results and report honestly. Outcomes depend on your offer, market and many other factors."
         },
         {
-          "q": "Do you guarantee sales or growth?",
-          "a": "No. We plan and run promotion carefully and report honestly. Outcomes depend on your offer, market and many other factors."
+          "q": "Can you manage our social media channels?",
+          "a": "Yes, where agreed. Nothing is published on your behalf without the approval process we agree at the start."
         }
-      ]
+      ],
+      "for": "Businesses that want to reach a clearer audience and grow their presence."
     },
     {
-      "slug": "business-solutions",
-      "area": "Business Solutions",
-      "icon": "briefcase",
-      "title": "Business Solutions",
-      "summary": "Requirement-based support for needs that do not fit a single category, scoped around what your business actually needs.",
-      "body": [
-        "Not every requirement fits a category, and many cross several. Business solutions is how we handle those: we assess the need, identify what expertise it requires, agree a plan and support its execution.",
-        "The same principles apply as everywhere else: a written scope, the right people on the work, a clear process and regular communication."
-      ],
+      "slug": "seo-digital-visibility",
+      "area": "SEO & Digital Visibility",
+      "icon": "arrow",
+      "title": "SEO & Digital Visibility",
+      "summary": "MONOHA supports businesses with practical SEO and content optimization to improve website structure, search visibility and long-term online presence.",
+      "for": "Businesses whose website should be easier to find, now and over time.",
       "points": [
-        "Needs assessment",
-        "Tailored plan",
-        "Right expertise",
-        "Execution support",
-        "Ongoing support"
+        "Technical SEO",
+        "On-page SEO",
+        "Content Optimization",
+        "Website SEO",
+        "Search Visibility",
+        "Ongoing SEO Support"
+      ],
+      "body": [
+        "Search visibility is not a one-time setup. It depends on how a website is structured, how its content is written and how both are maintained over time.",
+        "We work on the technical foundation, on-page structure and content of your website, and continue that work as an ongoing service where it is needed, reporting plainly on what changed."
       ],
       "audience": [
-        "Businesses with a requirement that crosses several areas",
-        "Teams that need practical support on an operational problem",
-        "Anyone unsure which kind of support fits"
+        "Businesses whose website is hard to find in search",
+        "Teams with a new website that needs a sound SEO foundation",
+        "Businesses that want continuing SEO support rather than a one-off audit"
       ],
       "handle": [
-        "Understanding the business need and its constraints",
-        "Identifying the expertise the work requires",
-        "Agreeing a written scope and plan",
-        "Supporting execution against that plan",
-        "Reviewing the result, and continuing where ongoing support is needed"
+        "Reviewing the current website, structure and content",
+        "Technical SEO improvements to the site foundation",
+        "On-page SEO and content optimization",
+        "Ongoing SEO support and content updates where agreed",
+        "Plain reporting on work done and search visibility"
       ],
-      "approach": "We scope before we commit. If a requirement is outside what we can do well, we say so early.",
+      "approach": "We improve the things that influence visibility, such as structure, content and technical quality, and treat SEO as continuing work rather than a single task.",
       "expect": [
-        "An honest assessment of whether we are the right fit",
-        "A written scope before work begins",
-        "Regular communication throughout"
+        "A clear view of the current state before work starts",
+        "A written list of what will be improved and why",
+        "Plain reporting on progress over time"
       ],
       "faqs": [
         {
-          "q": "What if my requirement doesn't match any listed service?",
-          "a": "That is common. Describe it in the request form and choose \"Other / Custom Requirement\". We will review it and tell you honestly whether and how we can help."
+          "q": "Do you guarantee search rankings?",
+          "a": "No. Nobody can honestly guarantee rankings. We improve the things that influence visibility and report plainly on progress."
+        },
+        {
+          "q": "Is SEO a one-time job?",
+          "a": "It can start with a one-time improvement, but visibility depends on continued upkeep. We offer ongoing SEO support where it is needed."
+        },
+        {
+          "q": "Can you work on a website someone else built?",
+          "a": "Often, yes. We review the site first and tell you what is possible."
         }
       ]
     },
     {
       "slug": "partnerships-development",
-      "area": "Partnerships & Development Projects",
+      "area": "Project, Institutional & Partnership Support",
       "icon": "handshake",
-      "title": "Partnerships & Development Projects",
+      "title": "Project, Institutional & Partnership Support",
       "summary": "Supporting NGOs, development organizations, institutions and project partners with sourcing, coordination, supply, digital and operational requirements.",
       "process": "sourcing",
       "body": [
@@ -296,7 +320,8 @@
           "q": "Do you share details of past projects?",
           "a": "Only business-level details that the organizations involved have approved. We do not publish confidential project, financial or personal information."
         }
-      ]
+      ],
+      "for": "NGOs, development organizations, institutions and project partners."
     }
   ]
 }

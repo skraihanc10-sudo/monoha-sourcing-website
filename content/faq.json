@@ -1,5 +1,5 @@
 {
-  "_rev": 4,
+  "_rev": 6,
   "categories": [
     "General",
     "Services",
@@ -26,7 +26,7 @@
     {
       "cat": "Services",
       "q": "What kind of work do you take on?",
-      "a": "Our work is grouped into Business & Sourcing, Social & Digital Presence, Professional Digital Presence (websites), Marketing & Growth Support and Business Solutions. These are broad areas rather than a fixed list; if your requirement is related, describe it and we will review it."
+      "a": "Our work is organized into six categories: Sourcing & Business Solutions, Digital & Online Solutions, Content & Creative, Marketing & Growth, SEO & Digital Visibility, and Project, Institutional & Partnership Support. These are broad areas rather than a fixed list; if your requirement is related, describe it and we will review it."
     },
     {
       "cat": "Services",
@@ -36,7 +36,7 @@
     {
       "cat": "Services",
       "q": "Do you guarantee results?",
-      "a": "No. We do not guarantee sales, growth, rankings or supplier outcomes. We commit to a structured process, the right expertise, honest reporting and follow-through."
+      "a": "No. We do not guarantee sales, followers, leads, rankings, growth or supplier outcomes. We commit to a structured process, the right expertise, honest reporting and follow-through."
     },
     {
       "cat": "Services",
@@ -46,7 +46,7 @@
     {
       "cat": "Process",
       "q": "How does your process work?",
-      "a": "Seven steps: understand, research, plan, execute, review, optimize, and deliver & support. The Our Process page explains each step and what you hear from us at each stage."
+      "a": "Seven steps: understand, research, plan, source or build, coordinate, review, and deliver & support. The same steps apply to websites, content, marketing, SEO, sourcing and project work. The Our Process page explains each one."
     },
     {
       "cat": "Process",
