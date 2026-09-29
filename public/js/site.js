@@ -12,6 +12,48 @@
     };
     btn.addEventListener('click', () => set(!document.body.classList.contains('menu-open')));
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') set(false); });
+    // A link to a section of the current page does not reload it, so close the menu ourselves.
+    const nav = document.getElementById('nav');
+    if (nav) nav.addEventListener('click', (e) => { if (e.target.closest('a')) set(false); });
+  }
+
+  // ------------------------------------------------------------ dropdowns
+  // Hover opens them on desktop (CSS); the chevron button opens them by click, tap or keyboard,
+  // and in the mobile menu they work as accordions.
+  const items = document.querySelectorAll('.nav-item');
+  const openItem = (it, open) => {
+    it.classList.toggle('is-open', open);
+    it.querySelector('.nav-toggle').setAttribute('aria-expanded', String(open));
+  };
+  const mobile = () => document.body.classList.contains('menu-open');
+  items.forEach((it) => {
+    const t = it.querySelector('.nav-toggle');
+    t.addEventListener('click', () => {
+      const open = !it.classList.contains('is-open');
+      items.forEach((o) => { if (o !== it && !mobile()) openItem(o, false); });
+      openItem(it, open);
+    });
+    it.addEventListener('focusout', (e) => { if (!mobile() && !it.contains(e.relatedTarget)) openItem(it, false); });
+    it.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && it.classList.contains('is-open')) { e.stopPropagation(); openItem(it, false); t.focus(); }
+    });
+  });
+  document.addEventListener('click', (e) => { if (!mobile() && !e.target.closest('.nav-item')) items.forEach((o) => openItem(o, false)); });
+
+  // ------------------------------------------------------------ section menu
+  const sub = document.querySelector('.subnav');
+  if (sub && 'IntersectionObserver' in window) {
+    const links = [...sub.querySelectorAll('a')];
+    const byId = new Map(links.map((a) => [a.hash.slice(1), a]));
+    const ul = sub.querySelector('ul');
+    const mark = (a) => {
+      links.forEach((l) => l.classList.toggle('is-active', l === a));
+      if (a && ul.scrollWidth > ul.clientWidth) ul.scrollTo({ left: a.offsetLeft - 16, behavior: 'smooth' });
+    };
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((en) => { if (en.isIntersecting) mark(byId.get(en.target.id)); });
+    }, { rootMargin: '-35% 0px -60% 0px' });
+    byId.forEach((a, id) => { const s = document.getElementById(id); if (s) io.observe(s); });
   }
 
   // ------------------------------------------------------------ copy link
@@ -191,8 +233,11 @@
     const sync = () => solx.forEach((d) => { if (wide.matches) d.open = true; });
     sync(); wide.addEventListener('change', sync);
     solx.forEach((d) => d.querySelector('summary').addEventListener('click', (e) => { if (wide.matches) e.preventDefault(); }));
-    const target = location.hash && document.getElementById(location.hash.slice(1));
-    if (target && target.matches('details.solx')) target.open = true;
+    const openTarget = () => {
+      const target = location.hash && document.getElementById(location.hash.slice(1));
+      if (target && target.matches('details.solx')) target.open = true;
+    };
+    openTarget(); window.addEventListener('hashchange', openTarget);
   }
 
   // ------------------------------------------------------------ forms
@@ -206,7 +251,7 @@
       form.querySelectorAll('[aria-invalid]').forEach((el) => el.removeAttribute('aria-invalid'));
       const missing = Array.from(form.querySelectorAll('[required]')).find((el) => !el.value.trim());
       const email = form.querySelector('input[type=email]');
-      if (!missing && email && !/^[^@s]+@[^@s]+.[^@s]+$/.test(email.value.trim())) { email.setAttribute('aria-invalid', 'true'); say('Please enter a valid email address.', true); email.focus(); return; }
+      if (!missing && email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.value.trim())) { email.setAttribute('aria-invalid', 'true'); say('Please enter a valid email address.', true); email.focus(); return; }
       const req = form.querySelector('#requirement');
       if (!missing && req && req.value.trim().length < 20) { req.setAttribute('aria-invalid', 'true'); say('Please describe your requirement in at least 20 characters.', true); req.focus(); return; }
       if (missing) missing.setAttribute('aria-invalid', 'true');
