@@ -1,5 +1,5 @@
 {
-  "_rev": 4,
+  "_rev": 5,
   "_note": "Broad capability groups, not a fixed list. 'area' groups them on the home page. 'process': 'sourcing' uses site.sourcingProcess, otherwise site.process. No guarantees, statistics, clients or certifications.",
   "services": [
     {
@@ -13,7 +13,13 @@
         "Some requirements are about finding the right product, supplier or partner. Others are about keeping several parties moving in the same direction. Both need the same things: a clear brief, careful research and someone who follows up.",
         "We take the requirement, research the options, coordinate the people involved and report back with what is confirmed and what is still open, so decisions stay with you and the legwork stays with us."
       ],
-      "points": ["Product & supplier sourcing", "Market and online research", "Business coordination", "Operational support", "Cross-border communication"],
+      "points": [
+        "Product & supplier sourcing",
+        "Market and online research",
+        "Business coordination",
+        "Operational support",
+        "Cross-border communication"
+      ],
       "audience": [
         "Businesses that need a product, material or supplier found and compared",
         "Teams managing several external parties on one requirement",
@@ -34,9 +40,18 @@
         "Clear notes on what is confirmed and what is still open"
       ],
       "faqs": [
-        { "q": "Do you guarantee a supplier will be found?", "a": "No. We commit to a structured search and honest reporting. If suitable options are limited, we tell you what we found and why." },
-        { "q": "Who decides which supplier or partner to use?", "a": "You do. We present the options and the information behind them; the decision stays with your business." },
-        { "q": "Which countries do you work with?", "a": "We review each requirement individually. Tell us the markets involved and we will confirm whether we can support it." }
+        {
+          "q": "Do you guarantee a supplier will be found?",
+          "a": "No. We commit to a structured search and honest reporting. If suitable options are limited, we tell you what we found and why."
+        },
+        {
+          "q": "Who decides which supplier or partner to use?",
+          "a": "You do. We present the options and the information behind them; the decision stays with your business."
+        },
+        {
+          "q": "Which countries do you work with?",
+          "a": "We review each requirement individually. Tell us the markets involved and we will confirm whether we can support it."
+        }
       ]
     },
     {
@@ -49,7 +64,13 @@
         "A business's online presence is usually built from many small pieces: posts, visuals, videos, captions, replies and the planning behind them. When those pieces are handled separately, the result feels scattered.",
         "We handle them together. Depending on the requirement, that can mean researching and planning content, producing it, editing video, publishing and managing channels, and promoting the work to the right audience."
       ],
-      "points": ["Content planning & research", "Content & creative production", "Video editing", "Publishing & channel management", "Promotion & optimisation"],
+      "points": [
+        "Content planning & research",
+        "Content & creative production",
+        "Video editing",
+        "Publishing & channel management",
+        "Promotion & optimisation"
+      ],
       "audience": [
         "Businesses that want a consistent, professional presence online",
         "Teams without the time or in-house skills to produce content regularly",
@@ -70,9 +91,18 @@
         "Honest reporting on how the work is performing"
       ],
       "faqs": [
-        { "q": "Do you guarantee followers, reach or sales?", "a": "No. We commit to well-planned, professionally produced work and honest reporting. Results depend on the market, the audience and many factors outside anyone's control." },
-        { "q": "Can you handle only part of it, such as video editing?", "a": "Yes. Some clients need one piece of the work, others need all of it. Describe what you need and we will scope it." },
-        { "q": "Who approves content before it goes live?", "a": "You do. Nothing is published on your behalf without the approval process we agree at the start." }
+        {
+          "q": "Do you guarantee followers, reach or sales?",
+          "a": "No. We commit to well-planned, professionally produced work and honest reporting. Results depend on the market, the audience and many factors outside anyone's control."
+        },
+        {
+          "q": "Can you handle only part of it, such as video editing?",
+          "a": "Yes. Some clients need one piece of the work, others need all of it. Describe what you need and we will scope it."
+        },
+        {
+          "q": "Who approves content before it goes live?",
+          "a": "You do. Nothing is published on your behalf without the approval process we agree at the start."
+        }
       ]
     },
     {
@@ -85,7 +115,14 @@
         "For many businesses, the website is the first place a customer or partner checks. It should be clear, fast, reliable and easy to keep current.",
         "We take a website from requirement to a professionally deployed site: planning what it needs to say, designing and developing it, putting it live, and supporting updates and maintenance afterwards where required."
       ],
-      "points": ["Website planning", "Design", "Development", "Deployment", "Updates & maintenance", "Optimisation"],
+      "points": [
+        "Website planning",
+        "Design",
+        "Development",
+        "Deployment",
+        "Updates & maintenance",
+        "Optimisation"
+      ],
       "audience": [
         "Businesses without a website, or with one that no longer represents them",
         "Teams that need a site deployed and maintained, not only designed",
@@ -106,9 +143,18 @@
         "Clear information on how updates are handled afterwards"
       ],
       "faqs": [
-        { "q": "Do you only design, or also put the site live?", "a": "Both. We can take a site from planning through development to deployment, and support it afterwards where required." },
-        { "q": "Will the website bring guaranteed business?", "a": "No website can guarantee that. We build a clear, professional, well-structured site; what it achieves also depends on your offer, market and promotion." },
-        { "q": "Can you update a website someone else built?", "a": "Often, yes. It depends on how the site was built. Tell us about it and we will review it first." }
+        {
+          "q": "Do you only design, or also put the site live?",
+          "a": "Both. We can take a site from planning through development to deployment, and support it afterwards where required."
+        },
+        {
+          "q": "Will the website bring guaranteed business?",
+          "a": "No website can guarantee that. We build a clear, professional, well-structured site; what it achieves also depends on your offer, market and promotion."
+        },
+        {
+          "q": "Can you update a website someone else built?",
+          "a": "Often, yes. It depends on how the site was built. Tell us about it and we will review it first."
+        }
       ]
     },
     {
@@ -121,7 +167,13 @@
         "Good work still has to be found. Marketing and growth support is about putting the right message in front of the right people and improving how easily you are found online.",
         "Search visibility, content structure and website optimisation are part of the broader digital support we provide, alongside audience research, targeting and support for online campaigns."
       ],
-      "points": ["Audience research & targeting", "Digital promotion", "Online campaign support", "SEO & search visibility", "Content optimisation"],
+      "points": [
+        "Audience research & targeting",
+        "Digital promotion",
+        "Online campaign support",
+        "SEO & search visibility",
+        "Content optimisation"
+      ],
       "audience": [
         "Businesses that want to reach a clearer, better-defined audience",
         "Teams running or planning online promotion",
@@ -141,8 +193,14 @@
         "Recommendations based on results, not assumptions"
       ],
       "faqs": [
-        { "q": "Do you guarantee search rankings?", "a": "No. Nobody can honestly guarantee rankings. We improve the things that influence visibility, such as structure, content and technical quality, and report plainly on progress." },
-        { "q": "Do you guarantee sales or growth?", "a": "No. We plan and run promotion carefully and report honestly. Outcomes depend on your offer, market and many other factors." }
+        {
+          "q": "Do you guarantee search rankings?",
+          "a": "No. Nobody can honestly guarantee rankings. We improve the things that influence visibility, such as structure, content and technical quality, and report plainly on progress."
+        },
+        {
+          "q": "Do you guarantee sales or growth?",
+          "a": "No. We plan and run promotion carefully and report honestly. Outcomes depend on your offer, market and many other factors."
+        }
       ]
     },
     {
@@ -155,7 +213,13 @@
         "Not every requirement fits a category, and many cross several. Business solutions is how we handle those: we assess the need, identify what expertise it requires, agree a plan and support its execution.",
         "The same principles apply as everywhere else: a written scope, the right people on the work, a clear process and regular communication."
       ],
-      "points": ["Needs assessment", "Tailored plan", "Right expertise", "Execution support", "Ongoing support"],
+      "points": [
+        "Needs assessment",
+        "Tailored plan",
+        "Right expertise",
+        "Execution support",
+        "Ongoing support"
+      ],
       "audience": [
         "Businesses with a requirement that crosses several areas",
         "Teams that need practical support on an operational problem",
@@ -175,7 +239,63 @@
         "Regular communication throughout"
       ],
       "faqs": [
-        { "q": "What if my requirement doesn't match any listed service?", "a": "That is common. Describe it in the request form and choose \"Other / Custom Requirement\". We will review it and tell you honestly whether and how we can help." }
+        {
+          "q": "What if my requirement doesn't match any listed service?",
+          "a": "That is common. Describe it in the request form and choose \"Other / Custom Requirement\". We will review it and tell you honestly whether and how we can help."
+        }
+      ]
+    },
+    {
+      "slug": "partnerships-development",
+      "area": "Partnerships & Development Projects",
+      "icon": "handshake",
+      "title": "Partnerships & Development Projects",
+      "summary": "Supporting NGOs, development organizations, institutions and project partners with sourcing, coordination, supply, digital and operational requirements.",
+      "process": "sourcing",
+      "body": [
+        "Development organizations, institutions and project partners often need a dependable business partner for specific parts of a project: sourcing and supplying goods, coordinating suppliers and deliveries, or handling digital and operational requirements.",
+        "MONOHA is a business and service organization, not an NGO. We collaborate with organizations through partnerships and project-based engagements, and our role depends on the requirement, from supply and sourcing support to project coordination, digital execution and other operational services."
+      ],
+      "points": [
+        "NGO & Development Projects",
+        "Institutional Support",
+        "Project Coordination",
+        "Sourcing & Supply Support",
+        "Digital & Online Support",
+        "Partner Collaboration"
+      ],
+      "audience": [
+        "NGOs and development organizations with project-based requirements",
+        "Institutions managing specific sourcing, supply or operational needs",
+        "Project partners looking for a structured implementation and support partner"
+      ],
+      "handle": [
+        "Understanding the project requirement, specifications and timelines",
+        "Sourcing and supply support against agreed specifications",
+        "Project coordination with suppliers and other parties involved",
+        "Digital and online support connected to the project",
+        "Documentation and follow-up in line with the organization's procedures"
+      ],
+      "approach": "We work within the requirements and procedures of each organization. The scope, specifications and reporting are agreed in writing, and we follow them through to delivery.",
+      "expect": [
+        "A written scope aligned with the project requirement",
+        "Delivery against agreed specifications and timelines",
+        "Clear documentation and one point of contact",
+        "Professional, confidential handling of project information"
+      ],
+      "faqs": [
+        {
+          "q": "Is MONOHA an NGO?",
+          "a": "No. MONOHA SOURCING INTERNATIONAL is a business and service organization. We collaborate with NGOs, development organizations and institutions when their requirements match our capabilities."
+        },
+        {
+          "q": "How do you work with organizations?",
+          "a": "Directly, through partnerships and collaborations, or on project-based assignments. The arrangement depends on the project and the organization's procedures."
+        },
+        {
+          "q": "Do you share details of past projects?",
+          "a": "Only business-level details that the organizations involved have approved. We do not publish confidential project, financial or personal information."
+        }
       ]
     }
   ]

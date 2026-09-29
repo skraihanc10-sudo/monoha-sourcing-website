@@ -1,8 +1,8 @@
 {
-  "_rev": 4,
+  "_rev": 5,
   "_note": "Add only real, permitted projects. Outcome only when verified.",
   "projects": [],
-  "_fields": "Each project: slug, name, category (one of categories), industry, requirement, challenge, approach, execution, outcome (verified only), image (optional).",
+  "_fields": "Each project: slug, name, category (one of categories), industry, requirement, challenge, approach, execution, outcome (verified only), image (optional). Only publish approved, business-level details; never confidential, financial or personal information.",
   "categories": [
     "Business",
     "Sourcing",
@@ -11,6 +11,8 @@
     "Website",
     "SEO",
     "Marketing",
-    "Creative"
+    "NGO & Development",
+    "Institutional Projects",
+    "Partnerships"
   ]
 }

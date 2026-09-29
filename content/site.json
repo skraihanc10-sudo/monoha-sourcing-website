@@ -1,5 +1,5 @@
 {
-  "_rev": 4,
+  "_rev": 5,
   "name": "MONOHA SOURCING INTERNATIONAL",
   "short": "Monoha",
   "tagline": "Connecting Business Requirements With Practical Solutions.",
@@ -158,6 +158,20 @@
       "who": "Businesses outside Bangladesh working with partners here, and the reverse.",
       "need": "Organised communication and follow-up across distance and time zones.",
       "support": "One accountable point of contact, written summaries and a steady follow-up rhythm."
+    },
+    {
+      "title": "For NGOs & Development Organizations",
+      "text": "Practical support for project-based sourcing, coordination, supply, digital requirements and other operational needs.",
+      "who": "NGOs and development organizations running projects with specific practical requirements.",
+      "need": "A dependable partner for sourcing, supply, coordination or digital work within the project's specifications and procedures.",
+      "support": "We work to the agreed specifications and timelines, through direct engagement, partnership or a project-based assignment."
+    },
+    {
+      "title": "For Institutions & Project Partners",
+      "text": "Structured support for organizations managing specific sourcing, supply, digital or operational requirements.",
+      "who": "Institutions and project partners with defined requirements to fulfil.",
+      "need": "A clear scope, reliable delivery and documentation that fits their processes.",
+      "support": "We agree the scope in writing, coordinate the work and deliver against it with one accountable point of contact."
     }
   ],
   "about": {
@@ -194,7 +208,8 @@
     ],
     "leadership": [],
     "whoMore": "We have worked on business and digital requirements for several years, including long-term working relationships with the businesses we support. We bring together business understanding, research, specialised expertise, digital execution, coordination and ongoing support.",
-    "approach": "Every requirement moves through the same sequence, whether it is a sourcing search, a website or a content plan. It keeps the work predictable for clients and accountable for us."
+    "approach": "Every requirement moves through the same sequence, whether it is a sourcing search, a website or a content plan. It keeps the work predictable for clients and accountable for us.",
+    "partnerships": "Alongside business and digital solutions, MONOHA works with NGOs, development organizations, institutions and project partners through collaborations and project-based engagements. Our role can vary depending on the requirement, from sourcing and supply support to coordination, digital execution and other operational services."
   },
   "clients": [],
   "testimonials": [],
@@ -218,6 +233,11 @@
       "title": "Business Solutions",
       "text": "Requirement-based support designed around a specific business need.",
       "href": "/services/business-solutions"
+    },
+    {
+      "title": "Partnerships & Development Projects",
+      "text": "Collaboration with NGOs, development organizations, institutions and project partners on project-based requirements.",
+      "href": "/services/partnerships-development"
     }
   ],
   "expertise": {
