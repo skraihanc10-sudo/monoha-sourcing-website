@@ -21,8 +21,11 @@ const ROOT = __dirname;
 const DATA_DIR = process.env.DATA_DIR || ROOT;
 const CONTENT_DIR = path.join(DATA_DIR, 'content');
 const INQUIRY_FILE = path.join(DATA_DIR, 'inquiries.json');
-const GMAIL_USER = process.env.GMAIL_USER || '';
-const GMAIL_APP_PASSWORD = process.env.GMAIL_APP_PASSWORD || '';
+// Mail goes out through the domain mailbox (Hostinger SMTP by default).
+const SMTP_HOST = process.env.SMTP_HOST || 'smtp.hostinger.com';
+const SMTP_PORT = Number(process.env.SMTP_PORT) || 465;
+const SMTP_USER = process.env.SMTP_USER || '';
+const SMTP_PASS = process.env.SMTP_PASS || '';
 
 // ---------------------------------------------------------------- content
 fs.mkdirSync(CONTENT_DIR, { recursive: true });
@@ -463,14 +466,14 @@ ${section('<a href="/" class="btn btn-primary">Back to home</a>')}` }));
 // ---------------------------------------------------------------- mail
 let transport = null;
 function mailer() {
-  if (!GMAIL_USER || !GMAIL_APP_PASSWORD) return null;
-  if (!transport) transport = nodemailer.createTransport({ service: 'gmail', auth: { user: GMAIL_USER, pass: GMAIL_APP_PASSWORD.replace(/\s/g, '') } });
+  if (!SMTP_USER || !SMTP_PASS) return null;
+  if (!transport) transport = nodemailer.createTransport({ host: SMTP_HOST, port: SMTP_PORT, secure: SMTP_PORT === 465, auth: { user: SMTP_USER, pass: SMTP_PASS } });
   return transport;
 }
 async function sendMail(to, subject, html, attachments) {
   const t = mailer();
-  if (!t) { console.warn(`[mail] Gmail is not configured — would have sent "${subject}" to ${to}`); return; }
-  try { await t.sendMail({ from: `MONOHA SOURCING INTERNATIONAL <${GMAIL_USER}>`, to, subject, html, attachments }); }
+  if (!t) { console.warn(`[mail] SMTP is not configured — would have sent "${subject}" to ${to}`); return; }
+  try { await t.sendMail({ from: `MONOHA SOURCING INTERNATIONAL <${SMTP_USER}>`, to, subject, html, attachments }); }
   catch (e) { console.error('[mail]', e.message); }
 }
 
@@ -548,7 +551,7 @@ app.post('/api/inquiry', express.json({ limit: '8mb' }), (req, res) => {
   res.json({ ok: true, id: entry.id });
 
   const site = content('site');
-  const to = [GMAIL_USER, site.contact && site.contact.email].filter(Boolean);
+  const to = [SMTP_USER, site.contact && site.contact.email].filter(Boolean);
   const rows = Object.entries({ Name: entry.name, Company: entry.company, Country: entry.country, Email: entry.email, Phone: entry.phone, Subject: entry.subject, Service: entry.service, Requirement: entry.requirement, 'Quantity / budget': entry.budget, Message: entry.message })
     .filter(([, v]) => v).map(([k, v]) => `<tr><td style="padding:6px 12px 6px 0;color:#5B6B88;vertical-align:top">${k}</td><td style="padding:6px 0;white-space:pre-wrap">${esc(v)}</td></tr>`).join('');
   for (const addr of new Set(to)) {
