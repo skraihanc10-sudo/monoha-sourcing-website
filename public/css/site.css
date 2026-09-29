@@ -1222,3 +1222,29 @@ input[type=file] { padding: 11px; }
 @media (max-width: 1100px) { .sol-grid, .home-svc .svc-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 800px) { .sold { grid-template-columns: 1fr; } }
 @media (max-width: 560px) { .sol-grid, .home-svc .svc-grid { grid-template-columns: 1fr; } }
+
+/* v14 career application */
+.apply-wrap { max-width: 760px; margin: 0 auto; }
+.apply-card { border-radius: 24px; }
+.photo-pick { display: flex; align-items: center; gap: 20px; padding: 18px 20px; margin-bottom: 22px; border: 1px solid var(--line); border-radius: 16px; background: var(--soft); }
+.photo-prev { position: relative; flex: none; width: 84px; height: 84px; border-radius: 50%; display: grid; place-items: center; background: #fff; color: #A9B6CC; overflow: hidden; box-shadow: 0 0 0 4px #fff; }
+.photo-prev .ico { width: 30px; height: 30px; }
+.photo-prev img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.photo-t { margin: 0; font-weight: 700; color: var(--navy); }
+.photo-d { margin: 2px 0 10px; font-size: 13.5px; color: var(--muted); }
+.btn-chip { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border: 1px solid var(--line); border-radius: 999px; background: #fff; font-size: 14px; font-weight: 600; color: var(--navy); cursor: pointer; }
+.btn-chip .ico { width: 16px; height: 16px; }
+.btn-chip:hover, #photo:focus-visible + .btn-chip { border-color: var(--royal); color: var(--royal); }
+.photo-pick:has(#photo:focus-visible) .btn-chip { outline: 2px solid var(--royal); outline-offset: 2px; }
+.cv-drop { display: flex; align-items: center; gap: 18px; padding: 26px 24px; border: 2px dashed #B9C7DE; border-radius: 16px; background: linear-gradient(180deg, #F7FAFF, #EEF4FF); cursor: pointer; transition: border-color .2s, background .2s; }
+.cv-drop:hover, .cv-drop.is-over, .cv-drop:focus-visible { border-color: var(--royal); background: #E8F0FF; outline: none; }
+.cv-drop.has-file { border-style: solid; border-color: #1F9D62; background: #EFFAF4; }
+.cv-drop.is-bad, .field:has(#cv[aria-invalid]) .cv-drop { border-color: #D93838; background: #FFF3F3; }
+.cv-ico { flex: none; width: 56px; height: 56px; border-radius: 14px; display: grid; place-items: center; background: var(--royal); color: #fff; }
+.cv-drop.has-file .cv-ico { background: #1F9D62; }
+.cv-ico .ico { width: 26px; height: 26px; }
+.cv-main { display: grid; gap: 4px; min-width: 0; }
+.cv-name { font-size: 16.5px; color: var(--navy); overflow-wrap: anywhere; }
+.cv-name u { color: var(--royal); text-underline-offset: 3px; }
+.cv-meta { font-size: 13.5px; color: var(--muted); }
+@media (max-width: 560px) { .photo-pick { flex-direction: column; text-align: center; } .cv-drop { flex-direction: column; text-align: center; padding: 24px 16px; } }

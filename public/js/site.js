@@ -250,6 +250,31 @@
     fcols.forEach((d) => d.querySelector('summary').addEventListener('click', (e) => { if (wideF.matches) e.preventDefault(); }));
   }
 
+  // ------------------------------------------------------------ career form
+  const photo = document.getElementById('photo');
+  if (photo) photo.addEventListener('change', () => {
+    const img = document.querySelector('.photo-prev img'), f = photo.files[0];
+    if (!f) { img.hidden = true; return; }
+    img.src = URL.createObjectURL(f); img.hidden = false;
+  });
+  const cvIn = document.getElementById('cv'), drop = document.querySelector('.cv-drop');
+  if (cvIn && drop) {
+    const name = drop.querySelector('.cv-name'), meta = drop.querySelector('.cv-meta'), blank = name.innerHTML;
+    const show = () => {
+      const f = cvIn.files[0];
+      drop.classList.toggle('has-file', !!f);
+      name.innerHTML = blank; meta.textContent = 'PDF only · up to 10 MB';
+      if (f) { name.textContent = f.name; meta.textContent = `${(f.size / 1048576).toFixed(1)} MB · click to replace`; }
+      drop.classList.toggle('is-bad', !!f && f.size > 10 * 1048576);
+    };
+    cvIn.addEventListener('change', show);
+    drop.setAttribute('tabindex', '0'); drop.setAttribute('role', 'button');
+    drop.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); cvIn.click(); } });
+    ['dragenter', 'dragover'].forEach((ev) => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add('is-over'); }));
+    ['dragleave', 'drop'].forEach((ev) => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.remove('is-over'); }));
+    drop.addEventListener('drop', (e) => { if (e.dataTransfer.files[0]) { cvIn.files = e.dataTransfer.files; show(); } });
+  }
+
   // ------------------------------------------------------------ forms
   document.querySelectorAll('form[data-kind]').forEach((form) => {
     const status = form.querySelector('.form-status');
@@ -265,16 +290,18 @@
       const req = form.querySelector('#requirement');
       if (!missing && req && req.value.trim().length < 20) { req.setAttribute('aria-invalid', 'true'); say('Please describe your requirement in at least 20 characters.', true); req.focus(); return; }
       if (missing) missing.setAttribute('aria-invalid', 'true');
-      if (missing) { say('Please fill in: ' + missing.closest('.field').querySelector('label').textContent.replace('*', '').trim(), true); missing.focus(); return; }
+      if (missing) { say('Please fill in: ' + missing.closest('.field').querySelector('label').textContent.replace('*', '').trim(), true); (missing.type === 'file' ? missing.closest('.field').querySelector('.cv-drop') || missing : missing).focus(); return; }
 
       const data = { kind: form.dataset.kind };
       new FormData(form).forEach((v, k) => { if (typeof v === 'string') data[k] = v; });
 
-      const file = form.querySelector('input[type=file]');
-      if (file && file.files[0]) {
+      for (const file of form.querySelectorAll('input[type=file]')) {
         const f = file.files[0];
-        if (f.size > 5 * 1024 * 1024) { say('The attachment is larger than 5 MB.', true); return; }
-        data.attachment = { name: f.name, data: await new Promise((res) => {
+        if (!f) continue;
+        const max = Number(file.dataset.max || 5), label = file.dataset.label || 'attachment';
+        if (f.size > max * 1024 * 1024) { say(`The ${label.toLowerCase()} is larger than ${max} MB.`, true); return; }
+        if (file.dataset.pdf && !/\.pdf$/i.test(f.name) && f.type !== 'application/pdf') { say('Please attach your CV as a PDF file.', true); return; }
+        data[file.name] = { name: f.name, data: await new Promise((res) => {
           const r = new FileReader(); r.onload = () => res(String(r.result).split(',')[1]); r.readAsDataURL(f);
         }) };
       }

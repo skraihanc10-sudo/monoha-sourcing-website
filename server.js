@@ -132,7 +132,6 @@ const NAV = [
   ['/', 'Home'],
   ['/about', 'About', [
     ['/about', 'About MONOHA', 'Who we are and how we work', 'building'],
-    ['/about#ceo-message', 'CEO Message', 'A word from our founder', 'user'],
     ['/partners', 'Our Partners', 'Organizations we work with', 'handshake'],
     ['/programs', 'Programs', 'Programs and project initiatives', 'calendar'],
   ]],
@@ -220,7 +219,7 @@ ${noindex ? '<meta name="robots" content="noindex">' : ''}<meta property="og:typ
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/css/site.css?v=13">
+<link rel="stylesheet" href="/css/site.css?v=14">
 <script type="application/ld+json">${JSON.stringify({
     '@context': 'https://schema.org', '@type': 'Organization', name: site.name, url: SITE_URL, description: site.description,
     logo: SITE_URL + '/images/logo.png', ...(c.email ? { email: c.email } : {}), ...(c.phone ? { telephone: c.phone } : {}),
@@ -271,7 +270,7 @@ ${body}
     <span class="footer-motto">More than sourcing. More than digital.</span>
   </div>
 </footer>
-<script src="/js/site.js?v=13" defer></script>
+<script src="/js/site.js?v=14" defer></script>
 </body>
 </html>`;
 }
@@ -914,7 +913,7 @@ pages['/careers'] = (req) => {
   const open = (c.jobs || []).filter((j) => j.open);
   const faqs = c.faqs || [];
   return layout(req, { title: 'Careers', description: 'Careers at MONOHA SOURCING INTERNATIONAL: how we work, how recruitment works, and current opportunities.', body: `
-${pageHero({ eyebrow: 'Careers', title: 'Build Your Career With MONOHA', lead: c.intro, crumbs: [['/careers', 'Careers']], artKind: 'careers', actions: `<a href="#openings" class="btn btn-light">View Open Positions ${icon('arrow')}</a>` })}
+${pageHero({ eyebrow: 'Careers', title: 'Build Your Career With MONOHA', lead: c.intro, crumbs: [['/careers', 'Careers']], artKind: 'careers', actions: `<a href="/careers/apply" class="btn btn-light">Apply Now ${icon('arrow')}</a><a href="#openings" class="btn btn-ghost-light">View Open Positions</a>` })}
 
 ${subnav('Careers sections', [['why-work-with-us', 'Why MONOHA'], ['work-environment', 'Work With Us'], ['openings', 'Open Positions'], ['application-process', 'Application Process'], ...(faqs.length ? [['careers-faq', 'FAQ']] : [])])}
 
@@ -932,14 +931,14 @@ ${section(`<div class="split">
 
 ${section(`${headSplit('Current opportunities', open.length ? `${open.length} open position${open.length > 1 ? 's' : ''}` : 'No open positions right now', open.length ? 'Select a role for details and how to apply.' : 'Open positions will appear here when available. You can still send your CV; we keep it on file and contact you if a suitable role opens.')}
   ${open.length ? `<div class="jobs">${open.map((j) => `<a class="job reveal" href="/careers/${esc(j.slug)}"><div><h3>${esc(j.title)}</h3><p>${esc(j.type)} · ${esc(j.location)}</p></div><span class="link-arrow">View role ${icon('arrow')}</span></a>`).join('')}</div>`
-    : `<div class="empty-state left"><a href="/contact?subject=${encodeURIComponent('CV submission')}" class="btn btn-primary">Send your CV ${icon('arrow')}</a></div>`}`, '', 'openings')}
+    : `<div class="empty-state left"><a href="/careers/apply" class="btn btn-primary">Send your CV ${icon('arrow')}</a></div>`}`, '', 'openings')}
 
 ${section(`${headSplit('How recruitment works', 'Four steps, clearly communicated.', 'Sending an application does not guarantee an interview or employment.')}
   <ol class="rsteps">${(c.process || []).map((p, i) => `<li class="reveal"><span>${pad2(i)}</span><h3>${esc(p.title || p)}</h3>${p.text ? `<p>${esc(p.text)}</p>` : ''}</li>`).join('')}</ol>`, 'soft', 'application-process')}
 
 ${faqs.length ? section(`<div class="faq-split"><div><p class="eyebrow">FAQ</p><h2>Careers questions</h2></div>${faqList(faqs)}</div>`, '', 'careers-faq') + faqLd(faqs) : ''}
 
-${ctaBand({ eyebrow: 'Careers', title: 'Interested in working with Monoha?', text: 'See current openings, or send your CV for future roles.', actions: `<a href="#openings" class="btn btn-light">View Open Positions ${icon('arrow')}</a><a href="/contact?subject=${encodeURIComponent('CV submission')}" class="btn btn-ghost-light">Send your CV</a>` })}` });
+${ctaBand({ eyebrow: 'Careers', title: 'Interested in working with Monoha?', text: 'See current openings, or send your CV for future roles.', actions: `<a href="#openings" class="btn btn-light">View Open Positions ${icon('arrow')}</a><a href="/careers/apply" class="btn btn-ghost-light">Apply Now / Send your CV</a>` })}` });
 };
 
 function jobPage(req, res) {
@@ -950,9 +949,46 @@ function jobPage(req, res) {
 ${pageHero({ eyebrow: j.open ? 'Open position' : 'Position closed', title: j.title, lead: j.about, crumbs: [['/careers', 'Careers'], [`/careers/${j.slug}`, j.title]] })}
 ${section(`<div class="detail">
   <div class="prose">${list('Responsibilities', j.responsibilities)}${list('Requirements', j.requirements)}<h2>How to apply</h2><p>${esc(j.apply)}</p>
-    ${j.open ? `<a href="/contact?subject=${encodeURIComponent('Application: ' + j.title)}" class="btn btn-primary">Apply now</a>` : '<p class="muted">This position is not currently open.</p>'}</div>
+    ${j.open ? `<a href="/careers/apply?position=${encodeURIComponent(j.slug)}" class="btn btn-primary">Apply now ${icon('arrow')}</a>` : '<p class="muted">This position is not currently open.</p>'}</div>
   <aside class="detail-aside"><dl class="facts"><dt>Work type</dt><dd>${esc(j.type)}</dd><dt>Location</dt><dd>${esc(j.location)}</dd><dt>Compensation</dt><dd>${esc(j.compensation)}</dd></dl></aside>
 </div>`)}` }));
+}
+
+function applyPage(req, res) {
+  const open = (content('careers').jobs || []).filter((j) => j.open);
+  const pick = open.find((j) => j.slug === req.query.position);
+  const opts = ['General application / future roles', ...open.map((j) => j.title)];
+  const f = (id, label, type, req, extra = '') => `<div class="field"><label for="${id}">${label}${req ? ' <span class="req" aria-hidden="true">*</span>' : ''}</label><input id="${id}" name="${id}" type="${type}"${req ? ' required aria-required="true"' : ''}${extra}></div>`;
+  res.send(layout(req, { title: 'Apply to Join the Team', description: 'Apply to join MONOHA SOURCING INTERNATIONAL. Send your details and CV (PDF, up to 10 MB).', active: '/careers', body: `
+${pageHero({ eyebrow: 'Careers', title: 'Join the MONOHA team.', lead: 'Send your details and your CV. Our team reviews every application and contacts shortlisted candidates.', crumbs: [['/careers', 'Careers'], ['/careers/apply', 'Apply']], artKind: 'careers' })}
+${section(`<div class="apply-wrap"><div class="form-card apply-card">
+<form class="form" data-kind="career" novalidate>
+  <div class="photo-pick">
+    <span class="photo-prev" aria-hidden="true">${icon('user')}<img alt="" hidden></span>
+    <div><p class="photo-t">Your photo <span class="opt">optional</span></p><p class="photo-d">A clear, friendly photo of your face. JPG, PNG or WebP, up to 2 MB.</p>
+      <label class="btn-chip" for="photo">${icon('user')} Choose photo</label>
+      <input class="sr-only" id="photo" name="photo" type="file" accept="image/png,image/jpeg,image/webp" data-max="2" data-label="Photo"></div>
+  </div>
+  <div class="row">${f('name', 'Full name', 'text', true, ' autocomplete="name" maxlength="120"')}${f('email', 'Email', 'email', true, ' autocomplete="email" maxlength="160"')}</div>
+  <div class="row">${f('phone', 'Phone', 'tel', true, ' autocomplete="tel" maxlength="40" placeholder="01XXXXXXXXX"')}
+    <div class="field"><label for="position">Applying for <span class="req" aria-hidden="true">*</span></label><select id="position" name="position" required aria-required="true">${opts.map((o) => `<option${pick && pick.title === o ? ' selected' : ''}>${esc(o)}</option>`).join('')}</select></div></div>
+  <div class="row">${f('occupation', 'Occupation / institution', 'text', false, ' maxlength="160" placeholder="e.g. Student, Cox\'s Bazar Govt. College"')}${f('area', 'Area / address', 'text', false, ' maxlength="200" placeholder="e.g. Kalatali, Cox\'s Bazar"')}</div>
+  <div class="row">${f('facebook', 'Facebook profile <span class="opt">optional</span>', 'url', false, ' maxlength="300" placeholder="https://facebook.com/..."')}${f('linkedin', 'LinkedIn profile <span class="opt">optional</span>', 'url', false, ' maxlength="300" placeholder="https://linkedin.com/in/..."')}</div>
+  <div class="field"><label for="message">Tell us about yourself</label><textarea id="message" name="message" rows="5" maxlength="4000" placeholder="Your skills, experience, interests and when you are available..."></textarea></div>
+  <div class="field"><label for="cv">Your CV <span class="req" aria-hidden="true">*</span></label>
+    <label class="cv-drop" for="cv">
+      <span class="cv-ico">${icon('article')}</span>
+      <span class="cv-main"><strong class="cv-name">Drop your CV here or <u>browse</u></strong><span class="cv-meta">PDF only · up to 10 MB</span></span>
+    </label>
+    <input class="sr-only" id="cv" name="cv" type="file" accept="application/pdf,.pdf" required aria-required="true" data-max="10" data-label="CV" data-pdf="1"></div>
+  <div class="hp" aria-hidden="true"><label for="website">Leave this empty</label><input type="text" id="website" name="website" tabindex="-1" autocomplete="off"></div>
+  <input type="hidden" name="started" value="${Date.now()}">
+  <div class="form-foot"><p class="form-note">Fields marked <span class="req">*</span> are required. Sending an application does not guarantee an interview. <a href="/privacy-policy">Privacy Policy</a></p>
+  <button type="submit" class="btn btn-primary">Submit application ${icon('arrow')}</button></div>
+  <p class="form-status" role="status" aria-live="polite"></p>
+</form>
+<div class="form-done" hidden tabindex="-1"><span class="done-icon">${icon('check')}</span><h2>Application received.</h2><p>Thank you. Our team will review your CV and contact you if there is a suitable role.</p></div>
+</div></div>`, 'soft')}` }));
 }
 
 // ---------------------------------------------------------------- forms
@@ -1136,6 +1172,7 @@ app.get('/request', (req, res) => res.redirect(301, '/request-service' + req.ori
 const OLD_SERVICES = { 'international-sourcing': 'business-sourcing', 'product-supplier-sourcing': 'business-sourcing', 'business-coordination': 'business-solutions', 'sourcing-support': 'business-sourcing', 'international-business-support': 'business-solutions', 'professional-websites': 'digital-online-solutions', 'social-digital-presence': 'content-creative' };
 app.get('/services/:slug', (req, res, next) => (OLD_SERVICES[req.params.slug] ? res.redirect(301, '/services/' + OLD_SERVICES[req.params.slug]) : next()), servicePage);
 app.get('/insights/:slug', articlePage);
+app.get('/careers/apply', applyPage);
 app.get('/careers/:slug', jobPage);
 app.get('/programs/:slug', programPage);
 app.get('/solutions/:slug', solutionPage);
@@ -1155,7 +1192,7 @@ app.get('/sitemap.xml', (req, res) => {
 // Enquiries: saved to disk first, then emailed. A small attachment rides
 // along as base64 so the form needs no upload library.
 const recent = new Map();
-app.post('/api/inquiry', express.json({ limit: '8mb' }), (req, res) => {
+app.post('/api/inquiry', express.json({ limit: '20mb' }), (req, res) => {
   const b = req.body || {};
   if (b.website) return res.json({ ok: true }); // bots fill the hidden field
   // A human takes more than a few seconds to fill the form in.
@@ -1167,29 +1204,42 @@ app.post('/api/inquiry', express.json({ limit: '8mb' }), (req, res) => {
   if (hits.length >= 5) return res.status(429).json({ error: 'Too many messages. Please try again in a few minutes.' });
 
   const t = (v, n) => String(v || '').trim().slice(0, n);
-  const kind = b.kind === 'request' ? 'request' : 'contact';
+  const kind = ['request', 'career'].includes(b.kind) ? b.kind : 'contact';
   const entry = {
     id: 'INQ-' + now.toString(36).toUpperCase(), kind, at: new Date(now).toISOString(),
     name: t(b.name, 120), company: t(b.company, 160), country: t(b.country, 80), email: t(b.email, 160),
     phone: t(b.phone, 40), subject: t(b.subject, 200), service: t(b.service, 120),
     requirementType: t(b.requirementType, 120), requirement: t(b.requirement, 4000), budget: t(b.budget, 200), timeline: t(b.timeline, 120), message: t(b.message, 4000),
+    position: t(b.position, 160), occupation: t(b.occupation, 160), area: t(b.area, 200), facebook: t(b.facebook, 300), linkedin: t(b.linkedin, 300),
   };
   if (!entry.name) return res.status(400).json({ error: 'Please enter your name.' });
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(entry.email)) return res.status(400).json({ error: 'Please enter a valid email address.' });
   if (kind === 'contact' && !entry.message) return res.status(400).json({ error: 'Please write a message.' });
+  if (kind === 'career' && !entry.phone) return res.status(400).json({ error: 'Please enter your phone number.' });
+  if (kind === 'career' && !(b.cv && b.cv.data)) return res.status(400).json({ error: 'Please attach your CV as a PDF.' });
   if (kind === 'request' && (!entry.service || !entry.requirement)) return res.status(400).json({ error: 'Please choose a service and describe your requirement.' });
 
-  let attachment = null;
-  if (b.attachment && b.attachment.data) {
-    const buf = Buffer.from(String(b.attachment.data), 'base64');
-    if (buf.length > 5 * 1024 * 1024) return res.status(400).json({ error: 'The attachment is larger than 5 MB.' });
-    const name = t(b.attachment.name, 120).replace(/[^\w.\- ]/g, '_') || 'attachment';
+  // Files: [field, max MB, check on the first bytes, error label].
+  const FILES = kind === 'career'
+    ? [['cv', 10, (x) => x.slice(0, 5).toString() === '%PDF-', 'Your CV must be a PDF file'], ['photo', 2, (x) => /^(ffd8ff|89504e47|52494646)/.test(x.slice(0, 4).toString('hex')), 'The photo must be a JPG, PNG or WebP image']]
+    : [['attachment', 5, () => true, '']];
+  const attachments = [];
+  const saved = [];
+  for (const [key, max, check, bad] of FILES) {
+    const up = b[key];
+    if (!up || !up.data) continue;
+    const buf = Buffer.from(String(up.data), 'base64');
+    if (buf.length > max * 1024 * 1024) return res.status(400).json({ error: `The ${key === 'attachment' ? 'attachment' : key === 'cv' ? 'CV' : 'photo'} is larger than ${max} MB.` });
+    if (!check(buf)) return res.status(400).json({ error: bad + '.' });
+    saved.push([key, t(up.name, 120).replace(/[^\w.\- ]/g, '_') || key, buf]);
+  }
+  for (const [key, name, buf] of saved) {
     const dir = path.join(DATA_DIR, 'attachments');
     fs.mkdirSync(dir, { recursive: true });
-    const stored = `${entry.id}-${name}`;
+    const stored = `${entry.id}-${key}-${name}`;
     fs.writeFileSync(path.join(dir, stored), buf);
-    entry.attachment = stored;
-    attachment = { filename: name, content: buf };
+    entry[key] = stored;
+    attachments.push({ filename: name, content: buf });
   }
 
   hits.push(now); recent.set(ip, hits);
@@ -1200,12 +1250,13 @@ app.post('/api/inquiry', express.json({ limit: '8mb' }), (req, res) => {
 
   const site = content('site');
   const to = [SMTP_USER, site.contact && site.contact.email].filter(Boolean);
-  const rows = Object.entries({ Name: entry.name, Company: entry.company, Country: entry.country, Email: entry.email, Phone: entry.phone, Subject: entry.subject, Service: entry.service, Requirement: entry.requirement, 'Requirement type': entry.requirementType, 'Budget range': entry.budget, Timeline: entry.timeline, Message: entry.message })
+  const rows = Object.entries({ Name: entry.name, Company: entry.company, Country: entry.country, Email: entry.email, Phone: entry.phone, Subject: entry.subject, Service: entry.service, Requirement: entry.requirement, 'Requirement type': entry.requirementType, 'Budget range': entry.budget, Timeline: entry.timeline, 'Applying for': entry.position, Occupation: entry.occupation, Area: entry.area, Facebook: entry.facebook, LinkedIn: entry.linkedin, Message: entry.message })
     .filter(([, v]) => v).map(([k, v]) => `<tr><td style="padding:6px 12px 6px 0;color:#5B6B88;vertical-align:top">${k}</td><td style="padding:6px 0;white-space:pre-wrap">${esc(v)}</td></tr>`).join('');
   for (const addr of new Set(to)) {
-    sendMail(addr, `${kind === 'request' ? 'Service request' : 'New inquiry'} from ${entry.name} (${entry.id})`,
-      `<div style="font-family:Arial,sans-serif;color:#0A1A3F"><h2 style="margin:0 0 12px">${kind === 'request' ? 'New service request' : 'New website inquiry'}</h2><table style="font-size:14px;border-collapse:collapse">${rows}</table></div>`,
-      attachment ? [attachment] : undefined);
+    const label = { request: ['Service request', 'New service request'], career: ['Job application', 'New job application'], contact: ['New inquiry', 'New website inquiry'] }[kind];
+    sendMail(addr, `${label[0]} from ${entry.name} (${entry.id})`,
+      `<div style="font-family:Arial,sans-serif;color:#0A1A3F"><h2 style="margin:0 0 12px">${label[1]}</h2><table style="font-size:14px;border-collapse:collapse">${rows}</table></div>`,
+      attachments.length ? attachments : undefined);
   }
 });
 
