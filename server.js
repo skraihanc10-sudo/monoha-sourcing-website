@@ -55,12 +55,14 @@ const DEFAULT_CEO = {
   name: 'Mojahidul Islam', position: 'CEO & Founder', photo: '/images/team/mojahidul-islam.jpg', bio: '', socials: [],
   message: 'At MONOHA SOURCING INTERNATIONAL, we believe that every requirement represents an opportunity — an opportunity to create value, build meaningful connections and provide practical solutions. Our goal is to provide reliable sourcing, supply, business and digital support to help businesses and organizations move forward. We remain committed to professional execution, clear communication and long-term collaboration.',
 };
-// Three team slots. The third is left empty until it is filled from /admin.
-const TEAM_SLOTS = 3;
+const TEAM_SLOTS = 5;
+// Placeholder members until real profiles are entered in /admin.
 const DEFAULT_TEAM = [
-  { name: 'Mojahidul Islam', position: 'CEO & Founder', email: 'mojahidul360@monohasourcing.international', photo: '/images/team/mojahidul-islam.jpg' },
-  { name: 'RAYHAN', position: 'Management', email: 'rayhan@monohasourcing.international', photo: '/images/team/rayhan.jpg' },
-  { name: '', position: '', email: '', photo: '' },
+  { name: 'Arif Hossain', position: 'Operations Manager', email: '', photo: '' },
+  { name: 'Nusrat Jahan', position: 'Client Relations', email: '', photo: '' },
+  { name: 'Tanvir Ahmed', position: 'Sourcing Coordinator', email: '', photo: '' },
+  { name: 'Sadia Rahman', position: 'Digital Lead', email: '', photo: '' },
+  { name: 'Imran Kabir', position: 'Project Coordinator', email: '', photo: '' },
 ];
 // Once saved from the admin, the stored slots replace the defaults entirely.
 const team = () => {
@@ -136,12 +138,12 @@ const NAV = [
   ]],
   ['/services', 'Services', SERVICE_MENU.map(([s, l, d, i]) => [`/services/${s}`, l, d, i]), ['/request-service', 'Request a service']],
   ['/solutions', 'Solutions', [
-    ['/solutions#for-businesses', 'For Businesses', 'Coordination, operations and growth', 'briefcase'],
-    ['/solutions#for-brands', 'For Brands', 'Content, presence and campaigns', 'star'],
-    ['/solutions#for-sourcing-requirements', 'For Sourcing Requirements', 'Suppliers, products and materials', 'box'],
-    ['/solutions#for-growing-businesses', 'For Growing Businesses', 'Support that scales with you', 'trend'],
-    ['/solutions#for-ngos-and-development-organizations', 'For NGOs & Development Organizations', 'Supply, coordination and project support', 'heart'],
-    ['/solutions#for-institutions-and-project-partners', 'For Institutions & Project Partners', 'Work within a defined project scope', 'building'],
+    ['/solutions/for-businesses', 'For Businesses', 'Coordination, operations and growth', 'briefcase'],
+    ['/solutions/for-brands', 'For Brands', 'Content, presence and campaigns', 'star'],
+    ['/solutions/for-sourcing-requirements', 'For Sourcing Requirements', 'Suppliers, products and materials', 'box'],
+    ['/solutions/for-growing-businesses', 'For Growing Businesses', 'Support that scales with you', 'trend'],
+    ['/solutions/for-ngos-and-development-organizations', 'For NGOs & Development Organizations', 'Supply, coordination and project support', 'heart'],
+    ['/solutions/for-institutions-and-project-partners', 'For Institutions & Project Partners', 'Work within a defined project scope', 'building'],
   ], ['/solutions', 'All solutions']],
   ['/process', 'Our Process'],
   ['/work', 'Our Work'],
@@ -218,7 +220,7 @@ ${noindex ? '<meta name="robots" content="noindex">' : ''}<meta property="og:typ
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/css/site.css?v=12">
+<link rel="stylesheet" href="/css/site.css?v=13">
 <script type="application/ld+json">${JSON.stringify({
     '@context': 'https://schema.org', '@type': 'Organization', name: site.name, url: SITE_URL, description: site.description,
     logo: SITE_URL + '/images/logo.png', ...(c.email ? { email: c.email } : {}), ...(c.phone ? { telephone: c.phone } : {}),
@@ -269,7 +271,7 @@ ${body}
     <span class="footer-motto">More than sourcing. More than digital.</span>
   </div>
 </footer>
-<script src="/js/site.js?v=12" defer></script>
+<script src="/js/site.js?v=13" defer></script>
 </body>
 </html>`;
 }
@@ -439,9 +441,9 @@ const ctaBand = (o = {}) => `
 const requestCta = (title, text) => ctaBand({ eyebrow: 'Next step', title, text, actions: `<a href="/request-service" class="btn btn-light">Request a Service ${icon('arrow')}</a><a href="/contact" class="btn btn-ghost-light">Get in Touch</a>` });
 
 const SOL_ICONS = ['briefcase', 'box', 'clipboard', 'globe', 'network', 'globe', 'handshake', 'clipboard'];
-const solutionRows = (sol) => `<div class="sol-list">${sol.map((x, i) => `
-  <a class="sol reveal" href="/solutions#${esc(slugify(x.title))}">
-    <span class="sol-mark">${icon(SOL_ICONS[i % SOL_ICONS.length])}</span><h3>${esc(x.title)}</h3><p>${esc(x.text)}</p><span class="sol-go">${icon('arrow')}</span>
+const solutionRows = (sol) => `<div class="sol-grid">${sol.map((x, i) => `
+  <a class="solc reveal" href="/solutions/${esc(slugify(x.title))}">
+    <span class="sol-mark">${icon(SOL_ICONS[i % SOL_ICONS.length])}</span><h3>${esc(x.title)}</h3><p>${esc(x.text)}</p><span class="link-arrow">View details ${icon('arrow')}</span>
   </a>`).join('')}</div>`;
 
 // The seven steps as one line of words, for places that only need the shape.
@@ -509,7 +511,7 @@ ${section(`${headSplit('What We Do', 'Many requirements.<br>One professional par
   </div>`)}
 
 ${section(`${headSplit('Services', 'How we support your business', 'Broad areas of work rather than a fixed list, each run through the same structured process.')}
-  ${serviceGrid(services)}`, 'soft')}
+  ${serviceGrid(services)}`, 'soft home-svc')}
 
 ${section(`<div class="why">
   <div class="why-head reveal"><p class="eyebrow">Why Monoha</p><h2>Why businesses choose a structured approach</h2>
@@ -534,6 +536,8 @@ ${articles.length ? section(`${headSplit('Insights', 'Notes on business, sourcin
   <p class="center-link"><a href="/insights" class="link-arrow">All insights ${icon('arrow')}</a></p>`) : ''}
 
 ${section(`<div class="faq-split"><div class="reveal"><p class="eyebrow">FAQ</p><h2>Common questions</h2><p class="lead">Short answers to what people ask before getting in touch.</p><a href="/faq" class="btn btn-outline">All questions ${icon('arrow')}</a></div>${faqList(faqs)}</div>`, 'soft')}
+
+${ceoSection(leadership())}
 
 ${ctaBand()}` });
 };
@@ -567,7 +571,7 @@ pages['/about'] = (req) => {
   return layout(req, { title: 'About', fullTitle: 'About MONOHA Sourcing International | Sourcing, Supply & Business Solutions', description: 'Learn about MONOHA SOURCING INTERNATIONAL and our approach to sourcing, supplier coordination, supply, business solutions, digital support and project-based collaboration.', body: `
 ${pageHero({ eyebrow: 'About MONOHA', title: a.heroTitle, lead: a.heroLead, crumbs: [['/about', 'About']], artHtml: ABOUT_NET_SVG + `<ul class="ahero-chips">${chips.map((t) => `<li>${esc(t)}</li>`).join('')}</ul>`, cls: 'ahero',
     actions: `<a href="/services" class="btn btn-light">Explore Our Services ${icon('arrow')}</a><a href="#ceo-message" class="btn btn-ghost-light">Message from our CEO</a>` })}
-${subnav('About sections', [['who-we-are', 'Who We Are'], ['how-we-work', 'How We Work'], ['capabilities', 'Core Capabilities'], ['values', 'Values'], ['team', 'Our Team'], ['ceo-message', 'CEO Message']])}
+${subnav('About sections', [['who-we-are', 'Who We Are'], ['how-we-work', 'How We Work'], ['capabilities', 'Core Capabilities'], ['values', 'Values'], ['ceo-message', 'CEO Message'], ['team', 'Our Team']])}
 
 ${section(`<div class="ab-who">
   <div class="reveal"><p class="eyebrow">Who we are</p><h2>More Than Sourcing.<br>More Than Digital.</h2></div>
@@ -590,9 +594,9 @@ ${section(`${headSplit('Core capabilities', 'Six areas of work, one partner.', '
 ${section(`${headSplit('Values', 'How we work with every client.', 'Working principles, without exaggerated claims.')}
 <div class="values">${(a.values || []).map((x) => `<div class="value reveal"><span class="value-ico">${icon('check')}</span><h3>${esc(x.title)}</h3><p>${esc(x.text)}</p></div>`).join('')}</div>`, 'dark', 'values')}
 
-${teamSection(team())}
-
 ${ceoSection(ceo)}
+
+${teamSection(team())}
 
 ${ctaBand({ eyebrow: 'Next step', title: "Have a Requirement? Let's Discuss It.", text: 'Tell us what you need. Our team will review the requirement and identify the appropriate way to support you.' })}` });
 };
@@ -602,7 +606,7 @@ function teamSection(list) {
   const people = list.filter((p) => p.name);
   if (!people.length) return '';
   const initials = (n) => String(n).split(/\s+/).filter(Boolean).map((w) => w[0]).slice(0, 2).join('').toUpperCase();
-  return section(`${headSplit('Our team', 'The people behind MONOHA.', 'Reach the right person directly by email.')}
+  return section(`${headSplit('Our team', 'The people behind MONOHA.', 'The team that takes each requirement from first conversation to delivery.')}
 <div class="team">${people.map((p) => `
   <figure class="team-card reveal">
     <div class="team-photo">${p.photo ? `<img src="${esc(p.photo)}" alt="${esc(p.name)}" loading="lazy" width="720" height="792">` : `<span class="ceo-mono" aria-hidden="true">${esc(initials(p.name))}</span>`}</div>
@@ -721,12 +725,37 @@ ${section(`<div class="solx-list">${(site.solutions || []).map((x, i) => `
       <div><p class="mini-label">Who it is for</p><p>${esc(x.who || x.text)}</p></div>
       <div><p class="mini-label">Typical requirement</p><p>${esc(x.need || '')}</p></div>
       <div><p class="mini-label">How Monoha supports it</p><p>${esc(x.support || '')}</p>
-        <a class="link-arrow" href="/request-service?subject=${encodeURIComponent(x.title)}">Discuss your requirement ${icon('arrow')}</a></div>
+        <a class="link-arrow" href="/solutions/${esc(slugify(x.title))}">View full details ${icon('arrow')}</a></div>
     </div>
   </details>`).join('')}</div>`)}
 
 ${requestCta('Recognise your situation?', 'Tell us about your requirement and we will suggest how to approach it.')}` });
 };
+
+function solutionPage(req, res) {
+  const list = content('site').solutions || [];
+  const i = list.findIndex((x) => slugify(x.title) === req.params.slug);
+  if (i < 0) return notFound(req, res);
+  const x = list[i];
+  const others = list.filter((_, j) => j !== i);
+  res.send(layout(req, { title: x.title, description: `${x.title}: ${x.text}`, active: '/solutions', body: `
+${pageHero({ eyebrow: 'Solutions', title: x.title, lead: x.text, crumbs: [['/solutions', 'Solutions'], ['/solutions/' + req.params.slug, x.title]], artKind: 'solutions',
+    actions: `<a href="/request-service?subject=${encodeURIComponent(x.title)}" class="btn btn-light">Discuss your requirement ${icon('arrow')}</a>` })}
+
+${section(`<div class="sold">
+  <div class="sold-card reveal"><span class="sol-mark">${icon('user')}</span><p class="mini-label">Who it is for</p><p>${esc(x.who || x.text)}</p></div>
+  <div class="sold-card reveal"><span class="sol-mark">${icon('clipboard')}</span><p class="mini-label">Typical requirement</p><p>${esc(x.need || '')}</p></div>
+  <div class="sold-card reveal"><span class="sol-mark">${icon(SOL_ICONS[i % SOL_ICONS.length])}</span><p class="mini-label">How MONOHA supports it</p><p>${esc(x.support || '')}</p></div>
+</div>`)}
+
+${section(`${headSplit('How we work', 'The same seven steps, every time.', 'Every requirement follows our structured process, so you always know what happens next.')}
+  ${processSteps(content('site').process || [])}
+  <p class="center-link"><a href="/process" class="link-arrow">See each step in detail ${icon('arrow')}</a></p>`, 'soft')}
+
+${section(`<p class="mini-label">Other solutions</p><div class="other-svc">${others.map((o) => `<a href="/solutions/${esc(slugify(o.title))}">${esc(o.title)} ${icon('arrow')}</a>`).join('')}</div>`, 'tight')}
+
+${requestCta(`Discuss ${x.title.replace(/^For /, 'support for ')}`, 'Tell us about your requirement and we will suggest how to approach it.')}` }));
+}
 
 // ---------------------------------------------------------------- process
 pages['/process'] = (req) => {
@@ -1109,6 +1138,7 @@ app.get('/services/:slug', (req, res, next) => (OLD_SERVICES[req.params.slug] ? 
 app.get('/insights/:slug', articlePage);
 app.get('/careers/:slug', jobPage);
 app.get('/programs/:slug', programPage);
+app.get('/solutions/:slug', solutionPage);
 require('./admin')(app, { STORE, UPLOAD_DIR, DATA_DIR, readJSON, esc, slugify, leadership, DEFAULT_CEO, team, TEAM_SLOTS, notFound });
 
 app.get('/robots.txt', (req, res) => res.type('text/plain').send(`User-agent: *\nAllow: /\nSitemap: ${SITE_URL}/sitemap.xml\n`));
@@ -1117,7 +1147,8 @@ app.get('/sitemap.xml', (req, res) => {
     ...(content('services').services || []).map((x) => '/services/' + x.slug),
     ...(content('insights').articles || []).map((x) => '/insights/' + x.slug),
     ...(content('careers').jobs || []).filter((j) => j.open).map((x) => '/careers/' + x.slug),
-    ...publishedPrograms().map((x) => '/programs/' + x.slug)];
+    ...publishedPrograms().map((x) => '/programs/' + x.slug),
+    ...(content('site').solutions || []).map((x) => '/solutions/' + slugify(x.title))];
   res.type('application/xml').send(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${urls.map((u) => `<url><loc>${SITE_URL}${u === '/' ? '' : u}</loc></url>`).join('')}</urlset>`);
 });
 

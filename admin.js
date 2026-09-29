@@ -210,7 +210,7 @@ function field(f,v){var id='f-'+f[0],t=f[2]||'text';
 function render(){
  var tabs='<div class="ad-tabs" role="tablist">'+[['partners','Partners'],['programs','Programs'],['team','Team'],['leadership','CEO profile']].map(function(x){return '<button type="button" role="tab" data-tab="'+x[0]+'" aria-selected="'+(tab===x[0])+'">'+x[1]+'</button>';}).join('')+'</div>';
  if(tab==='team'){
-  app.innerHTML=tabs+'<div class="ad-card"><h2>Team</h2><p class="muted">Three slots. Leave a name blank to hide that slot on the About page.</p><form class="ad-form" id="form">'+(D.team||[]).map(function(p,i){return '<fieldset style="border:1px solid #dde3ee;border-radius:10px;padding:14px;display:grid;gap:12px"><legend>Slot '+(i+1)+'</legend>'+field(['name'+i,'Name'],p.name)+field(['position'+i,'Position'],p.position)+field(['email'+i,'Email','email'],p.email)+field(['photo'+i,'Photo','image'],p.photo)+'</fieldset>';}).join('')
+  app.innerHTML=tabs+'<div class="ad-card"><h2>Team</h2><p class="muted">Five slots. Leave a name blank to hide that slot on the About page.</p><form class="ad-form" id="form">'+(D.team||[]).map(function(p,i){return '<fieldset style="border:1px solid #dde3ee;border-radius:10px;padding:14px;display:grid;gap:12px"><legend>Slot '+(i+1)+'</legend>'+field(['name'+i,'Name'],p.name)+field(['position'+i,'Position'],p.position)+field(['email'+i,'Email','email'],p.email)+field(['photo'+i,'Photo','image'],p.photo)+'</fieldset>';}).join('')
   +'<div class="ad-actions"><button class="ad-btn" type="submit">Save team</button></div><p class="ad-err" role="alert"></p><p class="ad-ok" role="status"></p></form></div>';
   return bind();}
  if(tab==='leadership'){var L=D.leadership,so=(L.socials||[]).concat([{},{},{}]).slice(0,3);

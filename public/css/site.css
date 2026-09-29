@@ -1200,3 +1200,25 @@ input[type=file] { padding: 11px; }
 .team-card figcaption > span { font-weight: 600; color: var(--royal); font-size: 15px; }
 .team-card a { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 14px; font-weight: 600; overflow-wrap: anywhere; }
 .team-card a svg { width: 16px; height: 16px; flex: none; }
+
+/* v13 compact home sections, solution pages */
+.sol-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.solc { display: flex; flex-direction: column; gap: 10px; padding: 22px 20px; background: #fff; border: 1px solid var(--line); border-radius: 14px; color: var(--ink); transition: border-color .25s, box-shadow .25s, transform .25s var(--ease); }
+.solc:hover { border-color: var(--royal); box-shadow: 0 20px 40px -28px rgba(7,26,65,.45); transform: translateY(-3px); color: var(--ink); }
+.solc .sol-mark { width: 42px; height: 42px; border-radius: 11px; }
+.solc .sol-mark .ico { width: 20px; height: 20px; }
+.solc h3 { font-size: 17.5px; margin: 4px 0 0; letter-spacing: -.01em; }
+.solc p { margin: 0; font-size: 14.5px; line-height: 1.55; color: var(--muted); flex: 1; }
+.solc .link-arrow { font-size: 13.5px; }
+.home-svc .svc-grid { grid-template-columns: repeat(4, 1fr); }
+.home-svc .svc { min-height: 0; padding: 24px 22px; gap: 8px; }
+.home-svc .svc h3 { font-size: 18px; margin-top: 6px; }
+.home-svc .svc p { font-size: 14.5px; line-height: 1.55; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.home-svc .svc .link-arrow { margin-top: auto; padding-top: 6px; }
+.sold { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.sold-card { display: grid; gap: 8px; align-content: start; padding: 28px 26px; border: 1px solid var(--line); border-radius: 16px; background: #fff; }
+.sold-card p:last-child { margin: 0; color: var(--ink); line-height: 1.65; }
+.sold-card .sol-mark { margin-bottom: 8px; }
+@media (max-width: 1100px) { .sol-grid, .home-svc .svc-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 800px) { .sold { grid-template-columns: 1fr; } }
+@media (max-width: 560px) { .sol-grid, .home-svc .svc-grid { grid-template-columns: 1fr; } }
