@@ -1176,9 +1176,10 @@ app.get('/careers/apply', applyPage);
 app.get('/careers/:slug', jobPage);
 app.get('/programs/:slug', programPage);
 app.get('/solutions/:slug', solutionPage);
+require('./workspace')(app, { DATA_DIR, esc });
 require('./admin')(app, { STORE, UPLOAD_DIR, DATA_DIR, readJSON, esc, slugify, leadership, DEFAULT_CEO, team, TEAM_SLOTS, notFound });
 
-app.get('/robots.txt', (req, res) => res.type('text/plain').send(`User-agent: *\nAllow: /\nSitemap: ${SITE_URL}/sitemap.xml\n`));
+app.get('/robots.txt', (req, res) => res.type('text/plain').send(`User-agent: *\nAllow: /\nDisallow: /team\nDisallow: /admin\nSitemap: ${SITE_URL}/sitemap.xml\n`));
 app.get('/sitemap.xml', (req, res) => {
   const urls = [...Object.keys(pages),
     ...(content('services').services || []).map((x) => '/services/' + x.slug),
