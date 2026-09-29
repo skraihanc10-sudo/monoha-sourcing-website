@@ -1,90 +1,201 @@
 {
-  "_rev": 2,
-  "_note": "Draft list. Confirm each service against the trade licence and real operations before launch.",
+  "_rev": 3,
+  "_note": "Draft copy. Confirm each service against the trade licence and real operations before launch. No guarantees, statistics, clients or certifications.",
   "services": [
     {
       "slug": "international-sourcing",
       "icon": "globe",
       "title": "International Sourcing",
-      "summary": "Sourcing-related support and supplier/business coordination.",
+      "summary": "Finding and working with suitable suppliers beyond your own market, with the process kept structured from brief to follow-up.",
       "body": [
-        "We help businesses find and work with suppliers beyond their own market.",
-        "From the first requirement to follow-up, we keep the process structured and the communication clear."
+        "International sourcing means looking past the suppliers you already know to find ones that fit your requirement better, whether on specification, capacity, lead time or cost.",
+        "We take your requirement, research the relevant markets, identify suppliers worth talking to and manage the communication with them, so you see organised options rather than a pile of unanswered enquiries."
       ],
-      "points": [
-        "Requirement analysis",
-        "Supplier identification",
-        "Communication and follow-up"
+      "points": ["Requirement analysis", "Market research", "Supplier identification", "Communication and follow-up"],
+      "audience": [
+        "Businesses looking for a product or material not readily available locally",
+        "Teams comparing suppliers across more than one market",
+        "Companies without the time or contacts to run supplier searches themselves"
+      ],
+      "handle": [
+        "Clarifying the requirement: specification, quantity, standard and timeline",
+        "Researching markets and identifying suitable suppliers",
+        "First contact, questions and quotation requests",
+        "Organising responses so options can be compared side by side",
+        "Following up until a decision is made"
+      ],
+      "approach": "We treat every search as a small project: a written requirement, a defined shortlist and regular updates. You make the decisions; we make sure you have what you need to make them.",
+      "expect": [
+        "A written summary of your requirement before any search starts",
+        "Organised supplier options with the information you asked for",
+        "Regular updates through one point of contact",
+        "Clear notes on what is confirmed and what is still open"
+      ],
+      "faqs": [
+        { "q": "Do you guarantee a supplier will be found?", "a": "No. We commit to a structured search and honest reporting. If suitable options are limited, we tell you what we found and why." },
+        { "q": "Who decides which supplier to use?", "a": "You do. We present the options and the information behind them; the decision stays with your business." },
+        { "q": "What do you need from me to start?", "a": "A description of the product or material, the quantity, any quality standard, and the date you need it by. Drawings, samples or reference links help." }
       ]
     },
     {
       "slug": "product-supplier-sourcing",
       "icon": "box",
       "title": "Product & Supplier Sourcing",
-      "summary": "Finding and coordinating suitable sourcing opportunities.",
+      "summary": "Looking for products and suppliers that match your specification, budget and timeline, and coordinating samples where needed.",
       "body": [
-        "We look for products and suppliers that match your specification, budget and timeline."
+        "Product and supplier sourcing starts from a specific item. We review what you need, look for suppliers able to make or supply it, and help you compare them on the points that matter to your business.",
+        "Where samples are part of the decision, we help coordinate requesting, tracking and reviewing them."
       ],
-      "points": [
-        "Specification review",
-        "Supplier shortlisting",
-        "Sample coordination"
+      "points": ["Specification review", "Supplier shortlisting", "Quotation comparison", "Sample coordination"],
+      "audience": [
+        "Brands developing or re-sourcing a product",
+        "Businesses that need a specific component, material or finished item",
+        "Buyers who want a second option alongside a current supplier"
+      ],
+      "handle": [
+        "Reviewing the specification and asking the questions suppliers will ask",
+        "Shortlisting suppliers able to meet the specification",
+        "Requesting and organising quotations",
+        "Coordinating sample requests and feedback",
+        "Keeping a record of what each supplier has confirmed"
+      ],
+      "approach": "We compare suppliers on more than price. Communication, consistency and the ability to meet your standard are weighed alongside cost and lead time.",
+      "expect": [
+        "A clear specification both sides can work from",
+        "A shortlist with the reasons behind it",
+        "Quotations organised in one comparable format",
+        "Sample status tracked until review is complete"
+      ],
+      "faqs": [
+        { "q": "Can you work from a photo or a reference product?", "a": "Yes, as a starting point. We will then help turn it into a written specification suppliers can quote against." },
+        { "q": "Do you handle samples?", "a": "We coordinate sample requests, follow up on them and help organise feedback. Arrangements for each requirement are agreed in advance." }
       ]
     },
     {
       "slug": "business-coordination",
       "icon": "handshake",
       "title": "Business Coordination",
-      "summary": "Connecting relevant parties and supporting communication.",
+      "summary": "Acting as one organised point of contact between the parties involved in your requirement.",
       "body": [
-        "We act as a single, organised point of contact between the parties involved in your requirement."
+        "Many requirements involve several parties: suppliers, partners, service providers and your own team. Business coordination keeps them connected and working from the same information.",
+        "We follow up on messages and meetings, keep track of what has been agreed, and report status back to you."
       ],
-      "points": [
-        "Party coordination",
-        "Meeting and message follow-up",
-        "Status reporting"
+      "points": ["Party coordination", "Meeting and message follow-up", "Status reporting", "Action tracking"],
+      "audience": [
+        "Businesses managing several external parties on one requirement",
+        "Teams that need someone to own follow-up",
+        "Partners working across time zones or languages"
+      ],
+      "handle": [
+        "Connecting the relevant parties",
+        "Scheduling and following up on meetings and messages",
+        "Recording agreed actions and owners",
+        "Chasing open items before they become delays",
+        "Regular status updates to you"
+      ],
+      "approach": "One point of contact, one shared record of what has been agreed, and follow-up that happens on a schedule rather than when something goes wrong.",
+      "expect": [
+        "A named point of contact",
+        "A running list of agreed actions and their status",
+        "Prompt follow-up on open items",
+        "Updates at an agreed frequency"
+      ],
+      "faqs": [
+        { "q": "Do you replace our own team?", "a": "No. We support your team by owning the coordination work, so your people can focus on decisions." },
+        { "q": "How often will I get updates?", "a": "We agree the frequency with you at the start, and update sooner when something needs your attention." }
       ]
     },
     {
       "slug": "sourcing-support",
       "icon": "clipboard",
       "title": "Sourcing Support",
-      "summary": "Helping organise sourcing requirements and workflows.",
+      "summary": "Helping your team turn a loose requirement into a clear, trackable sourcing workflow.",
       "body": [
-        "We help your team turn a loose requirement into a clear, trackable sourcing workflow."
+        "Sometimes the need is not a new search but a better way of working. Sourcing support helps your team document requirements, set up a simple workflow and track progress.",
+        "It suits businesses that already source in-house but want more structure around it."
       ],
-      "points": [
-        "Requirement documentation",
-        "Workflow setup",
-        "Progress tracking"
+      "points": ["Requirement documentation", "Workflow setup", "Progress tracking", "Supplier records"],
+      "audience": [
+        "Businesses that already source but want a clearer process",
+        "Growing teams handling more requirements than before",
+        "Owners who want visibility of where each requirement stands"
+      ],
+      "handle": [
+        "Documenting requirements in a consistent format",
+        "Setting up a simple workflow from request to delivery",
+        "Tracking progress on open requirements",
+        "Organising supplier information in one place"
+      ],
+      "approach": "We start with how your team works today and add only the structure that helps. The aim is a process people actually use.",
+      "expect": [
+        "A requirement template suited to your business",
+        "A clear view of open requirements and their status",
+        "Practical recommendations, not a heavy system"
+      ],
+      "faqs": [
+        { "q": "Do we need special software?", "a": "Not necessarily. We work with the tools your team already uses wherever possible." }
       ]
     },
     {
       "slug": "business-solutions",
       "icon": "briefcase",
       "title": "Business Solutions",
-      "summary": "Structured support based on specific business requirements.",
+      "summary": "Structured support shaped around a specific business requirement that does not fit a standard service.",
       "body": [
-        "Where a requirement does not fit a standard service, we shape the support around it."
+        "Not every requirement fits a category. Business solutions is how we handle those: we assess the need, agree a plan and support its execution.",
+        "The same principles apply as in our other services: a written scope, a clear process and regular communication."
       ],
-      "points": [
-        "Needs assessment",
-        "Tailored plan",
-        "Execution support"
+      "points": ["Needs assessment", "Tailored plan", "Execution support", "Review"],
+      "audience": [
+        "Businesses with a requirement that crosses several areas",
+        "Teams that need practical support on an operational problem",
+        "Anyone unsure which of our services fits"
+      ],
+      "handle": [
+        "Understanding the business need and its constraints",
+        "Agreeing a written scope and plan",
+        "Supporting execution against that plan",
+        "Reviewing the result against the original need"
+      ],
+      "approach": "We scope before we commit. If a requirement is outside what we can do well, we say so early.",
+      "expect": [
+        "An honest assessment of whether we are the right fit",
+        "A written scope before work begins",
+        "Regular communication throughout"
+      ],
+      "faqs": [
+        { "q": "What if my requirement doesn't match any listed service?", "a": "Describe it in the request form. We will review it and tell you honestly whether and how we can help." }
       ]
     },
     {
       "slug": "international-business-support",
       "icon": "network",
       "title": "International Business Support",
-      "summary": "Cross-border business coordination where applicable.",
+      "summary": "Keeping cross-border coordination organised and communication clear, where applicable.",
       "body": [
-        "For businesses working across borders, we help keep coordination organised and communication clear."
+        "Working across borders adds distance, time zones and different ways of doing business. International business support helps keep that coordination organised.",
+        "We help maintain communication with partners in other markets and follow up so that agreed steps move forward."
       ],
-      "points": [
-        "Cross-border coordination",
-        "Partner communication",
-        "Follow-up"
+      "points": ["Cross-border coordination", "Partner communication", "Follow-up", "Status reporting"],
+      "audience": [
+        "Businesses working with partners in other countries",
+        "International partners working with businesses in Bangladesh",
+        "Teams managing a cross-border requirement for the first time"
+      ],
+      "handle": [
+        "Coordinating communication between parties in different markets",
+        "Following up on agreed steps and documents",
+        "Keeping a shared record of progress",
+        "Flagging issues early so they can be resolved"
+      ],
+      "approach": "Clear written communication and a steady follow-up rhythm, so distance does not become delay.",
+      "expect": [
+        "One accountable point of contact",
+        "Written summaries of discussions and agreed steps",
+        "Regular progress updates"
+      ],
+      "faqs": [
+        { "q": "Which countries do you work with?", "a": "We review each requirement individually. Tell us the markets involved and we will confirm whether we can support it." }
       ]
     }
   ]

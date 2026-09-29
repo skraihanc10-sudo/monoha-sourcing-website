@@ -1,5 +1,5 @@
 {
-  "_rev": 2,
+  "_rev": 3,
   "name": "MONOHA SOURCING INTERNATIONAL",
   "short": "Monoha",
   "tagline": "Connecting Global Opportunities Through Reliable Sourcing & Business Solutions.",
@@ -9,7 +9,8 @@
     "address": "",
     "email": "",
     "phone": "",
-    "website": ""
+    "website": "",
+    "hours": ""
   },
   "social": {
     "facebook": "",
@@ -53,88 +54,140 @@
   "process": [
     {
       "title": "Understand",
-      "text": "We listen to the requirement in full — what is needed, by when, and to what standard."
+      "text": "We listen to the requirement in full — what is needed, by when, and to what standard.",
+      "happens": [
+        "We read your brief and ask the questions needed to make it precise",
+        "We agree the specification, quantity, standard and timeline in writing"
+      ],
+      "comms": "A written summary of your requirement for you to confirm."
     },
     {
       "title": "Research",
-      "text": "We study the market and the options before recommending anything."
+      "text": "We study the market and the options before recommending anything.",
+      "happens": [
+        "We study the relevant markets and typical options",
+        "We note constraints such as lead times, minimums and standards"
+      ],
+      "comms": "A short note if research changes the brief or the timeline."
     },
     {
       "title": "Source",
-      "text": "We identify suitable suppliers, partners or solutions for the requirement."
+      "text": "We identify suitable suppliers, partners or solutions for the requirement.",
+      "happens": [
+        "We identify suppliers, partners or solutions that fit",
+        "We request the information needed to compare them"
+      ],
+      "comms": "Organised options, with what is confirmed and what is still open."
     },
     {
       "title": "Coordinate",
-      "text": "We connect the right parties and keep communication organised."
+      "text": "We connect the right parties and keep communication organised.",
+      "happens": [
+        "We connect the parties involved",
+        "We keep one record of messages, samples and agreed actions"
+      ],
+      "comms": "Regular updates at the rhythm agreed at the start."
     },
     {
       "title": "Execute",
-      "text": "We carry the agreed plan through, step by step."
+      "text": "We carry the agreed plan through, step by step.",
+      "happens": [
+        "We carry the agreed plan through, step by step",
+        "We follow up open items before they become delays"
+      ],
+      "comms": "Status updates, and a prompt message when a decision is needed."
     },
     {
       "title": "Review",
-      "text": "We check the work against the original requirement before it is closed."
+      "text": "We check the work against the original requirement before it is closed.",
+      "happens": [
+        "We check the work against the original requirement",
+        "We note anything that differs and agree how to handle it"
+      ],
+      "comms": "A review summary before anything is closed."
     },
     {
       "title": "Deliver",
-      "text": "We hand over the result and stay available for follow-up."
+      "text": "We hand over the result and stay available for follow-up.",
+      "happens": [
+        "We hand over the result and the records behind it",
+        "We stay available for follow-up questions"
+      ],
+      "comms": "A closing summary, and a point of contact for what comes next."
     }
   ],
   "solutions": [
     {
       "title": "For Businesses",
-      "text": "Sourcing and operational support shaped around day-to-day business needs."
+      "text": "Sourcing and operational support shaped around day-to-day business needs.",
+      "who": "Established businesses that need dependable sourcing or coordination alongside day-to-day operations.",
+      "need": "A product, material or supplier needed on a timeline, without pulling your own team away from their work.",
+      "support": "We take the requirement off your desk, run it through our process and bring back organised options and regular updates."
     },
     {
       "title": "For Brands",
-      "text": "Product and supplier sourcing that respects your specifications and standards."
+      "text": "Product and supplier sourcing that respects your specifications and standards.",
+      "who": "Brands developing, refining or re-sourcing products.",
+      "need": "Suppliers who can meet a specification and a quality standard consistently.",
+      "support": "We turn your specification into a clear brief, shortlist suppliers against it and coordinate samples and feedback."
     },
     {
       "title": "For Sourcing Requirements",
-      "text": "A specific product, material or supplier to find? We scope it and search it out."
+      "text": "A specific product, material or supplier to find? We scope it and search it out.",
+      "who": "Anyone with a specific item, material or supplier to find.",
+      "need": "One defined requirement, and someone to search it out properly.",
+      "support": "We scope the requirement, research the market and report back honestly on what we find."
     },
     {
       "title": "For International Partners",
-      "text": "Coordination across borders, with one accountable point of contact."
+      "text": "Coordination across borders, with one accountable point of contact.",
+      "who": "Businesses outside Bangladesh working with partners or suppliers here, and the reverse.",
+      "need": "Organised communication and follow-up across distance and time zones.",
+      "support": "One accountable point of contact, written summaries and a steady follow-up rhythm."
     },
     {
       "title": "For Growing Businesses",
-      "text": "Structured sourcing support that scales as your volumes and markets grow."
+      "text": "Structured sourcing support that scales as your volumes and markets grow.",
+      "who": "Businesses whose sourcing needs are growing faster than their internal processes.",
+      "need": "More structure: documented requirements, tracked progress and fewer loose ends.",
+      "support": "We help set up a practical workflow and support your team as volumes and markets grow."
     }
   ],
   "about": {
-    "who": "MONOHA SOURCING INTERNATIONAL is a sourcing and business solutions company. We work between businesses and the suppliers, partners and processes they need, so that requirements are met in an organised, accountable way.",
+    "who": "MONOHA SOURCING INTERNATIONAL is a sourcing and business solutions company. We work between businesses and the suppliers, partners and processes they need, so that requirements are handled in an organised, accountable way.",
     "story": "Monoha began with a simple observation: businesses lose time and money when sourcing is handled informally. We set out to bring structure, clear communication and responsible follow-up to that work.",
     "mission": "Our mission is to simplify sourcing and business coordination through reliable processes, professional communication and practical solutions.",
     "vision": "To build a trusted international sourcing and business solutions company that connects opportunities, businesses and markets through professionalism and long-term relationships.",
     "commitment": "We commit to honest communication, clear expectations and follow-through on everything we agree to do.",
     "values": [
       {
-        "title": "Integrity",
-        "text": "We say what we will do, and we do it."
+        "title": "Professionalism",
+        "text": "Every interaction is handled with care, preparation and respect."
       },
       {
         "title": "Reliability",
         "text": "Deadlines and commitments are treated seriously."
       },
       {
-        "title": "Transparency",
-        "text": "Clients know where their requirement stands at every step."
+        "title": "Clear Communication",
+        "text": "You know where your requirement stands and who to ask."
       },
       {
-        "title": "Professionalism",
-        "text": "Every interaction is handled with care and respect."
+        "title": "Structured Execution",
+        "text": "The same defined process, every time."
       },
       {
         "title": "Responsibility",
         "text": "We own our part of the work, including the follow-up."
       },
       {
-        "title": "Continuous Improvement",
-        "text": "Each project teaches us to do the next one better."
+        "title": "Long-Term Thinking",
+        "text": "We would rather be the partner you call again than the one who promised most."
       }
     ],
-    "leadership": []
+    "leadership": [],
+    "whoMore": "We are a young company, and we say so plainly. What we offer is a structured way of working: a written requirement, careful research, organised options, steady coordination and a review before anything is closed.",
+    "approach": "Every requirement moves through the same sequence. It keeps the work predictable for our clients and accountable for us."
   },
   "clients": [],
   "testimonials": []

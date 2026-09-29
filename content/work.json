@@ -1,5 +1,6 @@
 {
-  "_rev": 2,
+  "_rev": 3,
   "_note": "Add only real, permitted projects. Outcome only when verified.",
-  "projects": []
+  "projects": [],
+  "_fields": "Each project: slug, name, industry, requirement, challenge, approach, execution, outcome (verified only), image (optional)."
 }

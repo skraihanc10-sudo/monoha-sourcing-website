@@ -183,6 +183,18 @@
     draw();
   }
 
+  // ------------------------------------------------------------ solutions
+  // Editorial rows on desktop (always open), expandable cards on phones.
+  const solx = document.querySelectorAll('details.solx');
+  if (solx.length) {
+    const wide = window.matchMedia('(min-width: 901px)');
+    const sync = () => solx.forEach((d) => { if (wide.matches) d.open = true; });
+    sync(); wide.addEventListener('change', sync);
+    solx.forEach((d) => d.querySelector('summary').addEventListener('click', (e) => { if (wide.matches) e.preventDefault(); }));
+    const target = location.hash && document.getElementById(location.hash.slice(1));
+    if (target && target.matches('details.solx')) target.open = true;
+  }
+
   // ------------------------------------------------------------ forms
   document.querySelectorAll('form[data-kind]').forEach((form) => {
     const status = form.querySelector('.form-status');
@@ -191,7 +203,13 @@
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
+      form.querySelectorAll('[aria-invalid]').forEach((el) => el.removeAttribute('aria-invalid'));
       const missing = Array.from(form.querySelectorAll('[required]')).find((el) => !el.value.trim());
+      const email = form.querySelector('input[type=email]');
+      if (!missing && email && !/^[^@s]+@[^@s]+.[^@s]+$/.test(email.value.trim())) { email.setAttribute('aria-invalid', 'true'); say('Please enter a valid email address.', true); email.focus(); return; }
+      const req = form.querySelector('#requirement');
+      if (!missing && req && req.value.trim().length < 20) { req.setAttribute('aria-invalid', 'true'); say('Please describe your requirement in at least 20 characters.', true); req.focus(); return; }
+      if (missing) missing.setAttribute('aria-invalid', 'true');
       if (missing) { say('Please fill in: ' + missing.closest('.field').querySelector('label').textContent.replace('*', '').trim(), true); missing.focus(); return; }
 
       const data = { kind: form.dataset.kind };
@@ -212,7 +230,7 @@
         const r = await fetch('/api/inquiry', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
         const out = await r.json().catch(() => ({}));
         if (!r.ok) throw new Error(out.error || 'Something went wrong. Please try again.');
-        form.hidden = true; done.hidden = false; done.scrollIntoView({ block: 'center' });
+        form.hidden = true; done.hidden = false; done.scrollIntoView({ block: 'center' }); done.focus({ preventScroll: true });
       } catch (err) {
         say(err.message, true);
       } finally { button.disabled = false; }

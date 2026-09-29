@@ -1,29 +1,19 @@
 {
-  "_rev": 2,
+  "_rev": 3,
+  "categories": ["General", "Sourcing", "Process", "Communication", "Service Requests"],
   "faqs": [
-    {
-      "q": "What does Monoha Sourcing International do?",
-      "a": "We help businesses with sourcing, supplier and business coordination through a structured, professional process."
-    },
-    {
-      "q": "What sourcing services do you provide?",
-      "a": "Our main areas are international sourcing, product and supplier sourcing, business coordination and sourcing support. See the Services page for details."
-    },
-    {
-      "q": "How does your sourcing process work?",
-      "a": "Seven steps: understand, research, source, coordinate, execute, review and deliver. The Our Process page explains each one."
-    },
-    {
-      "q": "How can I request a service?",
-      "a": "Use the Request a Service form. Our team reviews each request and contacts you."
-    },
-    {
-      "q": "Do you work with international businesses?",
-      "a": "Yes — where the requirement fits our services, we work with businesses inside and outside Bangladesh."
-    },
-    {
-      "q": "How can I contact your team?",
-      "a": "Through the Contact page, by email or by phone."
-    }
+    { "cat": "General", "q": "What does MONOHA SOURCING INTERNATIONAL do?", "a": "We help businesses with sourcing, supplier coordination and related business support through a structured, professional process." },
+    { "cat": "General", "q": "Do you work with international businesses?", "a": "Yes. Where the requirement fits our services, we work with businesses inside and outside Bangladesh. We review each requirement individually." },
+    { "cat": "General", "q": "Is there a minimum size of business you work with?", "a": "No fixed minimum. What matters is whether the requirement is clear and fits what we do." },
+    { "cat": "Sourcing", "q": "What sourcing services do you provide?", "a": "International sourcing, product and supplier sourcing, business coordination, sourcing support, business solutions and international business support. The Services page describes each one." },
+    { "cat": "Sourcing", "q": "Do you guarantee results?", "a": "No. We commit to a structured process, honest reporting and follow-through. Outcomes depend on the market, suppliers and the requirement itself." },
+    { "cat": "Sourcing", "q": "Who makes the final decision on a supplier?", "a": "You do. We organise the options and the information behind them so you can decide with confidence." },
+    { "cat": "Process", "q": "How does your process work?", "a": "Seven steps: understand, research, source, coordinate, execute, review and deliver. The Our Process page explains each step and what you hear from us at each stage." },
+    { "cat": "Process", "q": "What do you need from me to start?", "a": "A clear description of what you need, the quantity, any quality standard and your timeline. Drawings, photos or reference links help." },
+    { "cat": "Communication", "q": "Will I have one point of contact?", "a": "Yes. Each requirement has one point of contact on our side, so you always know who to ask." },
+    { "cat": "Communication", "q": "How often will I get updates?", "a": "We agree an update rhythm with you at the start, and contact you sooner whenever something needs your decision." },
+    { "cat": "Service Requests", "q": "How do I request a service?", "a": "Use the Request a Service form. Our team reviews each request and contacts you by email or phone." },
+    { "cat": "Service Requests", "q": "Does sending a request commit me to anything?", "a": "No. A request starts a conversation. Any work is agreed separately and in writing." },
+    { "cat": "Service Requests", "q": "Can I attach files to my request?", "a": "Yes. You can attach one PDF, image or document of up to 5 MB, such as a specification or reference photo." }
   ]
 }
