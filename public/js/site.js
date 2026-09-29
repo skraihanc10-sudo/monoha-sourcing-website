@@ -1,4 +1,4 @@
-// Menu, a gentle reveal, the hero globe, and the two enquiry forms.
+// Menu, header state, scroll reveal, the hero globe, and the enquiry forms.
 (function () {
   document.documentElement.classList.add('js');
 
@@ -19,65 +19,166 @@
     try { await navigator.clipboard.writeText(b.dataset.url); b.textContent = 'Link copied'; } catch (e) { /* ignore */ }
   }));
 
+  // ------------------------------------------------------------ header
+  const header = document.getElementById('header');
+  if (header) {
+    const onScroll = () => header.classList.toggle('is-scrolled', window.scrollY > 8);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+  }
+
+  // ------------------------------------------------------------ reveal
+  // Only what starts below the fold fades in; anything already on screen
+  // stays visible, so the first frame is never empty.
+  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!still && 'IntersectionObserver' in window) {
+    const io = new IntersectionObserver((entries) => entries.forEach((e) => {
+      if (e.isIntersecting) { e.target.classList.add('is-in'); io.unobserve(e.target); }
+    }), { rootMargin: '0px 0px -8% 0px' });
+    document.querySelectorAll('.reveal').forEach((el, i) => {
+      if (el.getBoundingClientRect().top < window.innerHeight) { el.classList.add('is-in'); return; }
+      el.style.transitionDelay = (i % 3) * 80 + 'ms';
+      io.observe(el);
+    });
+  } else {
+    document.querySelectorAll('.reveal').forEach((el) => el.classList.add('is-in'));
+  }
+
   // ------------------------------------------------------------ globe
-  // A dotted globe turning slowly, with arcs between points: the
-  // "connecting markets" idea from the logo, drawn rather than photographed.
+  // A dotted world turning slowly: land picked out from rough continent
+  // shapes, two thin orbits, and routes from Dhaka to trading hubs with a
+  // pulse travelling along each one.
   const cv = document.getElementById('globe');
   if (cv && cv.getContext) {
     const ctx = cv.getContext('2d');
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    const S = 520;
+    const S = 560, C = S / 2, R = 190;
     cv.width = S * dpr; cv.height = S * dpr; ctx.scale(dpr, dpr);
-    const R = 200, C = S / 2;
-    const pts = [];
-    for (let lat = -80; lat <= 80; lat += 8) {
-      const n = Math.max(6, Math.round(46 * Math.cos(lat * Math.PI / 180)));
-      for (let i = 0; i < n; i++) pts.push([lat * Math.PI / 180, (i / n) * Math.PI * 2]);
+    const rad = Math.PI / 180;
+
+    // [lat, lon, latRadius, lonRadius] — coarse, but reads as a world map.
+    const LAND = [[50, -102, 20, 36], [64, -150, 8, 18], [18, -95, 9, 12], [-14, -60, 20, 15], [-38, -67, 12, 7],
+      [73, -40, 8, 14], [52, 12, 11, 20], [63, 20, 7, 12], [8, 18, 22, 20], [-18, 26, 16, 12], [27, 46, 10, 13],
+      [55, 90, 16, 50], [35, 105, 13, 22], [21, 78, 10, 8], [10, 104, 8, 10], [-3, 118, 6, 16], [36, 138, 6, 4], [-25, 134, 11, 17]];
+    const isLand = (la, lo) => LAND.some(([a, b, ra, rb]) => {
+      let d = lo - b; if (d > 180) d -= 360; if (d < -180) d += 360;
+      return ((la - a) / ra) ** 2 + (d / rb) ** 2 <= 1;
+    });
+    const dots = [];
+    for (let la = -78; la <= 80; la += 3.4) {
+      const n = Math.max(8, Math.round(106 * Math.cos(la * rad)));
+      for (let k = 0; k < n; k++) {
+        const lo = -180 + (k / n) * 360;
+        const land = isLand(la, lo);
+        if (land || k % 3 === 0) dots.push([la * rad, lo * rad, land]);
+      }
     }
-    const hubs = [[23.7, 90.4], [31.2, 121.5], [25.2, 55.3], [51.5, -0.1], [1.35, 103.8], [40.7, -74]]
-      .map(([a, b]) => [a * Math.PI / 180, b * Math.PI / 180]);
-    const tilt = -0.35;
-    const proj = (lat, lon, rot) => {
+    const hubs = [[23.8, 90.4], [31.2, 121.5], [25.2, 55.3], [51.5, -0.1], [1.35, 103.8], [40.7, -74], [22.3, 114.2]]
+      .map(([a, b]) => [a * rad, b * rad]);
+    const tilt = -0.38;
+    const proj = (lat, lon, rot, r = R) => {
       const x = Math.cos(lat) * Math.sin(lon + rot);
-      let y = Math.sin(lat);
-      let z = Math.cos(lat) * Math.cos(lon + rot);
+      const y = Math.sin(lat);
+      const z = Math.cos(lat) * Math.cos(lon + rot);
       const y2 = y * Math.cos(tilt) - z * Math.sin(tilt);
       const z2 = y * Math.sin(tilt) + z * Math.cos(tilt);
-      return [C + x * R, C - y2 * R, z2];
+      return [C + x * r, C - y2 * r, z2];
     };
-    const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    let rot = -1.2;
+    // A great-circle route between two points, lifted off the surface.
+    const route = (a, b) => {
+      const v = (p) => [Math.cos(p[0]) * Math.cos(p[1]), Math.cos(p[0]) * Math.sin(p[1]), Math.sin(p[0])];
+      const A = v(a), B = v(b);
+      const out = [];
+      for (let t = 0; t <= 1.0001; t += 1 / 40) {
+        const m = A.map((c, i) => c * (1 - t) + B[i] * t);
+        const l = Math.hypot(...m);
+        out.push([Math.asin(m[2] / l), Math.atan2(m[1], m[0]), 1 + Math.sin(Math.PI * t) * 0.16]);
+      }
+      return out;
+    };
+    const routes = hubs.slice(1).map((h) => route(hubs[0], h));
+    const ring = (rx, ry, ang, rot, phase) => {
+      // Orbit: an ellipse around the globe, split into front and back halves.
+      const pts = [];
+      for (let t = 0; t <= Math.PI * 2 + 0.01; t += 0.04) {
+        const x = Math.cos(t + phase) * rx, y = Math.sin(t + phase) * ry;
+        pts.push([C + x * Math.cos(ang) - y * Math.sin(ang), C + x * Math.sin(ang) + y * Math.cos(ang), Math.sin(t + phase)]);
+      }
+      return pts;
+    };
+
+    let rot = -1.35, tick = 0;
     const draw = () => {
       ctx.clearRect(0, 0, S, S);
-      const g = ctx.createRadialGradient(C - 60, C - 70, 20, C, C, R + 30);
-      g.addColorStop(0, 'rgba(25,184,240,.22)'); g.addColorStop(1, 'rgba(21,83,209,.04)');
-      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(C, C, R + 6, 0, Math.PI * 2); ctx.fill();
-      for (const [la, lo] of pts) {
-        const [x, y, z] = proj(la, lo, rot);
-        if (z < 0) continue;
-        ctx.fillStyle = `rgba(21,83,209,${0.18 + z * 0.6})`;
-        ctx.beginPath(); ctx.arc(x, y, 1.2 + z * 1.3, 0, Math.PI * 2); ctx.fill();
+      // glow and body
+      const glow = ctx.createRadialGradient(C, C, R * 0.6, C, C, R * 1.45);
+      glow.addColorStop(0, 'rgba(0,191,239,.16)'); glow.addColorStop(1, 'rgba(0,191,239,0)');
+      ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(C, C, R * 1.45, 0, Math.PI * 2); ctx.fill();
+      const body = ctx.createRadialGradient(C - R * 0.35, C - R * 0.4, R * 0.1, C, C, R);
+      body.addColorStop(0, '#FFFFFF'); body.addColorStop(0.55, '#EAF3FF'); body.addColorStop(1, '#C9DBF7');
+      ctx.fillStyle = body; ctx.beginPath(); ctx.arc(C, C, R, 0, Math.PI * 2); ctx.fill();
+
+      // back orbit halves
+      const orbits = [ring(R * 1.32, R * 0.34, -0.42, rot, 0), ring(R * 1.22, R * 0.26, 0.5, rot, 1.2)];
+      ctx.lineWidth = 1;
+      for (const o of orbits) {
+        ctx.strokeStyle = 'rgba(20,85,217,.14)'; ctx.beginPath();
+        o.forEach((p, k) => (p[2] < 0 ? (k && o[k - 1][2] < 0 ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1])) : null)); ctx.stroke();
       }
-      const home = hubs[0];
-      for (let i = 1; i < hubs.length; i++) {
-        const seg = [];
-        for (let t = 0; t <= 1.0001; t += 0.05) {
-          const la = home[0] + (hubs[i][0] - home[0]) * t;
-          const lo = home[1] + (hubs[i][1] - home[1]) * t;
-          const p = proj(la, lo, rot); const lift = 1 + Math.sin(Math.PI * t) * 0.18;
-          seg.push([C + (p[0] - C) * lift, C + (p[1] - C) * lift, p[2]]);
+
+      // contour lines
+      ctx.strokeStyle = 'rgba(20,85,217,.10)'; ctx.lineWidth = 0.8;
+      for (let lo = 0; lo < 360; lo += 30) {
+        ctx.beginPath(); let on = false;
+        for (let la = -90; la <= 90; la += 4) { const [x, y, z] = proj(la * rad, lo * rad, rot); if (z < 0) { on = false; continue; } on ? ctx.lineTo(x, y) : ctx.moveTo(x, y); on = true; }
+        ctx.stroke();
+      }
+      for (let la = -60; la <= 60; la += 30) {
+        ctx.beginPath(); let on = false;
+        for (let lo = 0; lo <= 360; lo += 4) { const [x, y, z] = proj(la * rad, lo * rad, rot); if (z < 0) { on = false; continue; } on ? ctx.lineTo(x, y) : ctx.moveTo(x, y); on = true; }
+        ctx.stroke();
+      }
+
+      // dots
+      for (const [la, lo, land] of dots) {
+        const [x, y, z] = proj(la, lo, rot);
+        if (z < 0.02) continue;
+        ctx.fillStyle = land ? `rgba(7,26,65,${0.25 + z * 0.6})` : `rgba(20,85,217,${0.08 + z * 0.14})`;
+        ctx.beginPath(); ctx.arc(x, y, land ? 0.9 + z * 1.1 : 0.7 + z * 0.5, 0, Math.PI * 2); ctx.fill();
+      }
+
+      // routes with travelling pulses
+      routes.forEach((seg, i) => {
+        const pts = seg.map(([la, lo, lift]) => proj(la, lo, rot, R * lift));
+        if (pts.every((p) => p[2] < -0.1)) return;
+        ctx.strokeStyle = 'rgba(0,191,239,.9)'; ctx.lineWidth = 1.5; ctx.beginPath(); let on = false;
+        pts.forEach((p) => { if (p[2] < -0.1) { on = false; return; } on ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]); on = true; });
+        ctx.stroke();
+        const t = ((tick * 0.006 + i * 0.17) % 1);
+        const p = pts[Math.round(t * (pts.length - 1))];
+        if (p[2] > -0.1) {
+          ctx.fillStyle = 'rgba(0,191,239,.25)'; ctx.beginPath(); ctx.arc(p[0], p[1], 7, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = '#00BFEF'; ctx.beginPath(); ctx.arc(p[0], p[1], 2.6, 0, Math.PI * 2); ctx.fill();
         }
-        if (seg.every((p) => p[2] < 0)) continue;
-        ctx.strokeStyle = 'rgba(25,184,240,.85)'; ctx.lineWidth = 1.6; ctx.beginPath();
-        seg.forEach((p, k) => (k ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]))); ctx.stroke();
-      }
-      for (const [la, lo] of hubs) {
+      });
+
+      // hubs
+      hubs.forEach(([la, lo], i) => {
         const [x, y, z] = proj(la, lo, rot);
-        if (z < 0) continue;
-        ctx.fillStyle = '#0A1A3F'; ctx.beginPath(); ctx.arc(x, y, 4.5, 0, Math.PI * 2); ctx.fill();
-        ctx.strokeStyle = '#19B8F0'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(x, y, 8, 0, Math.PI * 2); ctx.stroke();
+        if (z < 0) return;
+        ctx.fillStyle = '#071A41'; ctx.beginPath(); ctx.arc(x, y, i ? 4 : 5.5, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = i ? 'rgba(0,191,239,.9)' : '#1455D9'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(x, y, i ? 8 : 11, 0, Math.PI * 2); ctx.stroke();
+      });
+
+      // front orbit halves with a satellite dot
+      for (const o of orbits) {
+        ctx.strokeStyle = 'rgba(20,85,217,.35)'; ctx.lineWidth = 1.1; ctx.beginPath();
+        o.forEach((p, k) => (p[2] >= 0 ? (k && o[k - 1][2] >= 0 ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1])) : null)); ctx.stroke();
       }
-      if (!still) { rot += 0.0025; requestAnimationFrame(draw); }
+      const sat = orbits[0][Math.floor((tick * 0.25) % orbits[0].length)];
+      if (sat) { ctx.fillStyle = sat[2] >= 0 ? '#1455D9' : 'rgba(20,85,217,.3)'; ctx.beginPath(); ctx.arc(sat[0], sat[1], 3.5, 0, Math.PI * 2); ctx.fill(); }
+
+      if (!still) { rot += 0.0018; tick++; requestAnimationFrame(draw); }
     };
     draw();
   }

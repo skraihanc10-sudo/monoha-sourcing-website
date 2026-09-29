@@ -31,7 +31,10 @@ const SMTP_PASS = process.env.SMTP_PASS || '';
 fs.mkdirSync(CONTENT_DIR, { recursive: true });
 for (const f of fs.readdirSync(path.join(ROOT, 'content'))) {
   const target = path.join(CONTENT_DIR, f);
-  if (!fs.existsSync(target)) fs.copyFileSync(path.join(ROOT, 'content', f), target);
+  const seed = path.join(ROOT, 'content', f);
+  // Refresh the volume copy when the seed file carries a newer _rev.
+  const rev = (file) => { try { return Number(JSON.parse(fs.readFileSync(file, 'utf8'))._rev) || 0; } catch (e) { return 0; } };
+  if (!fs.existsSync(target) || rev(seed) > rev(target)) fs.copyFileSync(seed, target);
 }
 
 function readJSON(file, fallback) {
@@ -88,7 +91,7 @@ function layout(req, { title, description, body, active }) {
     c.address && `<li>${icon('pin')}<span>${esc(c.address)}</span></li>`,
     c.email && `<li>${icon('mail')}<a href="mailto:${esc(c.email)}">${esc(c.email)}</a></li>`,
     c.phone && `<li>${icon('phone')}<a href="tel:${esc(c.phone.replace(/[^\d+]/g, ''))}">${esc(c.phone)}</a></li>`,
-  ].filter(Boolean).join('') || '<li><a href="/contact">Send us a message</a></li>';
+  ].filter(Boolean).join('');
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -104,27 +107,31 @@ function layout(req, { title, description, body, active }) {
 <meta property="og:description" content="${esc(desc)}">
 <meta property="og:url" content="${esc(url)}">
 <meta property="og:image" content="${SITE_URL}/images/logo.png">
-<meta name="theme-color" content="#0A1A3F">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="${esc(fullTitle)}">
+<meta name="twitter:description" content="${esc(desc)}">
+<meta name="twitter:image" content="${SITE_URL}/images/logo.png">
+<meta name="theme-color" content="#071A41">
 <link rel="icon" href="/images/logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/css/site.css">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/site.css?v=3">
 <script type="application/ld+json">${JSON.stringify({
-    '@context': 'https://schema.org', '@type': 'Organization', name: site.name, url: SITE_URL,
+    '@context': 'https://schema.org', '@type': 'Organization', name: site.name, url: SITE_URL, description: site.description,
     logo: SITE_URL + '/images/logo.png', ...(c.email ? { email: c.email } : {}), ...(c.phone ? { telephone: c.phone } : {}),
   }).replace(/</g, '\\u003c')}</script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
-<header class="header">
+<header class="header" id="header">
   <div class="wrap header-row">
     <a href="/" class="brand" aria-label="${esc(site.name)} — home">
       <img src="/images/logo.png" alt="" width="54" height="36">
       <span class="brand-text"><strong>MONOHA</strong><small>Sourcing International</small></span>
     </a>
     <nav class="nav" id="nav" aria-label="Main">${navLinks}
-      <a href="/request" class="btn btn-primary nav-cta-mobile">Request a Service</a>
+      <a href="/contact" class="btn btn-primary nav-cta-mobile">Get in Touch</a>
     </nav>
     <a href="/contact" class="btn btn-primary header-cta">Get in Touch</a>
     <button class="menu-btn" id="menu-btn" aria-label="Open menu" aria-expanded="false" aria-controls="nav"><span></span><span></span><span></span></button>
@@ -134,27 +141,31 @@ function layout(req, { title, description, body, active }) {
 ${body}
 </main>
 <footer class="footer">
-  <div class="wrap footer-grid">
+  <div class="wrap footer-top">
     <div class="footer-about">
-      <a href="/" class="brand brand-light"><img src="/images/logo.png" alt="" width="54" height="36">
+      <a href="/" class="brand brand-light"><img src="/images/logo.png" alt="" width="58" height="40">
         <span class="brand-text"><strong>MONOHA</strong><small>Sourcing International</small></span></a>
       <p>${esc(site.description)}</p>
+      ${contactLines ? `<ul class="contact-list">${contactLines}</ul>` : ''}
       ${socials ? `<div class="socials">${socials}</div>` : ''}
     </div>
-    <div><h3>Company</h3><a href="/about">About</a><a href="/work">Our Work</a><a href="/careers">Careers</a><a href="/contact">Contact</a></div>
-    <div><h3>Services</h3>${services.slice(0, 4).map((x) => `<a href="/services/${esc(x.slug)}">${esc(x.title)}</a>`).join('')}<a href="/request">Request a Service</a></div>
-    <div><h3>Resources</h3><a href="/insights">Insights</a><a href="/faq">FAQ</a><a href="/process">Our Process</a><a href="/solutions">Solutions</a></div>
-    <div><h3>Contact</h3><ul class="contact-list">${contactLines}</ul></div>
+    <div><h3>Company</h3><a href="/about">About</a><a href="/process">Our Process</a><a href="/work">Our Work</a><a href="/careers">Careers</a><a href="/contact">Contact</a></div>
+    <div><h3>Services</h3>${services.slice(0, 5).map((x) => `<a href="/services/${esc(x.slug)}">${esc(x.title)}</a>`).join('')}</div>
+    <div><h3>Solutions</h3>${(site.solutions || []).map((x) => `<a href="/solutions#${esc(slugify(x.title))}">${esc(x.title)}</a>`).join('')}</div>
+    <div><h3>Resources</h3><a href="/insights">Insights</a><a href="/faq">FAQ</a><a href="/request">Request a Service</a></div>
+    <div><h3>Legal</h3><a href="/privacy-policy">Privacy Policy</a><a href="/terms">Terms &amp; Conditions</a><a href="/cookie-policy">Cookie Policy</a></div>
   </div>
   <div class="wrap footer-base">
-    <span>&copy; ${new Date().getFullYear()} ${esc(site.name)}</span>
-    <span class="legal"><a href="/privacy-policy">Privacy Policy</a><a href="/terms">Terms &amp; Conditions</a><a href="/cookie-policy">Cookie Policy</a></span>
+    <span><strong>MONOHA SOURCING INTERNATIONAL</strong> &nbsp;&copy; ${new Date().getFullYear()}. All rights reserved.</span>
+    <a href="https://monohasourcing.international">monohasourcing.international</a>
   </div>
 </footer>
-<script src="/js/site.js" defer></script>
+<script src="/js/site.js?v=3" defer></script>
 </body>
 </html>`;
 }
+
+const slugify = (t) => String(t).toLowerCase().replace(/&/g, 'and').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
 const pageHead = (eyebrow, title, lead) => `
 <section class="page-head">
@@ -168,29 +179,58 @@ const pageHead = (eyebrow, title, lead) => `
 const section = (inner, cls = '') => `<section class="section ${cls}"><div class="wrap">${inner}</div></section>`;
 const heading = (eyebrow, title, lead, center) =>
   `<div class="sec-head${center ? ' center' : ''}"><p class="eyebrow">${esc(eyebrow)}</p><h2>${esc(title)}</h2>${lead ? `<p class="lead">${esc(lead)}</p>` : ''}</div>`;
+// Eyebrow and headline on the left, the explanation on the right.
+const headSplit = (eyebrow, titleHtml, lead) =>
+  `<div class="sec-split"><div><p class="eyebrow">${esc(eyebrow)}</p><h2>${titleHtml}</h2></div>${lead ? `<p class="lead">${esc(lead)}</p>` : '<span></span>'}</div>`;
 
-const serviceCard = (x) => `
-<a class="card service-card" href="/services/${esc(x.slug)}">
-  <span class="card-icon">${icon(x.icon)}</span>
+const serviceCard = (x, i) => `
+<a class="svc reveal" href="/services/${esc(x.slug)}">
+  <span class="svc-no">${String(i + 1).padStart(2, '0')}</span>
   <h3>${esc(x.title)}</h3>
   <p>${esc(x.summary)}</p>
-  <span class="more">Learn more ${icon('arrow')}</span>
+  <span class="link-arrow">Explore ${icon('arrow')}</span>
 </a>`;
+const serviceGrid = (list) => `<div class="svc-grid">${list.map(serviceCard).join('')}</div>`;
 
-const plainCards = (items, cls = '') =>
-  `<div class="grid grid-3 ${cls}">${items.map((i) => `<div class="card plain-card"><span class="tick">${icon('check')}</span><h3>${esc(i.title)}</h3><p>${esc(i.text)}</p></div>`).join('')}</div>`;
+// Values and reasons: a titled line of text under a thin rule, not a card.
+const plainCards = (items) =>
+  `<div class="facets">${items.map((i) => `<div class="facet reveal"><h3>${esc(i.title)}</h3><p>${esc(i.text)}</p></div>`).join('')}</div>`;
 
-const processSteps = (steps) => `<ol class="process">${steps.map((p, i) => `
-  <li><span class="step-no">${String(i + 1).padStart(2, '0')}</span><div><h3>${esc(p.title)}</h3><p>${esc(p.text)}</p></div></li>`).join('')}</ol>`;
+const processSteps = (steps) => `<ol class="timeline">${steps.map((p, i) => `
+  <li class="reveal"><span class="dot">${String(i + 1).padStart(2, '0')}</span><h3>${esc(p.title)}</h3><p>${esc(p.text)}</p></li>`).join('')}</ol>`;
 
 const faqList = (faqs) => `<div class="faq">${faqs.map((f) => `
   <details><summary>${esc(f.q)}</summary><p>${esc(f.a)}</p></details>`).join('')}</div>`;
 
+// Articles without a cover photo get drawn artwork: a network of points
+// seeded from the slug, so each one differs but stays on-brand.
+function coverArt(a) {
+  if (a.cover) return `<div class="cover-art"><img src="${esc(a.cover)}" alt="" loading="lazy"><span class="cat">${esc(a.category)}</span></div>`;
+  let seed = 0;
+  for (const ch of String(a.slug)) seed = (seed * 31 + ch.charCodeAt(0)) >>> 0;
+  const rnd = () => ((seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0) / 4294967296);
+  const pts = Array.from({ length: 9 }, () => [60 + rnd() * 500, 40 + rnd() * 260].map(Math.round));
+  const lines = pts.slice(1).map((pt, i) => {
+    const q = pts[Math.floor(rnd() * (i + 1))];
+    return `<path d="M${q[0]} ${q[1]} Q ${Math.round((q[0] + pt[0]) / 2)} ${Math.min(q[1], pt[1]) - 60} ${pt[0]} ${pt[1]}"/>`;
+  }).join('');
+  const dots = pts.map(([x, y], i) => `<circle cx="${x}" cy="${y}" r="${i ? 3.5 : 6}" fill="${i ? '#fff' : '#00BFEF'}"/>`).join('');
+  return `<div class="cover-art"><svg viewBox="0 0 600 360" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <g fill="none" stroke="#fff" stroke-opacity=".08"><circle cx="470" cy="80" r="220"/><circle cx="470" cy="80" r="150"/><circle cx="470" cy="80" r="80"/></g>
+    <g fill="none" stroke="#00BFEF" stroke-opacity=".6" stroke-width="1.4">${lines}</g>${dots}</svg><span class="cat">${esc(a.category)}</span></div>`;
+}
+
 const articleCard = (a) => `
-<a class="card article-card" href="/insights/${esc(a.slug)}">
-  <div class="article-cover${a.cover ? '' : ' is-empty'}">${a.cover ? `<img src="${esc(a.cover)}" alt="" loading="lazy">` : '<img src="/images/logo.png" alt="" loading="lazy">'}</div>
-  <div class="article-body"><span class="tag">${esc(a.category)}</span><h3>${esc(a.title)}</h3><p>${esc(a.summary)}</p>
-  <span class="meta">${fmtDate(a.date)} · <span class="more">Read more ${icon('arrow')}</span></span></div>
+<a class="article-card reveal" href="/insights/${esc(a.slug)}">
+  ${coverArt(a)}
+  <div class="article-body"><h3>${esc(a.title)}</h3><p>${esc(a.summary)}</p>
+  <span class="meta">${fmtDate(a.date)}</span></div>
+</a>`;
+const featureCard = (a) => `
+<a class="feature reveal" href="/insights/${esc(a.slug)}">
+  ${coverArt(a)}
+  <div class="feature-body"><span class="tag">Featured · ${esc(a.category)}</span><h2>${esc(a.title)}</h2><p>${esc(a.summary)}</p>
+  <span class="meta">${fmtDate(a.date)}</span><span class="link-arrow">Read article ${icon('arrow')}</span></div>
 </a>`;
 
 function fmtDate(d) {
@@ -198,11 +238,28 @@ function fmtDate(d) {
   return isNaN(t) ? '' : t.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
-const ctaBand = () => section(`
-  <div class="cta-band">
-    <div><h2>Have a sourcing requirement?</h2><p>Tell us what you need. Our team reviews every request and replies.</p></div>
-    <div class="cta-actions"><a href="/request" class="btn btn-light">Request a Service</a><a href="/contact" class="btn btn-ghost-light">Talk to Us</a></div>
-  </div>`);
+// Faint orbits and connections behind the closing call to action.
+const NET_SVG = `<svg class="net" viewBox="0 0 720 720" aria-hidden="true">
+  <g fill="none" stroke="#fff" stroke-opacity=".1"><circle cx="360" cy="360" r="300"/><ellipse cx="360" cy="360" rx="300" ry="110"/><ellipse cx="360" cy="360" rx="110" ry="300"/><ellipse cx="360" cy="360" rx="300" ry="210"/></g>
+  <g fill="none" stroke="#00BFEF" stroke-opacity=".45" stroke-width="1.5"><path d="M160 250 Q 300 120 470 210"/><path d="M470 210 Q 560 330 520 480"/><path d="M160 250 Q 200 430 330 520"/><path d="M330 520 Q 430 580 520 480"/></g>
+  <g fill="#00BFEF"><circle cx="160" cy="250" r="6"/><circle cx="470" cy="210" r="6"/><circle cx="520" cy="480" r="6"/><circle cx="330" cy="520" r="6"/></g></svg>`;
+
+const ctaBand = () => `
+<section class="cta">
+  ${NET_SVG}
+  <div class="wrap reveal">
+    <p class="eyebrow">Start a conversation</p>
+    <h2>Let's build the right sourcing solution for your business.</h2>
+    <p>Tell us what you need and our team will review your requirement.</p>
+    <div class="cta-actions"><a href="/contact" class="btn btn-light">Get in Touch ${icon('arrow')}</a><a href="/request" class="btn btn-ghost-light">Request a Service</a></div>
+  </div>
+</section>`;
+
+const SOL_ICONS = ['briefcase', 'box', 'clipboard', 'globe', 'network'];
+const solutionRows = (sol) => `<div class="sol-list">${sol.map((x, i) => `
+  <a class="sol reveal" id="${esc(slugify(x.title))}" href="/request?subject=${encodeURIComponent(x.title)}">
+    <span class="sol-mark">${icon(SOL_ICONS[i % SOL_ICONS.length])}</span><h3>${esc(x.title)}</h3><p>${esc(x.text)}</p><span class="sol-go">${icon('arrow')}</span>
+  </a>`).join('')}</div>`;
 
 const serviceOptions = (selected) => (content('services').services || [])
   .map((x) => `<option${x.title === selected ? ' selected' : ''}>${esc(x.title)}</option>`).join('') + '<option>Other</option>';
@@ -210,11 +267,25 @@ const serviceOptions = (selected) => (content('services').services || [])
 // ---------------------------------------------------------------- pages
 const pages = {};
 
+// The home page's "what we do" diagram: one brief, several supplier
+// options, one coordinated delivery.
+const FLOW_SVG = `<svg viewBox="0 0 520 330" role="img" aria-label="One brief goes to several supplier options and comes back as one coordinated delivery">
+  <defs><linearGradient id="fl" x1="0" x2="1"><stop offset="0" stop-color="#1455D9"/><stop offset="1" stop-color="#00BFEF"/></linearGradient></defs>
+  <g fill="none" stroke="url(#fl)" stroke-width="2">
+    <path d="M96 165 C 150 165 150 70 208 70"/><path d="M96 165 H 208"/><path d="M96 165 C 150 165 150 260 208 260"/>
+    <path d="M312 70 C 370 70 370 165 416 165"/><path d="M312 165 H 416"/><path d="M312 260 C 370 260 370 165 416 165"/></g>
+  <g font-family="Plus Jakarta Sans, Segoe UI, sans-serif" font-weight="700" text-anchor="middle">
+    <rect x="12" y="135" width="84" height="60" rx="12" fill="#fff"/><text x="54" y="159" font-size="9.5" fill="#64748B" letter-spacing="1.5">YOUR</text><text x="54" y="178" font-size="14" fill="#071A41">Brief</text>
+    <g fill="#fff" fill-opacity=".07" stroke="#fff" stroke-opacity=".25"><rect x="208" y="44" width="104" height="52" rx="12"/><rect x="208" y="139" width="104" height="52" rx="12"/><rect x="208" y="234" width="104" height="52" rx="12"/></g>
+    <g fill="#fff" font-size="12.5"><text x="260" y="75">Option A</text><text x="260" y="170">Option B</text><text x="260" y="265">Option C</text></g>
+    <circle cx="462" cy="165" r="46" fill="#00BFEF"/><text x="462" y="160" font-size="9.5" fill="#071A41" letter-spacing="1.5">COORDINATED</text><text x="462" y="179" font-size="14" fill="#071A41">Delivery</text>
+  </g></svg>`;
+
 pages['/'] = (req) => {
   const site = content('site');
   const services = content('services').services || [];
-  const articles = (content('insights').articles || []).slice(0, 3);
-  const faqs = (content('faq').faqs || []).slice(0, 4);
+  const articles = (content('insights').articles || []).slice().sort((a, b) => String(b.date).localeCompare(String(a.date))).slice(0, 4);
+  const faqs = (content('faq').faqs || []).slice(0, 5);
   const clients = site.clients || [];
   const testimonials = site.testimonials || [];
   return layout(req, { description: site.intro, body: `
@@ -222,37 +293,53 @@ pages['/'] = (req) => {
   <div class="wrap hero-grid">
     <div class="hero-copy">
       <p class="eyebrow">Sourcing &amp; Business Solutions</p>
-      <h1>MONOHA SOURCING <span>INTERNATIONAL</span></h1>
-      <p class="hero-tag">${esc(site.tagline)}</p>
+      <p class="hero-brand">MONOHA SOURCING INTERNATIONAL</p>
+      <h1>Connecting global opportunities <span class="hl">through reliable sourcing &amp; business solutions</span></h1>
       <p class="lead">${esc(site.intro)}</p>
-      <div class="hero-actions"><a href="/services" class="btn btn-primary">Explore Our Services</a><a href="/contact" class="btn btn-outline">Talk to Us</a></div>
+      <div class="hero-actions"><a href="/services" class="btn btn-primary">Explore Our Services ${icon('arrow')}</a><a href="/contact" class="btn btn-outline">Get in Touch</a></div>
     </div>
     <div class="hero-visual" aria-hidden="true">
-      <canvas id="globe" width="520" height="520"></canvas>
+      <canvas id="globe" width="560" height="560"></canvas>
+      <span class="globe-tag t1"><i></i>Global sourcing</span>
+      <span class="globe-tag t2"><i></i>Coordinated delivery</span>
     </div>
   </div>
 </section>
-<section class="trust"><div class="wrap"><ul>${(site.trust || []).map((t) => `<li>${icon('check')}${esc(t)}</li>`).join('')}</ul></div></section>
+<section class="trust" aria-label="How we work"><div class="wrap"><ul>${(site.trust || []).map((t) => `<li>${icon('check')}${esc(t)}</li>`).join('')}</ul></div></section>
 
-${section(`${heading('What We Do', 'Practical sourcing, handled professionally', site.description)}
-  <div class="grid grid-3">${services.map(serviceCard).join('')}</div>
-  <p class="center-link"><a href="/services" class="btn btn-outline">View all services</a></p>`)}
+${section(`${headSplit('What We Do', 'Practical sourcing.<br>Handled professionally.', site.description)}
+  <div class="wwd">
+    <div class="wwd-copy reveal">
+      <p>You bring the requirement. We find and compare suitable suppliers and partners, coordinate everyone involved, and follow the work through to delivery, with one point of contact from start to finish.</p>
+      <ul><li>Sourcing<span>Products, suppliers, partners</span></li><li>Coordination<span>Communication across parties</span></li><li>Follow-through<span>Checked against your brief</span></li></ul>
+    </div>
+    <div class="flow-panel reveal">${FLOW_SVG}<div class="flow-caption"><span>One brief</span><b>Compared options</b><span>One result</span></div></div>
+  </div>`)}
 
-${section(`${heading('Why Monoha', 'A partner you can rely on', '', true)}${plainCards(site.why || [])}`, 'tint')}
+${section(`${headSplit('Services', 'How we support your business', 'Every service runs through the same structured process, so the standard holds whatever you need.')}
+  ${serviceGrid(services)}`, 'soft')}
 
-${section(`${heading('Our Process', 'Seven clear steps, every time', 'Every requirement moves through the same structured path, so you always know what happens next.')}
+${section(`<div class="why">
+  <div class="why-head reveal"><p class="eyebrow">Why Monoha</p><h2>Why businesses choose a structured approach</h2>
+    <p class="lead">Informal sourcing costs time and money. A clear process keeps the requirement, the people and the deadline in view.</p>
+    <a href="/about" class="btn btn-ghost-light">About Monoha ${icon('arrow')}</a></div>
+  <div class="why-list">${(site.why || []).map((w) => `<div class="why-item reveal"><h3>${esc(w.title)}</h3><p>${esc(w.text)}</p></div>`).join('')}</div>
+</div>`, 'dark')}
+
+${section(`${headSplit('Our Process', 'How we work', 'Every requirement moves through the same seven steps, so you always know what happens next.')}
   ${processSteps(site.process || [])}`)}
 
-${section(`${heading('Solutions', 'Built around who you are', '', true)}
-  <div class="grid grid-4">${(site.solutions || []).map((x) => `<div class="card solution-card"><h3>${esc(x.title)}</h3><p>${esc(x.text)}</p></div>`).join('')}</div>`, 'tint')}
+${section(`${headSplit('Solutions', 'Solutions built around your requirements', 'The process stays the same. How we apply it depends on who you are and what you need.')}
+  ${solutionRows(site.solutions || [])}`, 'gradient')}
 
 ${clients.length ? section(`${heading('Trusted By', 'Our partners', '', true)}<div class="logos">${clients.map((l) => `<img src="${esc(l.logo)}" alt="${esc(l.name)}">`).join('')}</div>`) : ''}
 
 ${testimonials.length ? section(`${heading('Testimonials', 'What clients say', '', true)}<div class="grid grid-3">${testimonials.map((t) => `<figure class="card quote"><blockquote>“${esc(t.quote)}”</blockquote><figcaption><strong>${esc(t.name)}</strong>${t.company ? `<span>${esc(t.company)}</span>` : ''}</figcaption></figure>`).join('')}</div>`) : ''}
 
-${articles.length ? section(`${heading('Insights', 'Notes on sourcing and business')}<div class="grid grid-3">${articles.map(articleCard).join('')}</div>`) : ''}
+${articles.length ? section(`${headSplit('Insights', 'Notes on sourcing and business', '')}
+  ${featureCard(articles[0])}${articles.length > 1 ? `<div class="grid grid-3">${articles.slice(1).map(articleCard).join('')}</div>` : ''}`) : ''}
 
-${section(`<div class="split"><div>${heading('FAQ', 'Common questions')}<a href="/faq" class="btn btn-outline">All questions</a></div>${faqList(faqs)}</div>`, 'tint')}
+${section(`<div class="faq-split"><div class="reveal"><p class="eyebrow">FAQ</p><h2>Common questions</h2><p class="lead">Short answers to what people ask before getting in touch.</p><a href="/faq" class="btn btn-outline">All questions ${icon('arrow')}</a></div>${faqList(faqs)}</div>`, 'soft')}
 
 ${ctaBand()}` });
 };
@@ -268,23 +355,23 @@ ${section(`<div class="split">
     <div class="card mv-card"><p class="eyebrow">Mission</p><p>${esc(a.mission)}</p></div>
     <div class="card mv-card"><p class="eyebrow">Vision</p><p>${esc(a.vision)}</p></div>
   </div></div>`)}
-${section(`${heading('Our Values', 'What we hold ourselves to', '', true)}${plainCards(a.values || [])}`, 'tint')}
+${section(`${heading('Our Values', 'What we hold ourselves to', '', true)}${plainCards(a.values || [])}`, 'soft')}
 ${section(`${heading('How We Work', 'A structured process', 'Every requirement moves through the same seven steps.')}${processSteps(content('site').process || [])}`)}
-${section(`<div class="commit"><p class="eyebrow">Our Commitment</p><h2>${esc(a.commitment)}</h2></div>`, 'tint')}
+${section(`<div class="commit"><p class="eyebrow">Our Commitment</p><h2>${esc(a.commitment)}</h2></div>`, 'soft')}
 ${leaders.length ? section(`${heading('Leadership', 'The people behind Monoha', '', true)}<div class="grid grid-3">${leaders.map((l) => `<div class="card leader">${l.photo ? `<img src="${esc(l.photo)}" alt="">` : ''}<h3>${esc(l.name)}</h3><p>${esc(l.role)}</p></div>`).join('')}</div>`) : ''}
 ${ctaBand()}` });
 };
 
 pages['/services'] = (req) => layout(req, { title: 'Services', body: `
 ${pageHead('Services', 'What we do', content('site').description)}
-${section(`<div class="grid grid-3">${(content('services').services || []).map(serviceCard).join('')}</div>`)}
+${section(serviceGrid(content('services').services || []))}
 ${ctaBand()}` });
 
 pages['/solutions'] = (req) => {
   const site = content('site');
   return layout(req, { title: 'Solutions', body: `
-${pageHead('Solutions', 'Support shaped around you', 'Whoever you are, the process stays structured and the communication stays clear.')}
-${section(`<div class="grid grid-2">${(site.solutions || []).map((x) => `<div class="card solution-card big"><h2>${esc(x.title)}</h2><p>${esc(x.text)}</p><a class="more" href="/request">Discuss your requirement ${icon('arrow')}</a></div>`).join('')}</div>`)}
+${pageHead('Solutions', 'Solutions built around your requirements', 'Whoever you are, the process stays structured and the communication stays clear. Choose the one closest to you to start a request.')}
+${section(solutionRows(site.solutions || []))}
 ${ctaBand()}` });
 };
 
@@ -295,23 +382,31 @@ ${ctaBand()}` });
 
 pages['/work'] = (req) => {
   const projects = content('work').projects || [];
-  const rows = [['Industry', 'industry'], ['Requirement', 'requirement'], ['Our Role', 'role'], ['Solution', 'solution'], ['Outcome', 'outcome']];
+  const rows = [['Challenge', 'challenge'], ['Approach', 'approach'], ['Outcome', 'outcome']];
   return layout(req, { title: 'Our Work', body: `
-${pageHead('Our Work', projects.length ? 'Selected projects' : 'Our work is growing', projects.length ? '' : 'We publish projects here only with our clients’ permission and only with results we can verify. Case studies are on their way.')}
-${projects.length ? section(`<div class="grid grid-2">${projects.map((p) => `<article class="card project"><h2>${esc(p.name)}</h2><dl>${rows.filter(([, k]) => p[k]).map(([l, k]) => `<dt>${l}</dt><dd>${esc(p[k])}</dd>`).join('')}</dl></article>`).join('')}</div>`)
-      : section(`<div class="empty"><p>Want to be one of our first case studies?</p><a href="/request" class="btn btn-primary">Start a project</a></div>`)}
+${pageHead('Our Work', projects.length ? 'Selected work' : 'Case studies, published with permission', projects.length ? 'Projects we can share publicly, with results we can verify.' : 'We publish a project only with our client’s permission and only with results we can verify.')}
+${projects.length ? section(projects.map((p) => `<article class="case reveal"><div class="case-img">${p.image ? `<img src="${esc(p.image)}" alt="" loading="lazy">` : ''}</div>
+    <div class="case-body">${p.industry ? `<span class="tag">${esc(p.industry)}</span>` : ''}<h2>${esc(p.name)}</h2><dl>${rows.filter(([, k]) => p[k]).map(([l, k]) => `<div><dt>${l}</dt><dd>${esc(p[k])}</dd></div>`).join('')}</dl></div></article>`).join(''))
+    : section(`<div class="work-ready">
+  <div class="reveal"><p class="eyebrow">Coming soon</p><h2>Selected work will appear here</h2>
+    <p class="lead">Case studies will be added as projects become available for public presentation. Each will set out the industry, the challenge, our approach and the verified outcome.</p>
+    <div class="hero-actions"><a href="/request" class="btn btn-primary">Start a project ${icon('arrow')}</a><a href="/process" class="btn btn-outline">See how we work</a></div></div>
+  <div class="case-frame reveal" aria-hidden="true"><span class="case-label">Case study</span>
+    <div class="case-ghost"><div class="cover"></div><dl><dt>Industry</dt><dd></dd><dt>Challenge</dt><dd class="w2"></dd><dt>Approach</dt><dd></dd><dt>Outcome</dt><dd class="w3"></dd></dl></div>
+  </div></div>`)}
 ${ctaBand()}` });
 };
 
 pages['/insights'] = (req) => {
   const articles = (content('insights').articles || []).slice().sort((a, b) => String(b.date).localeCompare(String(a.date)));
-  const cats = ['Sourcing Insights', 'Business Tips', 'Market Insights', 'Industry Updates', 'Company News'];
+  const cats = ['Sourcing', 'Business', 'International Trade', 'Market Insights', 'Operations', 'Company Updates'];
   const pick = req.query.category;
   const list = pick ? articles.filter((a) => a.category === pick) : articles;
   return layout(req, { title: 'Insights', body: `
-${pageHead('Insights', 'Sourcing and business insights', 'Practical notes from our work.')}
+${pageHead('Insights', 'Sourcing and business insights', 'Practical notes on sourcing, trade and operations from the Monoha team.')}
 ${section(`<nav class="chips" aria-label="Categories"><a href="/insights"${!pick ? ' class="is-active"' : ''}>All</a>${cats.map((c) => `<a href="/insights?category=${encodeURIComponent(c)}"${pick === c ? ' class="is-active"' : ''}>${esc(c)}</a>`).join('')}</nav>
-  ${list.length ? `<div class="grid grid-3">${list.map(articleCard).join('')}</div>` : '<p class="empty">No articles in this category yet.</p>'}`)}` });
+  ${list.length ? featureCard(list[0]) + (list.length > 1 ? `<div class="grid grid-3">${list.slice(1).map(articleCard).join('')}</div>` : '') : '<p class="empty">No articles in this category yet.</p>'}`)}
+${ctaBand()}` });
 };
 
 function articlePage(req, res) {
@@ -338,7 +433,7 @@ function articlePage(req, res) {
   </div>
 </article>
 <script type="application/ld+json">${JSON.stringify({ '@context': 'https://schema.org', '@type': 'Article', headline: a.title, datePublished: a.date, author: { '@type': 'Organization', name: a.author || 'Monoha Team' }, description: a.summary }).replace(/</g, '\\u003c')}</script>
-${related.length ? section(`${heading('Related', 'More insights')}<div class="grid grid-3">${related.map(articleCard).join('')}</div>`, 'tint') : ''}` }));
+${related.length ? section(`${heading('Related', 'More insights')}<div class="grid grid-3">${related.map(articleCard).join('')}</div>`, 'soft') : ''}` }));
 }
 
 function servicePage(req, res) {
@@ -349,14 +444,15 @@ ${pageHead('Service', x.title, x.summary)}
 ${section(`<div class="split">
   <div class="prose">${(x.body || []).map((p) => `<p>${esc(p)}</p>`).join('')}
     <a href="/request?service=${encodeURIComponent(x.title)}" class="btn btn-primary">Request this service</a></div>
-  <div class="card"><h3>What it includes</h3><ul class="ticks">${(x.points || []).map((p) => `<li>${icon('check')}${esc(p)}</li>`).join('')}</ul></div>
+  <div class="card detail-aside"><h3>What it includes</h3><ul class="ticks">${(x.points || []).map((p) => `<li>${icon('check')}${esc(p)}</li>`).join('')}</ul></div>
 </div>`)}
-${section(`${heading('How we work', 'Our process')}${processSteps(content('site').process || [])}`, 'tint')}` }));
+${section(`${heading('How we work', 'Our process')}${processSteps(content('site').process || [])}`, 'soft')}
+${ctaBand()}` }));
 }
 
 pages['/faq'] = (req) => layout(req, { title: 'FAQ', body: `
 ${pageHead('FAQ', 'Frequently asked questions', '')}
-${section(`<div class="narrow-block">${faqList(content('faq').faqs || [])}</div>`)}
+${section(`<div class="faq-split"><div><p class="eyebrow">Answers</p><h2>Before you get in touch</h2><p class="lead">Can't find what you need? <a href="/contact">Ask us directly</a>.</p></div>${faqList(content('faq').faqs || [])}</div>`)}
 ${ctaBand()}` });
 
 pages['/careers'] = (req) => {
@@ -366,7 +462,7 @@ pages['/careers'] = (req) => {
 ${pageHead('Careers', 'Build your career with Monoha', c.culture)}
 ${section(`${heading('Why work with us', 'What you can expect', '', true)}${plainCards(c.why || [])}`)}
 ${section(`${heading('Open positions', open.length ? 'Current openings' : 'No openings right now', open.length ? '' : 'We are not hiring for a specific role at the moment. You can still send your CV and we will keep it on file.')}
-  ${open.length ? `<div class="jobs">${open.map((j) => `<a class="card job" href="/careers/${esc(j.slug)}"><div><h3>${esc(j.title)}</h3><p>${esc(j.type)} · ${esc(j.location)}</p></div><span class="more">View role ${icon('arrow')}</span></a>`).join('')}</div>` : '<a href="/contact?subject=Job%20application" class="btn btn-primary">Send your CV</a>'}`, 'tint')}
+  ${open.length ? `<div class="jobs">${open.map((j) => `<a class="card job" href="/careers/${esc(j.slug)}"><div><h3>${esc(j.title)}</h3><p>${esc(j.type)} · ${esc(j.location)}</p></div><span class="more">View role ${icon('arrow')}</span></a>`).join('')}</div>` : '<a href="/contact?subject=Job%20application" class="btn btn-primary">Send your CV</a>'}`, 'soft')}
 ${section(`<div class="split"><div>${heading('Internship', 'Learning with us', c.internship)}</div>
   <div>${heading('Application process', 'How hiring works')}<ol class="mini-steps">${(c.process || []).map((p) => `<li>${esc(p)}</li>`).join('')}</ol></div></div>`)}` });
 };

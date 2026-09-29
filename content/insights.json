@@ -1,8 +1,9 @@
 {
+  "_rev": 2,
   "articles": [
     {
       "slug": "how-international-sourcing-works",
-      "category": "Sourcing Insights",
+      "category": "Sourcing",
       "title": "How international sourcing works, step by step",
       "summary": "A plain guide to the stages of a sourcing requirement — from the first brief to delivery.",
       "date": "2026-09-29",
