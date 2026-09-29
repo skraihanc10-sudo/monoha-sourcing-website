@@ -1,5 +1,5 @@
 {
-  "_rev": 3,
+  "_rev": 4,
   "articles": [
     {
       "slug": "how-international-sourcing-works",
@@ -23,5 +23,15 @@
         "Check what arrives against the original requirement. That review is what makes the next order smoother."
       ]
     }
+  ],
+  "categories": [
+    "Business",
+    "Sourcing",
+    "Digital",
+    "Marketing",
+    "Technology",
+    "Operations",
+    "International Trade",
+    "Company Updates"
   ]
 }

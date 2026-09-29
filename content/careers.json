@@ -1,26 +1,60 @@
 {
-  "_rev": 3,
+  "_rev": 4,
   "_note": "Only list verified openings. Do not add benefits that have not been confirmed.",
   "intro": "We look for people who are responsible, willing to learn and interested in practical business work.",
   "why": [
-    { "title": "Practical work", "text": "Work on real sourcing and coordination requirements, not exercises." },
-    { "title": "International exposure", "text": "Learn how suppliers, partners and markets work across borders." },
-    { "title": "Clear expectations", "text": "Defined responsibilities, clear processes and direct feedback." }
+    {
+      "title": "Practical work",
+      "text": "Work on real business, sourcing and digital requirements, not exercises."
+    },
+    {
+      "title": "Varied work",
+      "text": "See how different kinds of requirements are scoped, planned and delivered."
+    },
+    {
+      "title": "Clear expectations",
+      "text": "Defined responsibilities, clear processes and direct feedback."
+    }
   ],
   "environment": "Work at Monoha is organised around a clear process. Everyone knows what they own, communication is direct, and follow-through matters more than hours.",
-  "environmentPoints": ["Ownership of your part of the work", "Written, organised communication", "Respect for deadlines and each other"],
+  "environmentPoints": [
+    "Ownership of your part of the work",
+    "Written, organised communication",
+    "Respect for deadlines and each other"
+  ],
   "learning": "People learn on the job: how requirements are scoped, how suppliers are assessed and how coordination is kept on track. We explain the why behind the process, not only the steps.",
   "internship": "We consider interns when we have capacity to train them properly. Send your CV through the Contact page and mention \"Internship\".",
   "process": [
-    { "title": "Apply", "text": "Send your CV, and portfolio if relevant, for an open role." },
-    { "title": "Review", "text": "Our team reviews every application against the role." },
-    { "title": "Conversation", "text": "Shortlisted applicants are invited to an interview or conversation." },
-    { "title": "Decision", "text": "We let you know the outcome." }
+    {
+      "title": "Apply",
+      "text": "Send your CV, and portfolio if relevant, for an open role."
+    },
+    {
+      "title": "Review",
+      "text": "Our team reviews every application against the role."
+    },
+    {
+      "title": "Conversation",
+      "text": "Shortlisted applicants are invited to an interview or conversation."
+    },
+    {
+      "title": "Decision",
+      "text": "We let you know the outcome."
+    }
   ],
   "faqs": [
-    { "q": "Can I apply if there are no open positions?", "a": "Yes. Send your CV through the Contact page. We keep it on file and contact you if a suitable role opens. This does not guarantee an interview." },
-    { "q": "Do you offer internships?", "a": "Only when we have the capacity to train interns properly. Mention \"Internship\" when you send your CV." },
-    { "q": "Where are roles based?", "a": "Each opening states its own location and work type." }
+    {
+      "q": "Can I apply if there are no open positions?",
+      "a": "Yes. Send your CV through the Contact page. We keep it on file and contact you if a suitable role opens. This does not guarantee an interview."
+    },
+    {
+      "q": "Do you offer internships?",
+      "a": "Only when we have the capacity to train interns properly. Mention \"Internship\" when you send your CV."
+    },
+    {
+      "q": "Where are roles based?",
+      "a": "Each opening states its own location and work type."
+    }
   ],
   "jobs": [
     {
@@ -31,8 +65,16 @@
       "compensation": "Discussed at interview",
       "open": false,
       "about": "Edit clear, professional video content for Monoha's website and social channels.",
-      "responsibilities": ["Edit short-form and long-form videos", "Prepare captions and simple motion graphics", "Keep a consistent brand look"],
-      "requirements": ["A portfolio of edited work", "Working knowledge of a professional editor", "Good sense of pacing and clarity"],
+      "responsibilities": [
+        "Edit short-form and long-form videos",
+        "Prepare captions and simple motion graphics",
+        "Keep a consistent brand look"
+      ],
+      "requirements": [
+        "A portfolio of edited work",
+        "Working knowledge of a professional editor",
+        "Good sense of pacing and clarity"
+      ],
       "apply": "Send your CV and portfolio link through the Contact page, subject \"Video Editor\"."
     }
   ]

@@ -1,6 +1,16 @@
 {
-  "_rev": 3,
+  "_rev": 4,
   "_note": "Add only real, permitted projects. Outcome only when verified.",
   "projects": [],
-  "_fields": "Each project: slug, name, industry, requirement, challenge, approach, execution, outcome (verified only), image (optional)."
+  "_fields": "Each project: slug, name, category (one of categories), industry, requirement, challenge, approach, execution, outcome (verified only), image (optional).",
+  "categories": [
+    "Business",
+    "Sourcing",
+    "Digital",
+    "Content",
+    "Website",
+    "SEO",
+    "Marketing",
+    "Creative"
+  ]
 }

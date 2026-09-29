@@ -1,161 +1,172 @@
 {
-  "_rev": 3,
-  "_note": "Draft copy. Confirm each service against the trade licence and real operations before launch. No guarantees, statistics, clients or certifications.",
+  "_rev": 4,
+  "_note": "Broad capability groups, not a fixed list. 'area' groups them on the home page. 'process': 'sourcing' uses site.sourcingProcess, otherwise site.process. No guarantees, statistics, clients or certifications.",
   "services": [
     {
-      "slug": "international-sourcing",
+      "slug": "business-sourcing",
+      "area": "Business & Sourcing",
       "icon": "globe",
-      "title": "International Sourcing",
-      "summary": "Finding and working with suitable suppliers beyond your own market, with the process kept structured from brief to follow-up.",
+      "title": "Business & Sourcing",
+      "summary": "Sourcing, research, coordination and practical business support, kept structured from the first brief to follow-up.",
+      "process": "sourcing",
       "body": [
-        "International sourcing means looking past the suppliers you already know to find ones that fit your requirement better, whether on specification, capacity, lead time or cost.",
-        "We take your requirement, research the relevant markets, identify suppliers worth talking to and manage the communication with them, so you see organised options rather than a pile of unanswered enquiries."
+        "Some requirements are about finding the right product, supplier or partner. Others are about keeping several parties moving in the same direction. Both need the same things: a clear brief, careful research and someone who follows up.",
+        "We take the requirement, research the options, coordinate the people involved and report back with what is confirmed and what is still open, so decisions stay with you and the legwork stays with us."
       ],
-      "points": ["Requirement analysis", "Market research", "Supplier identification", "Communication and follow-up"],
+      "points": ["Product & supplier sourcing", "Market and online research", "Business coordination", "Operational support", "Cross-border communication"],
       "audience": [
-        "Businesses looking for a product or material not readily available locally",
-        "Teams comparing suppliers across more than one market",
-        "Companies without the time or contacts to run supplier searches themselves"
+        "Businesses that need a product, material or supplier found and compared",
+        "Teams managing several external parties on one requirement",
+        "International partners working with businesses in Bangladesh, and the reverse"
       ],
       "handle": [
         "Clarifying the requirement: specification, quantity, standard and timeline",
-        "Researching markets and identifying suitable suppliers",
-        "First contact, questions and quotation requests",
-        "Organising responses so options can be compared side by side",
-        "Following up until a decision is made"
+        "Researching markets and identifying suitable suppliers or partners",
+        "Requesting and organising quotations, samples and information",
+        "Coordinating communication and keeping a record of what is agreed",
+        "Following up until the requirement is closed"
       ],
-      "approach": "We treat every search as a small project: a written requirement, a defined shortlist and regular updates. You make the decisions; we make sure you have what you need to make them.",
+      "approach": "We treat every requirement as a small project: written down, researched, coordinated and reviewed. You make the decisions; we make sure you have what you need to make them.",
       "expect": [
-        "A written summary of your requirement before any search starts",
-        "Organised supplier options with the information you asked for",
-        "Regular updates through one point of contact",
+        "A written summary of your requirement before work starts",
+        "Organised options with the information you asked for",
+        "One point of contact and regular updates",
         "Clear notes on what is confirmed and what is still open"
       ],
       "faqs": [
         { "q": "Do you guarantee a supplier will be found?", "a": "No. We commit to a structured search and honest reporting. If suitable options are limited, we tell you what we found and why." },
-        { "q": "Who decides which supplier to use?", "a": "You do. We present the options and the information behind them; the decision stays with your business." },
-        { "q": "What do you need from me to start?", "a": "A description of the product or material, the quantity, any quality standard, and the date you need it by. Drawings, samples or reference links help." }
+        { "q": "Who decides which supplier or partner to use?", "a": "You do. We present the options and the information behind them; the decision stays with your business." },
+        { "q": "Which countries do you work with?", "a": "We review each requirement individually. Tell us the markets involved and we will confirm whether we can support it." }
       ]
     },
     {
-      "slug": "product-supplier-sourcing",
-      "icon": "box",
-      "title": "Product & Supplier Sourcing",
-      "summary": "Looking for products and suppliers that match your specification, budget and timeline, and coordinating samples where needed.",
+      "slug": "social-digital-presence",
+      "area": "Digital & Online",
+      "icon": "network",
+      "title": "Social & Digital Presence",
+      "summary": "Content, creative, video and social media handled as one joined-up piece of work, planned around how your business wants to be seen.",
       "body": [
-        "Product and supplier sourcing starts from a specific item. We review what you need, look for suppliers able to make or supply it, and help you compare them on the points that matter to your business.",
-        "Where samples are part of the decision, we help coordinate requesting, tracking and reviewing them."
+        "A business's online presence is usually built from many small pieces: posts, visuals, videos, captions, replies and the planning behind them. When those pieces are handled separately, the result feels scattered.",
+        "We handle them together. Depending on the requirement, that can mean researching and planning content, producing it, editing video, publishing and managing channels, and promoting the work to the right audience."
       ],
-      "points": ["Specification review", "Supplier shortlisting", "Quotation comparison", "Sample coordination"],
+      "points": ["Content planning & research", "Content & creative production", "Video editing", "Publishing & channel management", "Promotion & optimisation"],
       "audience": [
-        "Brands developing or re-sourcing a product",
-        "Businesses that need a specific component, material or finished item",
-        "Buyers who want a second option alongside a current supplier"
+        "Businesses that want a consistent, professional presence online",
+        "Teams without the time or in-house skills to produce content regularly",
+        "Brands launching a product, a campaign or a new channel"
       ],
       "handle": [
-        "Reviewing the specification and asking the questions suppliers will ask",
-        "Shortlisting suppliers able to meet the specification",
-        "Requesting and organising quotations",
-        "Coordinating sample requests and feedback",
-        "Keeping a record of what each supplier has confirmed"
+        "Understanding the audience and agreeing a content direction",
+        "Planning what is published, where and when",
+        "Producing written, visual and video content",
+        "Publishing and managing channels where agreed",
+        "Reviewing what works and adjusting the plan"
       ],
-      "approach": "We compare suppliers on more than price. Communication, consistency and the ability to meet your standard are weighed alongside cost and lead time.",
+      "approach": "Content starts from the business, not the platform. We agree what you want to say and to whom, then produce and publish to that plan, reviewing it as we go.",
       "expect": [
-        "A clear specification both sides can work from",
-        "A shortlist with the reasons behind it",
-        "Quotations organised in one comparable format",
-        "Sample status tracked until review is complete"
+        "An agreed content direction before production starts",
+        "Work produced by people with the relevant skills",
+        "A clear approval step before anything is published",
+        "Honest reporting on how the work is performing"
       ],
       "faqs": [
-        { "q": "Can you work from a photo or a reference product?", "a": "Yes, as a starting point. We will then help turn it into a written specification suppliers can quote against." },
-        { "q": "Do you handle samples?", "a": "We coordinate sample requests, follow up on them and help organise feedback. Arrangements for each requirement are agreed in advance." }
+        { "q": "Do you guarantee followers, reach or sales?", "a": "No. We commit to well-planned, professionally produced work and honest reporting. Results depend on the market, the audience and many factors outside anyone's control." },
+        { "q": "Can you handle only part of it, such as video editing?", "a": "Yes. Some clients need one piece of the work, others need all of it. Describe what you need and we will scope it." },
+        { "q": "Who approves content before it goes live?", "a": "You do. Nothing is published on your behalf without the approval process we agree at the start." }
       ]
     },
     {
-      "slug": "business-coordination",
-      "icon": "handshake",
-      "title": "Business Coordination",
-      "summary": "Acting as one organised point of contact between the parties involved in your requirement.",
+      "slug": "professional-websites",
+      "area": "Digital & Online",
+      "icon": "web",
+      "title": "Professional Digital Presence",
+      "summary": "Websites planned, designed, developed and deployed properly, then kept up to date, from the first requirement to a live site.",
       "body": [
-        "Many requirements involve several parties: suppliers, partners, service providers and your own team. Business coordination keeps them connected and working from the same information.",
-        "We follow up on messages and meetings, keep track of what has been agreed, and report status back to you."
+        "For many businesses, the website is the first place a customer or partner checks. It should be clear, fast, reliable and easy to keep current.",
+        "We take a website from requirement to a professionally deployed site: planning what it needs to say, designing and developing it, putting it live, and supporting updates and maintenance afterwards where required."
       ],
-      "points": ["Party coordination", "Meeting and message follow-up", "Status reporting", "Action tracking"],
+      "points": ["Website planning", "Design", "Development", "Deployment", "Updates & maintenance", "Optimisation"],
       "audience": [
-        "Businesses managing several external parties on one requirement",
-        "Teams that need someone to own follow-up",
-        "Partners working across time zones or languages"
+        "Businesses without a website, or with one that no longer represents them",
+        "Teams that need a site deployed and maintained, not only designed",
+        "Businesses that need regular updates to an existing site"
       ],
       "handle": [
-        "Connecting the relevant parties",
-        "Scheduling and following up on meetings and messages",
-        "Recording agreed actions and owners",
-        "Chasing open items before they become delays",
-        "Regular status updates to you"
+        "Agreeing what the site needs to do and who it is for",
+        "Structuring pages and content",
+        "Design and development",
+        "Deployment to a live domain",
+        "Updates, maintenance and technical upkeep where agreed"
       ],
-      "approach": "One point of contact, one shared record of what has been agreed, and follow-up that happens on a schedule rather than when something goes wrong.",
+      "approach": "We build for the business, not for a template. The site is planned around what your visitors need to find, built to load quickly and structured so it can be maintained without starting again.",
       "expect": [
-        "A named point of contact",
-        "A running list of agreed actions and their status",
-        "Prompt follow-up on open items",
-        "Updates at an agreed frequency"
+        "A written scope before design or development starts",
+        "Review points before the site goes live",
+        "A properly deployed site on your own domain",
+        "Clear information on how updates are handled afterwards"
       ],
       "faqs": [
-        { "q": "Do you replace our own team?", "a": "No. We support your team by owning the coordination work, so your people can focus on decisions." },
-        { "q": "How often will I get updates?", "a": "We agree the frequency with you at the start, and update sooner when something needs your attention." }
+        { "q": "Do you only design, or also put the site live?", "a": "Both. We can take a site from planning through development to deployment, and support it afterwards where required." },
+        { "q": "Will the website bring guaranteed business?", "a": "No website can guarantee that. We build a clear, professional, well-structured site; what it achieves also depends on your offer, market and promotion." },
+        { "q": "Can you update a website someone else built?", "a": "Often, yes. It depends on how the site was built. Tell us about it and we will review it first." }
       ]
     },
     {
-      "slug": "sourcing-support",
-      "icon": "clipboard",
-      "title": "Sourcing Support",
-      "summary": "Helping your team turn a loose requirement into a clear, trackable sourcing workflow.",
+      "slug": "marketing-growth",
+      "area": "Marketing & Growth Support",
+      "icon": "arrow",
+      "title": "Marketing & Growth Support",
+      "summary": "Promotion, audience-focused activity, search visibility and digital optimisation, planned around the audience you actually want to reach.",
       "body": [
-        "Sometimes the need is not a new search but a better way of working. Sourcing support helps your team document requirements, set up a simple workflow and track progress.",
-        "It suits businesses that already source in-house but want more structure around it."
+        "Good work still has to be found. Marketing and growth support is about putting the right message in front of the right people and improving how easily you are found online.",
+        "Search visibility, content structure and website optimisation are part of the broader digital support we provide, alongside audience research, targeting and support for online campaigns."
       ],
-      "points": ["Requirement documentation", "Workflow setup", "Progress tracking", "Supplier records"],
+      "points": ["Audience research & targeting", "Digital promotion", "Online campaign support", "SEO & search visibility", "Content optimisation"],
       "audience": [
-        "Businesses that already source but want a clearer process",
-        "Growing teams handling more requirements than before",
-        "Owners who want visibility of where each requirement stands"
+        "Businesses that want to reach a clearer, better-defined audience",
+        "Teams running or planning online promotion",
+        "Businesses whose website is hard to find in search"
       ],
       "handle": [
-        "Documenting requirements in a consistent format",
-        "Setting up a simple workflow from request to delivery",
-        "Tracking progress on open requirements",
-        "Organising supplier information in one place"
+        "Researching who the audience is and where they are",
+        "Planning promotion and campaign activity",
+        "Supporting campaigns while they run",
+        "Improving search visibility and content structure",
+        "Reviewing results and adjusting the approach"
       ],
-      "approach": "We start with how your team works today and add only the structure that helps. The aim is a process people actually use.",
+      "approach": "We start with the audience and the goal, not the tactic. Activity is planned, measured where possible and adjusted based on what the results show.",
       "expect": [
-        "A requirement template suited to your business",
-        "A clear view of open requirements and their status",
-        "Practical recommendations, not a heavy system"
+        "A clear view of the audience before spend or activity starts",
+        "Plain reporting on what was done and what it showed",
+        "Recommendations based on results, not assumptions"
       ],
       "faqs": [
-        { "q": "Do we need special software?", "a": "Not necessarily. We work with the tools your team already uses wherever possible." }
+        { "q": "Do you guarantee search rankings?", "a": "No. Nobody can honestly guarantee rankings. We improve the things that influence visibility, such as structure, content and technical quality, and report plainly on progress." },
+        { "q": "Do you guarantee sales or growth?", "a": "No. We plan and run promotion carefully and report honestly. Outcomes depend on your offer, market and many other factors." }
       ]
     },
     {
       "slug": "business-solutions",
+      "area": "Business Solutions",
       "icon": "briefcase",
       "title": "Business Solutions",
-      "summary": "Structured support shaped around a specific business requirement that does not fit a standard service.",
+      "summary": "Requirement-based support for needs that do not fit a single category, scoped around what your business actually needs.",
       "body": [
-        "Not every requirement fits a category. Business solutions is how we handle those: we assess the need, agree a plan and support its execution.",
-        "The same principles apply as in our other services: a written scope, a clear process and regular communication."
+        "Not every requirement fits a category, and many cross several. Business solutions is how we handle those: we assess the need, identify what expertise it requires, agree a plan and support its execution.",
+        "The same principles apply as everywhere else: a written scope, the right people on the work, a clear process and regular communication."
       ],
-      "points": ["Needs assessment", "Tailored plan", "Execution support", "Review"],
+      "points": ["Needs assessment", "Tailored plan", "Right expertise", "Execution support", "Ongoing support"],
       "audience": [
         "Businesses with a requirement that crosses several areas",
         "Teams that need practical support on an operational problem",
-        "Anyone unsure which of our services fits"
+        "Anyone unsure which kind of support fits"
       ],
       "handle": [
         "Understanding the business need and its constraints",
+        "Identifying the expertise the work requires",
         "Agreeing a written scope and plan",
         "Supporting execution against that plan",
-        "Reviewing the result against the original need"
+        "Reviewing the result, and continuing where ongoing support is needed"
       ],
       "approach": "We scope before we commit. If a requirement is outside what we can do well, we say so early.",
       "expect": [
@@ -164,38 +175,7 @@
         "Regular communication throughout"
       ],
       "faqs": [
-        { "q": "What if my requirement doesn't match any listed service?", "a": "Describe it in the request form. We will review it and tell you honestly whether and how we can help." }
-      ]
-    },
-    {
-      "slug": "international-business-support",
-      "icon": "network",
-      "title": "International Business Support",
-      "summary": "Keeping cross-border coordination organised and communication clear, where applicable.",
-      "body": [
-        "Working across borders adds distance, time zones and different ways of doing business. International business support helps keep that coordination organised.",
-        "We help maintain communication with partners in other markets and follow up so that agreed steps move forward."
-      ],
-      "points": ["Cross-border coordination", "Partner communication", "Follow-up", "Status reporting"],
-      "audience": [
-        "Businesses working with partners in other countries",
-        "International partners working with businesses in Bangladesh",
-        "Teams managing a cross-border requirement for the first time"
-      ],
-      "handle": [
-        "Coordinating communication between parties in different markets",
-        "Following up on agreed steps and documents",
-        "Keeping a shared record of progress",
-        "Flagging issues early so they can be resolved"
-      ],
-      "approach": "Clear written communication and a steady follow-up rhythm, so distance does not become delay.",
-      "expect": [
-        "One accountable point of contact",
-        "Written summaries of discussions and agreed steps",
-        "Regular progress updates"
-      ],
-      "faqs": [
-        { "q": "Which countries do you work with?", "a": "We review each requirement individually. Tell us the markets involved and we will confirm whether we can support it." }
+        { "q": "What if my requirement doesn't match any listed service?", "a": "That is common. Describe it in the request form and choose \"Other / Custom Requirement\". We will review it and tell you honestly whether and how we can help." }
       ]
     }
   ]

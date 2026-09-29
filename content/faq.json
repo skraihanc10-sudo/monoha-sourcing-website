@@ -1,19 +1,82 @@
 {
-  "_rev": 3,
-  "categories": ["General", "Sourcing", "Process", "Communication", "Service Requests"],
+  "_rev": 4,
+  "categories": [
+    "General",
+    "Services",
+    "Process",
+    "Communication",
+    "Service Requests"
+  ],
   "faqs": [
-    { "cat": "General", "q": "What does MONOHA SOURCING INTERNATIONAL do?", "a": "We help businesses with sourcing, supplier coordination and related business support through a structured, professional process." },
-    { "cat": "General", "q": "Do you work with international businesses?", "a": "Yes. Where the requirement fits our services, we work with businesses inside and outside Bangladesh. We review each requirement individually." },
-    { "cat": "General", "q": "Is there a minimum size of business you work with?", "a": "No fixed minimum. What matters is whether the requirement is clear and fits what we do." },
-    { "cat": "Sourcing", "q": "What sourcing services do you provide?", "a": "International sourcing, product and supplier sourcing, business coordination, sourcing support, business solutions and international business support. The Services page describes each one." },
-    { "cat": "Sourcing", "q": "Do you guarantee results?", "a": "No. We commit to a structured process, honest reporting and follow-through. Outcomes depend on the market, suppliers and the requirement itself." },
-    { "cat": "Sourcing", "q": "Who makes the final decision on a supplier?", "a": "You do. We organise the options and the information behind them so you can decide with confidence." },
-    { "cat": "Process", "q": "How does your process work?", "a": "Seven steps: understand, research, source, coordinate, execute, review and deliver. The Our Process page explains each step and what you hear from us at each stage." },
-    { "cat": "Process", "q": "What do you need from me to start?", "a": "A clear description of what you need, the quantity, any quality standard and your timeline. Drawings, photos or reference links help." },
-    { "cat": "Communication", "q": "Will I have one point of contact?", "a": "Yes. Each requirement has one point of contact on our side, so you always know who to ask." },
-    { "cat": "Communication", "q": "How often will I get updates?", "a": "We agree an update rhythm with you at the start, and contact you sooner whenever something needs your decision." },
-    { "cat": "Service Requests", "q": "How do I request a service?", "a": "Use the Request a Service form. Our team reviews each request and contacts you by email or phone." },
-    { "cat": "Service Requests", "q": "Does sending a request commit me to anything?", "a": "No. A request starts a conversation. Any work is agreed separately and in writing." },
-    { "cat": "Service Requests", "q": "Can I attach files to my request?", "a": "Yes. You can attach one PDF, image or document of up to 5 MB, such as a specification or reference photo." }
+    {
+      "cat": "General",
+      "q": "What does MONOHA SOURCING INTERNATIONAL do?",
+      "a": "We support businesses with practical business, sourcing, digital and online requirements. We understand the requirement, identify what it needs, bring in the right expertise and handle the work through a structured process."
+    },
+    {
+      "cat": "General",
+      "q": "Do you work with international businesses?",
+      "a": "Yes. Where the requirement fits our services, we work with businesses inside and outside Bangladesh. We review each requirement individually."
+    },
+    {
+      "cat": "General",
+      "q": "Is there a minimum size of business you work with?",
+      "a": "No fixed minimum. What matters is whether the requirement is clear and fits what we do."
+    },
+    {
+      "cat": "Services",
+      "q": "What kind of work do you take on?",
+      "a": "Our work is grouped into Business & Sourcing, Social & Digital Presence, Professional Digital Presence (websites), Marketing & Growth Support and Business Solutions. These are broad areas rather than a fixed list; if your requirement is related, describe it and we will review it."
+    },
+    {
+      "cat": "Services",
+      "q": "Do you offer ongoing support?",
+      "a": "Yes. Some work is a single project; some needs continuing support such as content, website updates or search visibility. Where ongoing support is required, we work with businesses over the long term."
+    },
+    {
+      "cat": "Services",
+      "q": "Do you guarantee results?",
+      "a": "No. We do not guarantee sales, growth, rankings or supplier outcomes. We commit to a structured process, the right expertise, honest reporting and follow-through."
+    },
+    {
+      "cat": "Services",
+      "q": "Who makes the final decisions?",
+      "a": "You do. Whether it is a supplier, a design or a piece of content, we organise the options and the information behind them so you can decide with confidence."
+    },
+    {
+      "cat": "Process",
+      "q": "How does your process work?",
+      "a": "Seven steps: understand, research, plan, execute, review, optimize, and deliver & support. The Our Process page explains each step and what you hear from us at each stage."
+    },
+    {
+      "cat": "Process",
+      "q": "What do you need from me to start?",
+      "a": "A clear description of what you need, the quantity, any quality standard and your timeline. Drawings, photos or reference links help."
+    },
+    {
+      "cat": "Communication",
+      "q": "Will I have one point of contact?",
+      "a": "Yes. Each requirement has one point of contact on our side, so you always know who to ask."
+    },
+    {
+      "cat": "Communication",
+      "q": "How often will I get updates?",
+      "a": "We agree an update rhythm with you at the start, and contact you sooner whenever something needs your decision."
+    },
+    {
+      "cat": "Service Requests",
+      "q": "How do I request a service?",
+      "a": "Use the Request a Service form. Our team reviews each request and contacts you by email or phone."
+    },
+    {
+      "cat": "Service Requests",
+      "q": "Does sending a request commit me to anything?",
+      "a": "No. A request starts a conversation. Any work is agreed separately and in writing."
+    },
+    {
+      "cat": "Service Requests",
+      "q": "Can I attach files to my request?",
+      "a": "Yes. You can attach one PDF, image or document of up to 5 MB, such as a specification or reference photo."
+    }
   ]
 }
