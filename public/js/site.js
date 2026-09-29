@@ -240,6 +240,16 @@
     openTarget(); window.addEventListener('hashchange', openTarget);
   }
 
+  // ------------------------------------------------------------ footer
+  // Link columns are always open on wider screens and collapse on phones.
+  const fcols = document.querySelectorAll('details.fcol');
+  if (fcols.length) {
+    const wideF = window.matchMedia('(min-width: 701px)');
+    const syncF = () => fcols.forEach((d) => { d.open = wideF.matches; });
+    syncF(); wideF.addEventListener('change', syncF);
+    fcols.forEach((d) => d.querySelector('summary').addEventListener('click', (e) => { if (wideF.matches) e.preventDefault(); }));
+  }
+
   // ------------------------------------------------------------ forms
   document.querySelectorAll('form[data-kind]').forEach((form) => {
     const status = form.querySelector('.form-status');

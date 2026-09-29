@@ -1,17 +1,17 @@
 {
-  "_rev": 7,
-  "_note": "Six capability categories, not a fixed list. \"for\" is the short who-it-is-for line. \"process\": \"sourcing\" uses site.sourcingProcess, otherwise site.process. No guarantees, statistics, clients or certifications.",
+  "_rev": 8,
+  "_note": "Seven capability categories, not a fixed list. \"for\" is the short who-it-is-for line. \"process\": \"sourcing\" uses site.sourcingProcess, otherwise site.process. No guarantees, statistics, clients or certifications.",
   "services": [
     {
       "slug": "business-sourcing",
-      "area": "Sourcing, Supply & Business Solutions",
+      "area": "Sourcing & Supply Solutions",
       "icon": "globe",
-      "title": "Sourcing, Supply & Business Solutions",
-      "summary": "Connecting requirements with suitable suppliers and sourcing options: supplier identification, product and material sourcing, supplier and supply coordination, business coordination and follow-up.",
+      "title": "Sourcing & Supply Solutions",
+      "summary": "Connecting requirements with suitable suppliers and sourcing options: supplier identification, product and material sourcing, and supplier and supply coordination.",
       "process": "sourcing",
       "body": [
         "Sourcing and supply are at the core of MONOHA. Some requirements are about finding a suitable supplier, product or material. Others are about keeping suppliers, businesses and partners moving in the same direction. Both need the same things: a clear brief, careful research and consistent follow-up.",
-        "We support businesses and organizations with practical sourcing and supplier coordination: matching the requirement to suitable sourcing options, communicating with suppliers, coordinating supply and following the requirement through each stage. Where a requirement is operational rather than sourcing, we support it in the same structured way."
+        "We support businesses and organizations with practical sourcing and supplier coordination: matching the requirement to suitable sourcing options, communicating with suppliers, coordinating supply and following the requirement through each stage."
       ],
       "points": [
         "Supplier Identification",
@@ -20,8 +20,7 @@
         "Requirement Matching",
         "Supply Coordination",
         "International Sourcing",
-        "Business Coordination",
-        "Follow-up & Operational Support"
+        "Follow-up"
       ],
       "audience": [
         "Businesses and brands that need a product, material or supplier found and compared",
@@ -58,10 +57,64 @@
         },
         {
           "q": "What if my requirement doesn't match any listed service?",
-          "a": "That is common. Describe it in the request form and choose \"Other / Custom Requirement\". We will review it and tell you honestly whether and how we can help."
+          "a": "That is common. Describe it in the request form and choose \"Other\". We will review it and tell you honestly whether and how we can help."
         }
       ],
-      "for": "Businesses, brands, organizations, institutions and project partners with sourcing, supply or coordination requirements."
+      "for": "Businesses, brands, organizations, institutions and project partners with sourcing or supply requirements."
+    },
+    {
+      "slug": "business-solutions",
+      "area": "Business Solutions",
+      "icon": "briefcase",
+      "title": "Business Solutions",
+      "summary": "Business coordination, operational support, requirement management and project support, organized around what the business actually needs.",
+      "body": [
+        "Many requirements are not about a product or a website. They are about keeping work organized: coordinating several parties, managing a requirement from start to finish, or supporting operations while the team focuses elsewhere.",
+        "MONOHA supports these requirements in the same structured way as the rest of our work: the requirement is written down, responsibilities are agreed, progress is followed up and the result is reviewed against what was agreed."
+      ],
+      "points": [
+        "Business Coordination",
+        "Operational Support",
+        "Requirement Management",
+        "Project Support",
+        "Follow-up & Reporting",
+        "Business-Focused Solutions"
+      ],
+      "audience": [
+        "Businesses that need a requirement coordinated across several parties",
+        "Teams that need operational support for a defined period",
+        "Organizations running a project that needs structured follow-up",
+        "Businesses with a requirement that does not fit a single service"
+      ],
+      "handle": [
+        "Understanding the requirement, the parties involved and the timeline",
+        "Agreeing responsibilities and a simple working plan",
+        "Coordinating communication between the relevant parties",
+        "Following up on open items and keeping records",
+        "Reviewing the result against the agreed requirement"
+      ],
+      "approach": "We keep the work visible: what is agreed, who is responsible and what is still open. Decisions stay with you; we make sure they are made on clear information.",
+      "expect": [
+        "A written summary of the requirement before work starts",
+        "One point of contact",
+        "Regular updates on progress and open items",
+        "Honest reporting when something is not possible"
+      ],
+      "faqs": [
+        {
+          "q": "What kind of business requirements do you support?",
+          "a": "Coordination, operational support, requirement management and project support. Describe the requirement and we will tell you honestly whether it fits."
+        },
+        {
+          "q": "Do you guarantee a particular business result?",
+          "a": "No. We commit to structured, professional execution of the agreed work. Business results depend on many factors outside any one party's control."
+        },
+        {
+          "q": "Can this be combined with sourcing or digital work?",
+          "a": "Yes. Many requirements involve more than one capability, and they can be coordinated as one piece of work."
+        }
+      ],
+      "for": "Businesses and organizations that need coordination, operational support or structured management of a requirement."
     },
     {
       "slug": "digital-online-solutions",

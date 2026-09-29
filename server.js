@@ -42,6 +42,30 @@ function readJSON(file, fallback) {
 }
 const content = (name) => readJSON(path.join(CONTENT_DIR, name + '.json'), {});
 
+// Admin-managed records. These live only in DATA_DIR and are never seeded
+// or overwritten by a deploy: partners, programs and the CEO profile.
+const STORE = {
+  partners: path.join(DATA_DIR, 'partners.json'),
+  programs: path.join(DATA_DIR, 'programs.json'),
+  leadership: path.join(DATA_DIR, 'leadership.json'),
+};
+const UPLOAD_DIR = path.join(DATA_DIR, 'uploads');
+const DEFAULT_CEO = {
+  name: 'Mohammad Raihanul Islam', position: 'Founder & CEO', photo: '', bio: '', socials: [],
+  message: 'At MONOHA SOURCING INTERNATIONAL, we believe that every requirement represents an opportunity — an opportunity to create value, build meaningful connections and provide practical solutions. Our goal is to provide reliable sourcing, supply, business and digital support to help businesses and organizations move forward. We remain committed to professional execution, clear communication and long-term collaboration.',
+};
+const byOrder = (a, b) => (Number(a.order) || 0) - (Number(b.order) || 0);
+const storeItems = (k) => readJSON(STORE[k], { items: [] }).items || [];
+const leadership = () => {
+  const d = readJSON(STORE.leadership, {});
+  const out = { ...DEFAULT_CEO };
+  for (const k of Object.keys(DEFAULT_CEO)) if (d[k] && (!Array.isArray(d[k]) || d[k].length)) out[k] = d[k];
+  return out;
+};
+const activePartners = () => storeItems('partners').filter((x) => x.active).sort(byOrder);
+const publishedPrograms = () => storeItems('programs').filter((x) => x.published)
+  .sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0) || byOrder(a, b) || String(b.startDate).localeCompare(String(a.startDate)));
+
 // ---------------------------------------------------------------- helpers
 const esc = (s) => String(s == null ? '' : s)
   .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -60,55 +84,62 @@ const ICONS = {
   phone: '<path d="M5 4h4l2 5-3 2a11 11 0 005 5l2-3 5 2v4a2 2 0 01-2 2A16 16 0 013 6a2 2 0 012-2z"/>',
   pin: '<path d="M12 21s-7-6.5-7-12a7 7 0 0114 0c0 5.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/>',
   web: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18"/>',
+  monitor: '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/>',
+  play: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9l5 3-5 3z"/>',
+  trend: '<path d="M3 17l6-6 4 4 8-8M15 7h6v6"/>',
+  search: '<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>',
+  building: '<path d="M4 21V5l8-2v18M12 8h8v13M8 8h.01M8 12h.01M8 16h.01M16 12h.01M16 16h.01M2 21h20"/>',
+  user: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0116 0"/>',
+  calendar: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+  article: '<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/>',
+  megaphone: '<path d="M3 10v4h4l8 4V6L7 10zM18 9a4 4 0 010 6"/>',
+  star: '<path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/>',
+  heart: '<path d="M12 20s-8-5-8-11a4.5 4.5 0 018-2.8A4.5 4.5 0 0120 9c0 6-8 11-8 11z"/>',
+  gear: '<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/>',
 };
 const icon = (name) =>
   `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">${ICONS[name] || ICONS.globe}</svg>`;
 
-// The six service pages, named the way visitors look for them. Shared by the menu and footer.
+// The seven service pages, named the way visitors look for them. Shared by the menu and footer.
+// [slug, label, description, icon]
 const SERVICE_MENU = [
-  ['business-sourcing', 'Sourcing, Supply & Business', 'Supplier, product and material sourcing, supply and business coordination'],
-  ['digital-online-solutions', 'Digital & Online', 'Websites and online business solutions'],
-  ['content-creative', 'Content & Creative', 'Content, editing and creative production'],
-  ['marketing-growth', 'Marketing & Growth', 'Promotion, social media and audience support'],
-  ['seo-digital-visibility', 'SEO & Visibility', 'Search visibility and content optimization'],
-  ['partnerships-development', 'Projects & Partnerships', 'Institutional, NGO and development project support'],
+  ['business-sourcing', 'Sourcing & Supply', 'Supplier, product and material sourcing and supply', 'box'],
+  ['business-solutions', 'Business Solutions', 'Coordination, operations and requirement management', 'briefcase'],
+  ['digital-online-solutions', 'Digital & Online', 'Websites and online business solutions', 'monitor'],
+  ['content-creative', 'Content & Creative', 'Content, editing and creative production', 'play'],
+  ['marketing-growth', 'Marketing & Growth', 'Promotion, social media and audience support', 'megaphone'],
+  ['seo-digital-visibility', 'SEO & Visibility', 'Search visibility and content optimization', 'search'],
+  ['partnerships-development', 'Projects & Partnerships', 'Institutional, NGO and development project support', 'handshake'],
 ];
-// [href, label, dropdown items [href, label, note?], dropdown footer link]
+// [href, label, dropdown items [href, label, note?, icon?], dropdown footer link]
 const NAV = [
   ['/', 'Home'],
   ['/about', 'About', [
-    ['/about#who-we-are', 'Who We Are', 'The company and what drives it'],
-    ['/about#what-we-do', 'What We Do', 'Six capability areas'],
-    ['/about#approach', 'Our Approach', 'Seven stages for every requirement'],
-    ['/about#why-monoha', 'Why MONOHA', 'How we work with every client'],
+    ['/about', 'About MONOHA', 'Who we are and how we work', 'building'],
+    ['/about#ceo-message', 'CEO Message', 'A word from our founder', 'user'],
+    ['/partners', 'Our Partners', 'Organizations we work with', 'handshake'],
+    ['/programs', 'Programs', 'Programs and project initiatives', 'calendar'],
   ]],
-  ['/services', 'Services', SERVICE_MENU.map(([s, l, d]) => [`/services/${s}`, l, d]), ['/services', 'All services']],
+  ['/services', 'Services', SERVICE_MENU.map(([s, l, d, i]) => [`/services/${s}`, l, d, i]), ['/request-service', 'Request a service']],
   ['/solutions', 'Solutions', [
-    ['/solutions#for-businesses', 'For Businesses', 'Coordination, operations and growth'],
-    ['/solutions#for-brands', 'For Brands', 'Content, presence and campaigns'],
-    ['/solutions#for-sourcing-requirements', 'For Sourcing Requirements', 'Suppliers, products and materials'],
-    ['/solutions#for-growing-businesses', 'For Growing Businesses', 'Support that scales with you'],
-    ['/solutions#for-ngos-and-development-organizations', 'For NGOs & Development', 'Supply, coordination and project support'],
-    ['/solutions#for-institutions-and-project-partners', 'For Institutions & Partners', 'Work within a defined project scope'],
+    ['/solutions#for-businesses', 'For Businesses', 'Coordination, operations and growth', 'briefcase'],
+    ['/solutions#for-brands', 'For Brands', 'Content, presence and campaigns', 'star'],
+    ['/solutions#for-sourcing-requirements', 'For Sourcing Requirements', 'Suppliers, products and materials', 'box'],
+    ['/solutions#for-growing-businesses', 'For Growing Businesses', 'Support that scales with you', 'trend'],
+    ['/solutions#for-ngos-and-development-organizations', 'For NGOs & Development Organizations', 'Supply, coordination and project support', 'heart'],
+    ['/solutions#for-institutions-and-project-partners', 'For Institutions & Project Partners', 'Work within a defined project scope', 'building'],
   ], ['/solutions', 'All solutions']],
   ['/process', 'Our Process'],
   ['/work', 'Our Work'],
   ['/insights', 'Insights', [
-    ['/insights', 'All Articles'],
-    ['/insights?category=Sourcing', 'Sourcing Insights'],
-    ['/insights?category=Business', 'Business Insights'],
-    ['/insights?category=Digital', 'Digital Insights'],
-    ['/insights?category=Marketing', 'Marketing'],
-    ['/insights?category=SEO', 'SEO'],
-    ['/insights?category=Company%20Updates', 'Company Updates'],
+    ['/insights', 'Articles', 'Everything we have published', 'article'],
+    ['/insights?category=Sourcing', 'Sourcing Insights', 'Suppliers, products and supply', 'box'],
+    ['/insights?category=Business', 'Business Insights', 'Operations and coordination', 'briefcase'],
+    ['/insights?category=Digital', 'Digital Insights', 'Websites and online presence', 'monitor'],
+    ['/insights?category=Marketing%20%26%20SEO', 'Marketing & SEO', 'Promotion and search visibility', 'search'],
+    ['/insights?category=Company%20Updates', 'Company Updates', 'News from MONOHA', 'megaphone'],
   ]],
-  ['/careers', 'Careers', [
-    ['/careers#why-work-with-us', 'Why MONOHA'],
-    ['/careers#work-environment', 'Work With Us'],
-    ['/careers#openings', 'Open Positions'],
-    ['/careers#application-process', 'Application Process'],
-    ['/careers#careers-faq', 'FAQ'],
-  ]],
+  ['/careers', 'Careers'],
   ['/contact', 'Contact'],
 ];
 const CHEVRON = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5l3 3 3-3"/></svg>';
@@ -137,7 +168,7 @@ function layout(req, { title, fullTitle: fixedTitle, description, body, active, 
     if (!menu) return link;
     const id = 'menu-' + label.toLowerCase();
     return `<div class="nav-item">${link}<button type="button" class="nav-toggle" aria-expanded="false" aria-controls="${id}"><span class="sr-only">${label} menu</span>${CHEVRON}</button>
-      <div class="nav-menu${menu.length > 6 || menu.some((m) => m[1].length > 24) ? ' is-wide' : ''}" id="${id}">${menu.map(([h, l, d]) => `<a href="${h}"><strong>${esc(l)}</strong>${d ? `<small>${esc(d)}</small>` : ''}</a>`).join('')}
+      <div class="nav-menu${menu.length > 6 ? ' is-wide' : ''}" id="${id}">${menu.map(([h, l, d, ic]) => `<a href="${h}">${ic ? `<span class="nm-ico">${icon(ic)}</span>` : ''}<span class="nm-t"><strong>${esc(l)}</strong>${d ? `<small>${esc(d)}</small>` : ''}</span><svg class="nm-chev" viewBox="0 0 12 12" aria-hidden="true"><path d="M4.5 3l3 3-3 3"/></svg></a>`).join('')}
         ${foot ? `<a class="nav-menu-foot" href="${foot[0]}">${foot[1]} ${icon('arrow')}</a>` : ''}</div></div>`;
   }).join('');
 
@@ -173,7 +204,7 @@ ${noindex ? '<meta name="robots" content="noindex">' : ''}<meta property="og:typ
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/css/site.css?v=10">
+<link rel="stylesheet" href="/css/site.css?v=11">
 <script type="application/ld+json">${JSON.stringify({
     '@context': 'https://schema.org', '@type': 'Organization', name: site.name, url: SITE_URL, description: site.description,
     logo: SITE_URL + '/images/logo.png', ...(c.email ? { email: c.email } : {}), ...(c.phone ? { telephone: c.phone } : {}),
@@ -200,25 +231,31 @@ ${jsonld}
 ${body}
 </main>
 <footer class="footer">
-  <div class="wrap footer-top">
-    <div class="footer-about">
-      <p class="footer-name">${esc(site.name)}</p>
-      ${site.identity ? `<p class="footer-tag">${esc(site.identity)}</p>` : ''}
-      ${contactLines ? `<p class="footer-h">Contact</p><ul class="contact-list">${contactLines}</ul>` : ''}
-      ${socials ? `<div class="socials">${socials}</div>` : ''}
+  <div class="wrap footer-brandrow">
+    <div class="footer-brand">
+      <a href="/" class="footer-logo" aria-label="${esc(site.name)} — home"><img src="/images/logo.png" alt="" width="84" height="56" loading="lazy"></a>
+      <div><p class="footer-name">${esc(site.name)}</p>
+      <p class="footer-tag">Sourcing • Supply • Business Solutions • Digital Support</p>
+      <p class="footer-desc">We connect business requirements with practical sourcing, supply, business and digital solutions for businesses, brands and organizations.</p>
+      ${socials ? `<div class="socials">${socials}</div>` : ''}</div>
     </div>
-    <div><h3>Company</h3><a href="/about">About</a><a href="/process">Our Process</a><a href="/work">Our Work</a><a href="/careers">Careers</a><a href="/contact">Contact</a></div>
-    <div><h3>Services</h3>${SERVICE_MENU.map(([s, l]) => `<a href="/services/${s}">${esc(l)}</a>`).join('')}</div>
-    <div><h3>Solutions</h3>${NAV.find((n) => n[0] === '/solutions')[2].map(([h, l]) => `<a href="${h}">${esc(l)}</a>`).join('')}</div>
-    <div><h3>Resources</h3><a href="/insights">Insights &amp; Articles</a><a href="/faq">FAQ</a><a href="/request-service">Request a Service</a><a href="/contact">Get in Touch</a></div>
-    <div><h3>Legal</h3><a href="/privacy-policy">Privacy Policy</a><a href="/terms">Terms &amp; Conditions</a><a href="/cookie-policy">Cookie Policy</a></div>
+    ${contactLines ? `<div class="footer-contact"><p class="footer-h">Contact</p><ul class="contact-list">${contactLines}<li>${icon('web')}<a href="https://monohasourcing.international">monohasourcing.international</a></li></ul></div>` : ''}
+  </div>
+  <div class="wrap footer-top">
+    ${[
+    ['Quick Links', [['/about', 'About'], ['/services', 'Services'], ['/solutions', 'Solutions'], ['/process', 'Our Process'], ['/work', 'Our Work'], ['/insights', 'Insights'], ['/careers', 'Careers'], ['/contact', 'Contact']]],
+    ['Services', SERVICE_MENU.map(([sl, l]) => [`/services/${sl}`, l])],
+    ['Solutions', NAV.find((n) => n[0] === '/solutions')[2].map(([h, l]) => [h, l])],
+    ['Resources', [['/insights', 'Insights'], ['/insights', 'Articles'], ['/faq', 'FAQ'], ['/request-service', 'Request a Service'], ['/partners', 'Our Partners'], ['/programs', 'Programs']]],
+    ['Legal', [['/privacy-policy', 'Privacy Policy'], ['/terms', 'Terms &amp; Conditions'], ['/cookie-policy', 'Cookie Policy']]],
+  ].map(([h, links]) => `<details class="fcol" open><summary><h3>${h}</h3>${CHEVRON}</summary><div class="fcol-links">${links.map(([u, l]) => `<a href="${u}">${l.includes('&amp;') ? l : esc(l)}</a>`).join('')}</div></details>`).join('')}
   </div>
   <div class="wrap footer-base">
-    <span><strong>MONOHA SOURCING INTERNATIONAL</strong> &nbsp;&copy; ${new Date().getFullYear()}. All rights reserved.</span>
-    <a href="https://monohasourcing.international">monohasourcing.international</a>
+    <span>&copy; ${new Date().getFullYear()} MONOHA SOURCING INTERNATIONAL. All rights reserved.</span>
+    <span class="footer-motto">More than sourcing. More than digital.</span>
   </div>
 </footer>
-<script src="/js/site.js?v=10" defer></script>
+<script src="/js/site.js?v=11" defer></script>
 </body>
 </html>`;
 }
@@ -397,7 +434,7 @@ const solutionRows = (sol) => `<div class="sol-list">${sol.map((x, i) => `
 const chain = (steps) => `<ol class="chain">${steps.map((s, i) => `<li><span>${pad2(i)}</span>${esc(s)}</li>`).join('')}</ol>`;
 
 // Request-form option each service page preselects.
-const SERVICE_OPTION = { 'business-sourcing': 'Sourcing & Supply', 'digital-online-solutions': 'Website & Digital', 'content-creative': 'Content & Creative', 'marketing-growth': 'Marketing & Promotion', 'seo-digital-visibility': 'SEO', 'partnerships-development': 'Project Support' };
+const SERVICE_OPTION = { 'business-sourcing': 'Sourcing & Supply', 'business-solutions': 'Business Solutions', 'digital-online-solutions': 'Website & Digital', 'content-creative': 'Content & Creative', 'marketing-growth': 'Marketing & Promotion', 'seo-digital-visibility': 'SEO', 'partnerships-development': 'Project Support' };
 // Options for a select; a preset value that is not in the list (an old link, a job title) is kept as its own option.
 const options = (list, selected) => {
   const pre = selected && !list.includes(selected) ? `<option selected>${esc(selected)}</option>` : '';
@@ -511,15 +548,12 @@ const HUB_ENDS = [[16.7, 16.7], [50, 16.7], [83.3, 16.7], [16.7, 50], [83.3, 50]
 pages['/about'] = (req) => {
   const site = content('site');
   const a = site.about || {};
-  const c = site.contact || {};
-  const leaders = a.leadership || [];
-  const src = a.sourcing || {}, op = a.operate || {}, br = a.bridge || {}, pj = a.projects || {}, lt = a.longTermBlock || {};
-  const nodes = op.nodes || [];
-  const cells = [...nodes.slice(0, 4), null, ...nodes.slice(4, 8)];
-  const list = (xs) => (xs || []).map((t) => `<li>${esc(t)}</li>`).join('');
+  const ceo = leadership();
+  const chips = ['Sourcing', 'Supply', 'Business Solutions', 'Digital Support', 'Partnerships'];
   return layout(req, { title: 'About', fullTitle: 'About MONOHA Sourcing International | Sourcing, Supply & Business Solutions', description: 'Learn about MONOHA SOURCING INTERNATIONAL and our approach to sourcing, supplier coordination, supply, business solutions, digital support and project-based collaboration.', body: `
-${pageHero({ eyebrow: 'About Monoha', title: a.heroTitle, lead: a.heroLead, crumbs: [['/about', 'About']], artHtml: ABOUT_NET_SVG, cls: 'ahero' })}
-${subnav('About sections', [['who-we-are', 'Who We Are'], ['what-we-do', 'What We Do'], ['sourcing', 'Sourcing & Supply'], ['approach', 'Our Approach'], ['business-digital', 'Business & Digital'], ['projects', 'Projects & Partnerships'], ['why-monoha', 'Why MONOHA'], ['company', 'Contact']])}
+${pageHero({ eyebrow: 'About MONOHA', title: a.heroTitle, lead: a.heroLead, crumbs: [['/about', 'About']], artHtml: ABOUT_NET_SVG + `<ul class="ahero-chips">${chips.map((t) => `<li>${esc(t)}</li>`).join('')}</ul>`, cls: 'ahero',
+    actions: `<a href="/services" class="btn btn-light">Explore Our Services ${icon('arrow')}</a><a href="#ceo-message" class="btn btn-ghost-light">Message from our CEO</a>` })}
+${subnav('About sections', [['who-we-are', 'Who We Are'], ['how-we-work', 'How We Work'], ['capabilities', 'Core Capabilities'], ['values', 'Values'], ['ceo-message', 'CEO Message']])}
 
 ${section(`<div class="ab-who">
   <div class="reveal"><p class="eyebrow">Who we are</p><h2>More Than Sourcing.<br>More Than Digital.</h2></div>
@@ -527,80 +561,52 @@ ${section(`<div class="ab-who">
 </div>
 <ul class="ab-pillars reveal" aria-label="Company identity">${(site.identity || '').split('•').map((t, i) => `<li><span>${pad2(i)}</span>${esc(t.trim())}</li>`).join('')}</ul>`, '', 'who-we-are')}
 
-${section(`${headSplit('Capabilities', 'What We Do', 'Our work is organized around practical business requirements rather than a one-size-fits-all service model.')}
-<div class="ab-caps">${(a.capabilities || []).map((x, i) => `
-  <a class="ab-cap reveal${x.core ? ' is-core' : ''}" href="${esc(x.href)}">
-    <span class="ab-cap-no">${pad2(i)}${x.core ? '<em>Core</em>' : ''}</span>
-    <h3>${esc(x.title)}</h3><ul>${list(x.items)}</ul>
+${section(`${headSplit('How we work', 'Seven steps, whatever the requirement.', 'The same sequence applies to sourcing, business, digital and project work, so every client knows what happens next.')}
+<ol class="hw-steps">${(a.howSteps || []).map((x, i) => `<li class="reveal"><span class="hw-no">${pad2(i)}</span><h3>${esc(x.title)}</h3><p>${esc(x.text)}</p></li>`).join('')}</ol>`, 'soft', 'how-we-work')}
+
+${section(`${headSplit('Core capabilities', 'Six areas of work, one partner.', 'Capabilities are brought together around each requirement rather than sold as fixed packages.')}
+<div class="cap6">${(a.capabilities || []).map((x, i) => `
+  <a class="cap6-card reveal" href="${esc(x.href)}">
+    <span class="cap6-top"><span class="cap6-ico">${icon(x.icon)}</span><span class="cap6-no">${pad2(i)}</span></span>
+    <h3>${esc(x.title)}</h3><p>${esc(x.text)}</p>
+    <ul>${(x.items || []).map((t) => `<li>${esc(t)}</li>`).join('')}</ul>
     <span class="link-arrow">Explore ${icon('arrow')}</span>
-  </a>`).join('')}</div>`, 'soft', 'what-we-do')}
+  </a>`).join('')}</div>`, '', 'capabilities')}
 
-${section(`${headSplit('Sourcing &amp; supply', esc(src.title), src.text)}
-<ol class="sflow">${(src.steps || []).map((x, i) => `<li class="reveal"><span class="sflow-no">${pad2(i)}</span><h3>${esc(x.title)}</h3><p>${esc(x.text)}</p></li>`).join('')}</ol>
-<div class="sflow-with reveal"><p class="mini-label">Working with</p><ul class="ab-tags">${list(src.with)}</ul></div>`, 'dark ab-sourcing', 'sourcing')}
+${section(`${headSplit('Values', 'How we work with every client.', 'Working principles, without exaggerated claims.')}
+<div class="values">${(a.values || []).map((x) => `<div class="value reveal"><span class="value-ico">${icon('check')}</span><h3>${esc(x.title)}</h3><p>${esc(x.text)}</p></div>`).join('')}</div>`, 'dark', 'values')}
 
-${section(`<div class="ab-op">
-  <div class="reveal"><p class="eyebrow">How we operate</p><h2>${esc(op.title)}</h2><p class="lead">${esc(op.text)}</p></div>
-  <div class="hub reveal" role="img" aria-label="${esc('A client requirement at the centre, connected to ' + nodes.join(', '))}">
-    <svg class="hub-lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${HUB_ENDS.map(([x, y]) => `<line x1="50" y1="50" x2="${x}" y2="${y}" vector-effect="non-scaling-stroke"/>`).join('')}</svg>
-    ${cells.map((n) => (n === null ? '<div class="hub-core"><span>Client</span>Requirement</div>' : `<div class="hub-node">${esc(n)}</div>`)).join('')}
-  </div>
-</div>`)}
-
-${section(`<div class="ab-approach">
-  <div class="ab-approach-head reveal"><p class="eyebrow">Our approach</p><h2>Seven stages, whatever the requirement.</h2>
-    <p class="lead">The same sequence applies to sourcing, digital, content, marketing and project work.</p>
-    <a href="/process" class="btn btn-outline">See our process ${icon('arrow')}</a></div>
-  <ol class="vline">${(a.approachSteps || []).map((x, i) => `<li class="reveal"><span class="vline-no">${pad2(i)}</span><div><h3>${esc(x.title)}</h3><p>${esc(x.text)}</p></div></li>`).join('')}</ol>
-</div>`, 'soft', 'approach')}
-
-${section(`<div class="ab-bridge-head reveal"><p class="eyebrow">Business + digital</p><h2>${esc(br.title)}</h2><p class="lead">${esc(br.text)}</p></div>
-<div class="bridge reveal">
-  <div class="bridge-side"><p class="mini-label">Physical supply</p><ul>${list(br.physical)}</ul></div>
-  <div class="bridge-core" aria-hidden="true"><span>Monoha</span></div>
-  <div class="bridge-side"><p class="mini-label">Digital capability</p><ul>${list(br.digital)}</ul></div>
-</div>`, 'dark ab-bridge', 'business-digital')}
-
-${section(`<div class="ab-proj">
-  <div class="reveal"><p class="eyebrow">Projects &amp; partnerships</p><h2>${esc(pj.title)}</h2><p class="lead">${esc(pj.text)}</p>
-    <a class="link-arrow" href="/services/partnerships-development">Project, institutional &amp; partnership support ${icon('arrow')}</a></div>
-  <ol class="ab-ways">${(pj.ways || []).map((w, i) => `<li class="reveal"><span>${pad2(i)}</span><div><h3>${esc(w.title)}</h3><p>${esc(w.text)}</p></div></li>`).join('')}</ol>
-</div>`, '', 'projects')}
-
-${section(`<div class="ab-lt">
-  <div class="reveal"><p class="eyebrow">Long-term support</p><h2>${esc(lt.title)}</h2><p class="lead">${esc(lt.text)}</p></div>
-  <div class="ab-lt-vis reveal">
-    <div class="lt-row"><span class="lt-label">Project-based</span><span class="lt-bar lt-short"><i></i></span><span class="lt-note">A defined scope, delivered and closed.</span></div>
-    <div class="lt-row"><span class="lt-label">Longer-term</span><span class="lt-bar lt-long"><i></i></span><span class="lt-note">Continuous coordination and support as needs evolve.</span></div>
-  </div>
-</div>`, 'soft')}
-
-${section(`${headSplit('Why MONOHA', 'How we work with every client.', 'Six working principles, without exaggerated claims.')}
-<ol class="ab-why">${(a.whyPoints || []).map((x, i) => `<li class="reveal"><span>${pad2(i)}</span><h3>${esc(x.title)}</h3><p>${esc(x.text)}</p></li>`).join('')}</ol>`, '', 'why-monoha')}
-
-${section(`<div class="ab-info">
-  <div class="reveal"><p class="eyebrow">Company information</p><h2>${esc(site.name)}</h2><p class="lead">${esc(site.identity || '')}</p></div>
-  <dl class="info-list reveal">
-    <div><dt>Official name</dt><dd>${esc(site.name)}</dd></div>
-    <div><dt>Website</dt><dd><a href="https://monohasourcing.international">monohasourcing.international</a></dd></div>
-    ${c.email ? `<div><dt>Email</dt><dd><a href="mailto:${esc(c.email)}">${esc(c.email)}</a></dd></div>` : ''}
-    ${c.phone ? `<div><dt>Phone</dt><dd><a href="tel:${esc(c.phone.replace(/[^\d+]/g, ''))}">${esc(c.phone)}</a></dd></div>` : ''}
-    ${c.address ? `<div><dt>Office</dt><dd><address>${addressHtml(c)}</address><a class="link-arrow" href="${esc(mapUrl(c))}" target="_blank" rel="noopener">Open in Google Maps ${icon('arrow')}</a></dd></div>` : ''}
-  </dl>
-</div>`, 'soft', 'company')}
-
-${leaders.length ? section(`${heading('Leadership', 'The people behind Monoha', '', true)}<div class="grid grid-3">${leaders.map((l) => `<div class="card leader">${l.photo ? `<img src="${esc(l.photo)}" alt="${esc(l.name)}" loading="lazy">` : ''}<h3>${esc(l.name)}</h3><p>${esc(l.role)}</p></div>`).join('')}</div>`) : ''}
+${ceoSection(ceo)}
 
 ${ctaBand({ eyebrow: 'Next step', title: "Have a Requirement? Let's Discuss It.", text: 'Tell us what you need. Our team will review the requirement and identify the appropriate way to support you.' })}` });
 };
 
+// The CEO block: a portrait card on the left, the message on the right.
+function ceoSection(p) {
+  const initials = String(p.name || 'M').split(/\s+/).filter(Boolean).map((w) => w[0]).slice(-2).join('').toUpperCase();
+  const social = (p.socials || []).filter((x) => /^https?:\/\//.test(x.url || ''));
+  return section(`<div class="ceo">
+  <figure class="ceo-card reveal">
+    <div class="ceo-photo">${p.photo ? `<img src="${esc(p.photo)}" alt="${esc(p.name)}" loading="lazy">` : `<span class="ceo-mono" aria-hidden="true">${esc(initials)}</span>`}</div>
+    <figcaption><strong>${esc(p.name)}</strong><span>${esc(p.position)}</span><em>MONOHA SOURCING INTERNATIONAL</em>
+      ${social.length ? `<span class="ceo-social">${social.map((x) => `<a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.label || 'Profile')}</a>`).join('')}</span>` : ''}</figcaption>
+  </figure>
+  <div class="ceo-body reveal">
+    <p class="eyebrow">Message from our CEO</p>
+    <svg class="ceo-quote" viewBox="0 0 48 36" aria-hidden="true"><path d="M0 36V20C0 8 7 1 19 0v7c-6 1-9 5-9 11h9v18zm29 0V20c0-12 7-19 19-20v7c-6 1-9 5-9 11h9v18z"/></svg>
+    <blockquote>${String(p.message || '').split(/\n{2,}/).map((t) => `<p>${esc(t.trim())}</p>`).join('')}</blockquote>
+    ${p.bio ? `<p class="ceo-bio">${esc(p.bio)}</p>` : ''}
+    <p class="ceo-sign"><strong>${esc(p.name)}</strong><span>${esc(p.position)}, MONOHA SOURCING INTERNATIONAL</span></p>
+  </div>
+</div>`, 'ceo-sec', 'ceo-message');
+}
 
 // ---------------------------------------------------------------- services
 // Visitor intentions, each routed to the service or form that handles it.
 const INTENTS = [
   ['I need a supplier.', '/services/business-sourcing', 'Sourcing & Supply'],
   ['I need a product or material sourced.', '/services/business-sourcing', 'Sourcing & Supply'],
-  ['I need business or operational support.', '/services/business-sourcing', 'Business Solutions'],
+  ['I need business or operational support.', '/services/business-solutions', 'Business Solutions'],
   ['I need a website.', '/services/digital-online-solutions', 'Digital & Online'],
   ['I need content or creative work.', '/services/content-creative', 'Content & Creative'],
   ['I need marketing or promotion.', '/services/marketing-growth', 'Marketing & Growth'],
@@ -612,7 +618,7 @@ const INTENTS = [
 pages['/services'] = (req) => {
   const services = content('services').services || [];
   return layout(req, { title: 'Services', description: 'MONOHA SOURCING INTERNATIONAL services: international sourcing and business solutions, website development, content creation, digital marketing, SEO services, and NGO, institutional and partnership project support.', body: `
-${pageHero({ eyebrow: 'Services', title: 'Capabilities built around real business requirements.', lead: 'Six capability areas, each handled by people with the relevant expertise. Choose the one closest to your need, or describe your requirement and we will identify what it needs.', crumbs: [['/services', 'Services']], artKind: 'services' })}
+${pageHero({ eyebrow: 'Services', title: 'Capabilities built around real business requirements.', lead: 'Seven capability areas, each handled by people with the relevant expertise. Choose the one closest to your need, or describe your requirement and we will identify what it needs.', crumbs: [['/services', 'Services']], artKind: 'services' })}
 
 ${section(`${headSplit('Where to start', 'What do you need?', 'Choose the statement closest to your requirement. Each one leads to the service that handles it.')}
 <ul class="intents">${INTENTS.map(([t, h, l]) => `<li><a href="${h}"><span>${esc(t)}</span><em>${esc(l)}</em>${icon('arrow')}</a></li>`).join('')}</ul>`, 'tight intents-sec')}
@@ -747,15 +753,67 @@ ${section(`${headSplit('How we will present work', 'Every case study follows the
 ${ctaBand()}` });
 };
 
+// ---------------------------------------------------------------- partners
+const safeUrl = (u) => (/^https?:\/\//i.test(String(u || '')) ? String(u) : '');
+pages['/partners'] = (req) => {
+  const list = activePartners();
+  return layout(req, { title: 'Our Partners', description: 'Organizations, institutions, suppliers and development partners MONOHA SOURCING INTERNATIONAL collaborates with across sourcing, supply, digital and project-based initiatives.', active: '/about', body: `
+${pageHero({ eyebrow: 'Our Partners', title: 'Working together across sourcing, supply and projects.', lead: 'We collaborate with organizations, institutions, suppliers, development partners and other stakeholders across sourcing, supply, digital and project-based initiatives.', crumbs: [['/about', 'About'], ['/partners', 'Our Partners']], artKind: 'about' })}
+${section(list.length ? `<div class="partners">${list.map((x) => {
+    const url = safeUrl(x.website);
+    return `<article class="partner reveal">
+    <div class="partner-logo">${x.logo ? `<img src="${esc(x.logo)}" alt="${esc(x.name)} logo" loading="lazy">` : `<span aria-hidden="true">${esc(String(x.name).slice(0, 1))}</span>`}</div>
+    ${x.category ? `<p class="partner-cat">${esc(x.category)}</p>` : ''}<h2>${esc(x.name)}</h2>
+    ${x.description ? `<p>${esc(x.description)}</p>` : ''}
+    ${x.project ? `<p class="partner-proj"><span class="mini-label">Project</span>${esc(x.project)}</p>` : ''}
+    ${url ? `<a class="link-arrow" href="${esc(url)}" target="_blank" rel="noopener">Visit Website ${icon('arrow')}</a>` : ''}
+  </article>`;
+  }).join('')}</div>`
+    : `<div class="empty-state"><span class="empty-ico">${icon('handshake')}</span><h2>Partner profiles coming soon</h2><p>Details of the organizations we work with will be published here. To discuss a collaboration, get in touch.</p><div class="empty-actions"><a href="/contact" class="btn btn-primary">Contact Us ${icon('arrow')}</a></div></div>`, 'partners-sec')}
+${ctaBand({ eyebrow: 'Partnerships', title: 'Interested in working together?', text: 'Tell us about your organization and the collaboration you have in mind.', actions: `<a href="/request-service?service=Project%20Support&amp;type=Partnership" class="btn btn-light">Discuss a Partnership ${icon('arrow')}</a><a href="/contact" class="btn btn-ghost-light">Get in Touch</a>` })}` });
+};
+
+// ---------------------------------------------------------------- programs
+const fmtRange = (a, b) => [a, b].filter(Boolean).map(fmtDate).join(' – ');
+const programCard = (x) => `<a class="prog reveal" href="/programs/${esc(x.slug)}">
+  <div class="prog-cover">${x.cover ? `<img src="${esc(x.cover)}" alt="" loading="lazy">` : `<span aria-hidden="true">${icon('calendar')}</span>`}${x.status ? `<em class="prog-status">${esc(x.status)}</em>` : ''}</div>
+  <div class="prog-body">${x.category ? `<p class="prog-cat">${esc(x.category)}</p>` : ''}<h2>${esc(x.title)}</h2>${x.summary ? `<p>${esc(x.summary)}</p>` : ''}
+  <p class="prog-meta">${x.startDate ? `<span>${icon('calendar')}${fmtRange(x.startDate, x.endDate)}</span>` : ''}${x.location ? `<span>${icon('pin')}${esc(x.location)}</span>` : ''}</p>
+  <span class="link-arrow">View program ${icon('arrow')}</span></div></a>`;
+pages['/programs'] = (req) => {
+  const list = publishedPrograms();
+  return layout(req, { title: 'Programs', description: 'Programs and project initiatives from MONOHA SOURCING INTERNATIONAL.', active: '/about', body: `
+${pageHero({ eyebrow: 'Programs', title: 'Programs & project initiatives.', lead: 'Programs and project-based initiatives MONOHA is running or supporting.', crumbs: [['/about', 'About'], ['/programs', 'Programs']], artKind: 'work' })}
+${section(list.length ? `<div class="progs">${list.map(programCard).join('')}</div>`
+    : `<div class="empty-state"><span class="empty-ico">${icon('calendar')}</span><h2>Programs Coming Soon</h2><p>We are preparing details of our upcoming programs and project initiatives. Please check back soon or explore our services and get in touch.</p><div class="empty-actions"><a href="/services" class="btn btn-primary">Explore Our Services ${icon('arrow')}</a><a href="/contact" class="btn btn-outline">Contact Us</a></div></div>`, 'progs-sec')}
+${ctaBand()}` });
+};
+function programPage(req, res) {
+  const x = publishedPrograms().find((p) => p.slug === req.params.slug);
+  if (!x) return notFound(req, res);
+  const link = safeUrl(x.link);
+  res.send(layout(req, { title: x.title, description: x.summary || x.title, active: '/about', body: `
+${pageHero({ eyebrow: x.category || 'Program', title: x.title, lead: x.summary, crumbs: [['/programs', 'Programs'], [`/programs/${x.slug}`, x.title]], cls: 'phero-plain' })}
+${section(`<div class="detail">
+  <div class="prose">${x.cover ? `<img class="prog-hero-img" src="${esc(x.cover)}" alt="">` : ''}${String(x.description || '').split(/\n{2,}/).filter(Boolean).map((t) => `<p>${esc(t)}</p>`).join('')}</div>
+  <aside class="detail-aside"><dl class="facts">${x.status ? `<dt>Status</dt><dd>${esc(x.status)}</dd>` : ''}${x.startDate ? `<dt>Dates</dt><dd>${fmtRange(x.startDate, x.endDate)}</dd>` : ''}${x.location ? `<dt>Location</dt><dd>${esc(x.location)}</dd>` : ''}${x.category ? `<dt>Category</dt><dd>${esc(x.category)}</dd>` : ''}</dl>
+    ${link ? `<a class="btn btn-primary" href="${esc(link)}" target="_blank" rel="noopener">More information ${icon('arrow')}</a>` : ''}<a class="link-arrow" href="/programs">All programs ${icon('arrow')}</a></aside>
+</div>`)}
+${ctaBand()}` }));
+}
+
 // ---------------------------------------------------------------- insights
 pages['/insights'] = (req) => {
   const articles = sortedArticles();
   const INSIGHT_CATS = content('insights').categories || [];
-  const pick = INSIGHT_CATS.includes(req.query.category) ? req.query.category : '';
-  const list = pick ? articles.filter((a) => a.category === pick) : articles;
+  // "Marketing & SEO" in the menu is a group of two categories.
+  const GROUPS = { 'Marketing & SEO': ['Marketing', 'SEO'] };
+  const pick = INSIGHT_CATS.includes(req.query.category) || GROUPS[req.query.category] ? req.query.category : '';
+  const inPick = (c) => (GROUPS[pick] ? GROUPS[pick].includes(c) : c === pick);
+  const list = pick ? articles.filter((a) => inPick(a.category)) : articles;
   return layout(req, { title: pick ? `${pick} Insights` : 'Insights', description: 'Notes, perspectives and practical knowledge on business, sourcing, digital, marketing, technology and operations from MONOHA SOURCING INTERNATIONAL.', body: `
 ${pageHero({ eyebrow: 'Insights', title: 'Notes, perspectives and practical knowledge.', lead: 'Plain, practical writing on business, sourcing, digital work and operations from the Monoha team.', crumbs: [['/insights', 'Insights']], artKind: 'insights' })}
-${section(`<nav class="chips" aria-label="Categories"><a href="/insights"${!pick ? ' class="is-active" aria-current="page"' : ''}>All</a>${INSIGHT_CATS.map((c) => `<a href="/insights?category=${encodeURIComponent(c)}"${pick === c ? ' class="is-active" aria-current="page"' : ''}>${esc(c)}</a>`).join('')}</nav>
+${section(`<nav class="chips" aria-label="Categories"><a href="/insights"${!pick ? ' class="is-active" aria-current="page"' : ''}>All</a>${INSIGHT_CATS.map((c) => `<a href="/insights?category=${encodeURIComponent(c)}"${pick && inPick(c) ? ' class="is-active"' : ''}${pick === c ? ' aria-current="page"' : ''}>${esc(c)}</a>`).join('')}</nav>
   ${list.length ? featureCard(list[0]) + (list.length > 1 ? `<div class="grid grid-3">${list.slice(1).map(articleCard).join('')}</div>` : '')
     : `<div class="empty-state"><h2>Nothing in ${esc(pick)} yet</h2><p>New articles are added as they are written. <a href="/insights">See all insights</a>.</p></div>`}`)}
 ${ctaBand()}` });
@@ -856,9 +914,11 @@ function formFields(kind, q) {
   const pick = (v) => (typeof v === 'string' ? v.slice(0, 200) : '');
   const list = (k, v) => options(SELECTS[k], pick(v));
   if (kind === 'contact') return `
-    <div class="row">${f('name', 'Full name', 'text', true, ' autocomplete="name" maxlength="120" placeholder="Your name"')}${f('email', 'Email address', 'email', true, ' autocomplete="email" maxlength="160" placeholder="you@company.com"')}</div>
-    <div class="row">${f('phone', 'Phone', 'tel', false, ' autocomplete="tel" maxlength="40" placeholder="Include country code"')}${sel('subject', 'Subject', list('subject', q.subject || 'General Inquiry'))}</div>
-    <div class="field"><label for="message">Message <span class="req" aria-hidden="true">*</span></label><textarea id="message" name="message" rows="6" required aria-required="true" maxlength="4000" placeholder="How can we help?"></textarea></div>`;
+    <div class="row">${f('name', 'Full name', 'text', true, ' autocomplete="name" maxlength="120" placeholder="Your name"')}${f('company', 'Company name', 'text', false, ' autocomplete="organization" maxlength="160" placeholder="Optional"')}</div>
+    <div class="row">${f('email', 'Email address', 'email', true, ' autocomplete="email" maxlength="160" placeholder="you@company.com"')}${f('phone', 'Phone', 'tel', false, ' autocomplete="tel" maxlength="40" placeholder="Include country code"')}</div>
+    <div class="row">${sel('subject', 'Subject', list('subject', q.subject || 'General Inquiry'))}${sel('requirementType', 'Requirement type', list('requirementType', q.type), false, 'optional')}</div>
+    <div class="field"><label for="message">Message <span class="req" aria-hidden="true">*</span></label><textarea id="message" name="message" rows="6" required aria-required="true" maxlength="4000" placeholder="How can we help?"></textarea></div>
+    <div class="field"><label for="attachment">Attachment <span class="opt">optional · PDF, image or document, up to 5 MB</span></label><input id="attachment" name="attachment" type="file" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx,.xls,.xlsx"></div>`;
   return `
     <fieldset><legend>About you</legend>
     <div class="row">${f('name', 'Full name', 'text', true, ' autocomplete="name" maxlength="120"')}${f('company', 'Company name', 'text', false, ' autocomplete="organization" maxlength="160"')}</div>
@@ -887,34 +947,30 @@ const inquiryForm = (kind, q) => `
 // ---------------------------------------------------------------- contact
 pages['/contact'] = (req) => {
   const c = content('site').contact || {};
-  const cards = [
+  const rows = [
     ['mail', 'Email', c.email && `<a href="mailto:${esc(c.email)}">${esc(c.email).replace('@', '@<wbr>')}</a>`],
     ['phone', 'Phone', c.phone && `<a href="tel:${esc(c.phone.replace(/[^\d+]/g, ''))}">${esc(c.phone)}</a>`],
     ['pin', 'Office', c.address && `<address>${addressHtml(c)}</address>`],
     ['web', 'Website', '<a href="https://monohasourcing.international">monohasourcing.international</a>'],
   ].filter((r) => r[2]);
   return layout(req, { title: 'Contact', description: "Contact MONOHA SOURCING INTERNATIONAL in Cox's Bazar, Bangladesh about sourcing, supply, business solutions and digital support requirements.", body: `
-${pageHero({ eyebrow: 'Contact MONOHA', title: "Let's discuss your requirement.", lead: 'Whether you are looking for a sourcing partner, supplier support, business solution, digital service or project collaboration, tell us what you need and our team will review it.', crumbs: [['/contact', 'Contact']], artKind: 'contact', cls: 'phero-contact' })}
-<section class="ccards-wrap"><div class="wrap"><ul class="ccards">${cards.map(([i, l, v], k) => `
-  <li class="ccard"><span class="ccard-ico">${icon(i)}</span><div><p class="ccard-label"><span>${pad2(k)}</span>${l}</p>${v}</div></li>`).join('')}</ul></div></section>
+${pageHero({ eyebrow: 'Contact MONOHA', title: 'Get in touch with our team.', lead: 'Whether you are looking for a sourcing partner, supplier support, business solution, digital service or project collaboration, tell us what you need and our team will review it.', crumbs: [['/contact', 'Contact']], artKind: 'contact', cls: 'phero-contact' })}
 ${section(`<div class="contact-main">
-  <div class="form-card contact-form">
-    <p class="eyebrow">Write to us</p><h2>Send us a message</h2>
-    <p class="contact-form-lead">For general questions and conversations. Our team reads every message and replies by email.</p>
-    ${inquiryForm('contact', req.query)}
-  </div>
-  <aside class="contact-side">
+  <aside class="contact-info">
+    <p class="eyebrow">Contact</p><h2>Let's discuss your requirement.</h2>
+    <p class="lead">Send us a message and our team will reply by email. For a detailed brief, use the Request a Service form.</p>
+    <ul class="cinfo">${rows.map(([i, l, v]) => `<li><span class="cinfo-ico">${icon(i)}</span><div><p class="mini-label">${l}</p>${v}</div></li>`).join('')}</ul>
     ${c.address ? `<div class="map-card">
       <iframe title="Map showing the MONOHA office in Cox's Bazar" loading="lazy" referrerpolicy="no-referrer-when-downgrade" src="https://www.google.com/maps?q=${encodeURIComponent(c.mapQuery || c.address)}&output=embed"></iframe>
       <a class="map-open" href="${esc(mapUrl(c))}" target="_blank" rel="noopener">Open in Maps ${icon('arrow')}</a>
-      <div class="map-card-body">${icon('pin')}<div><p class="mini-label">Office location</p><address>${addressHtml(c)}</address></div></div>
     </div>` : ''}
-    <div class="side-cta">
-      <h3>Have a specific requirement?</h3>
-      <p>Use our Request a Service form and provide the details so our team can understand your requirement properly.</p>
-      <a href="/request-service" class="btn btn-light">Request a Service ${icon('arrow')}</a>
-    </div>
   </aside>
+  <div class="form-card contact-form">
+    <h2>Send us a message</h2>
+    <p class="contact-form-lead">Our team reads every message and replies by email.</p>
+    ${inquiryForm('contact', req.query)}
+    <p class="contact-alt">Have a specific requirement? <a href="/request-service" class="link-arrow">Request a Service ${icon('arrow')}</a></p>
+  </div>
 </div>`, 'contact-sec')}` });
 };
 
@@ -1005,6 +1061,8 @@ app.disable('x-powered-by');
 app.set('trust proxy', 1);
 
 app.use(express.static(path.join(ROOT, 'public'), { maxAge: '1h' }));
+// Images uploaded through the admin (partner logos, program covers, CEO photo).
+app.use('/uploads', express.static(UPLOAD_DIR, { maxAge: '1h', dotfiles: 'deny' }));
 
 // Remove trailing slashes so each page has one address.
 app.use((req, res, next) => {
@@ -1016,17 +1074,20 @@ app.use((req, res, next) => {
 
 for (const [p, fn] of Object.entries(pages)) app.get(p, (req, res) => res.send(fn(req)));
 app.get('/request', (req, res) => res.redirect(301, '/request-service' + req.originalUrl.slice(req.path.length)));
-const OLD_SERVICES = { 'international-sourcing': 'business-sourcing', 'product-supplier-sourcing': 'business-sourcing', 'business-coordination': 'business-sourcing', 'sourcing-support': 'business-sourcing', 'international-business-support': 'business-sourcing', 'business-solutions': 'business-sourcing', 'professional-websites': 'digital-online-solutions', 'social-digital-presence': 'content-creative' };
+const OLD_SERVICES = { 'international-sourcing': 'business-sourcing', 'product-supplier-sourcing': 'business-sourcing', 'business-coordination': 'business-solutions', 'sourcing-support': 'business-sourcing', 'international-business-support': 'business-solutions', 'professional-websites': 'digital-online-solutions', 'social-digital-presence': 'content-creative' };
 app.get('/services/:slug', (req, res, next) => (OLD_SERVICES[req.params.slug] ? res.redirect(301, '/services/' + OLD_SERVICES[req.params.slug]) : next()), servicePage);
 app.get('/insights/:slug', articlePage);
 app.get('/careers/:slug', jobPage);
+app.get('/programs/:slug', programPage);
+require('./admin')(app, { STORE, UPLOAD_DIR, DATA_DIR, readJSON, esc, slugify, leadership, DEFAULT_CEO, notFound });
 
 app.get('/robots.txt', (req, res) => res.type('text/plain').send(`User-agent: *\nAllow: /\nSitemap: ${SITE_URL}/sitemap.xml\n`));
 app.get('/sitemap.xml', (req, res) => {
   const urls = [...Object.keys(pages),
     ...(content('services').services || []).map((x) => '/services/' + x.slug),
     ...(content('insights').articles || []).map((x) => '/insights/' + x.slug),
-    ...(content('careers').jobs || []).filter((j) => j.open).map((x) => '/careers/' + x.slug)];
+    ...(content('careers').jobs || []).filter((j) => j.open).map((x) => '/careers/' + x.slug),
+    ...publishedPrograms().map((x) => '/programs/' + x.slug)];
   res.type('application/xml').send(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${urls.map((u) => `<url><loc>${SITE_URL}${u === '/' ? '' : u}</loc></url>`).join('')}</urlset>`);
 });
 

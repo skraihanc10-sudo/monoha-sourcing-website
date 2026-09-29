@@ -1,5 +1,5 @@
 {
-  "_rev": 7,
+  "_rev": 8,
   "name": "MONOHA SOURCING INTERNATIONAL",
   "short": "Monoha",
   "tagline": "Sourcing, Supply, Business Solutions and Digital Support.",
@@ -227,72 +227,70 @@
     "capabilities": [
       {
         "title": "Sourcing & Supply",
-        "core": true,
+        "icon": "box",
         "href": "/services/business-sourcing",
+        "text": "Product, supplier and material sourcing with coordination through to supply.",
         "items": [
           "Product sourcing",
           "Supplier sourcing",
-          "Material sourcing",
           "Supplier coordination",
-          "Supply support",
-          "Sourcing projects"
+          "Supply support"
         ]
       },
       {
         "title": "Business Solutions",
-        "href": "/services/business-sourcing",
+        "icon": "briefcase",
+        "href": "/services/business-solutions",
+        "text": "Coordination and operational support built around the requirement.",
         "items": [
           "Business coordination",
           "Operational support",
           "Requirement management",
-          "Project support",
-          "Business-focused solutions"
+          "Project support"
         ]
       },
       {
         "title": "Digital & Online",
+        "icon": "monitor",
         "href": "/services/digital-online-solutions",
+        "text": "Websites and the online tools a business needs to operate.",
         "items": [
           "Website development",
-          "Website deployment",
-          "Website maintenance",
-          "Digital presence",
-          "Online business support"
+          "Deployment & maintenance",
+          "Digital presence"
         ]
       },
       {
-        "title": "Content, Marketing & Social",
+        "title": "Content & Creative",
+        "icon": "play",
         "href": "/services/content-creative",
+        "text": "Content, video and design produced for a clear purpose.",
         "items": [
           "Content creation",
           "Video editing",
-          "Creative design",
-          "Social media",
-          "Promotion",
-          "Audience targeting",
-          "Digital marketing"
+          "Creative design"
         ]
       },
       {
-        "title": "SEO & Online Visibility",
-        "href": "/services/seo-digital-visibility",
+        "title": "Marketing & Growth",
+        "icon": "trend",
+        "href": "/services/marketing-growth",
+        "text": "Promotion, social media and search visibility, including SEO.",
         "items": [
-          "SEO",
-          "Content optimization",
-          "Website optimization",
-          "Search visibility",
-          "Ongoing SEO support"
+          "Social media marketing",
+          "Audience targeting",
+          "SEO & visibility"
         ]
       },
       {
         "title": "Projects & Partnerships",
+        "icon": "handshake",
         "href": "/services/partnerships-development",
+        "text": "Support for NGOs, institutions and project partners within a defined scope.",
         "items": [
-          "NGO & development projects",
-          "Institutional support",
           "Project coordination",
-          "Partner collaboration",
-          "Project-based requirements"
+          "Institutional support",
+          "Partner collaboration"
         ]
       }
     ],
@@ -443,6 +441,36 @@
         "title": "Long-Term Perspective",
         "text": "Where ongoing support is required, MONOHA can continue beyond the initial project."
       }
+    ],
+    "howSteps": [
+      {
+        "title": "Understand",
+        "text": "Clarify the requirement, scope, expectations and timeline."
+      },
+      {
+        "title": "Plan",
+        "text": "Define the approach and the capabilities the work needs."
+      },
+      {
+        "title": "Coordinate",
+        "text": "Bring the relevant people, suppliers and resources together."
+      },
+      {
+        "title": "Execute",
+        "text": "Carry out the agreed sourcing, business, digital or project work."
+      },
+      {
+        "title": "Review",
+        "text": "Check the work against what was agreed."
+      },
+      {
+        "title": "Support",
+        "text": "Stay available for follow-up and adjustments."
+      },
+      {
+        "title": "Grow",
+        "text": "Continue into longer-term support where it is useful."
+      }
     ]
   },
   "clients": [],
@@ -452,6 +480,11 @@
       "title": "Sourcing & Supply",
       "text": "Supplier identification, product and material sourcing, and supplier and supply coordination.",
       "href": "/services/business-sourcing"
+    },
+    {
+      "title": "Business Solutions",
+      "text": "Business coordination, operational support and requirement management.",
+      "href": "/services/business-solutions"
     },
     {
       "title": "Digital, Web & Online",

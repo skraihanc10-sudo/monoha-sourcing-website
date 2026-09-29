@@ -3,3 +3,7 @@ node_modules
 .env
 inquiries.json
 attachments
+uploads
+partners.json
+programs.json
+leadership.json
