@@ -1189,3 +1189,14 @@ input[type=file] { padding: 11px; }
 .contact-alt { margin: 0; padding: 18px 0 30px; border-top: 1px solid var(--line); color: var(--muted); display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; }
 @media (max-width: 900px) { .contact-main { grid-template-columns: 1fr; } }
 @media (max-width: 600px) { .contact-form { padding: 28px 20px 4px; } }
+
+/* v12 team */
+.team { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 300px)); gap: 28px; justify-content: center; }
+.team-card { margin: 0; background: #fff; border: 1px solid var(--line); border-radius: 18px; overflow: hidden; box-shadow: 0 26px 50px -34px rgba(7,26,65,.4); }
+.team-photo { aspect-ratio: 720 / 792; background: radial-gradient(120% 90% at 30% 10%, var(--navy-2), var(--navy)); display: grid; place-items: center; }
+.team-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.team-card figcaption { display: grid; gap: 4px; padding: 18px 20px 20px; border-top: 3px solid var(--cyan); }
+.team-card strong { font-size: 18px; color: var(--navy); }
+.team-card figcaption > span { font-weight: 600; color: var(--royal); font-size: 15px; }
+.team-card a { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 14px; font-weight: 600; overflow-wrap: anywhere; }
+.team-card a svg { width: 16px; height: 16px; flex: none; }

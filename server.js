@@ -48,11 +48,25 @@ const STORE = {
   partners: path.join(DATA_DIR, 'partners.json'),
   programs: path.join(DATA_DIR, 'programs.json'),
   leadership: path.join(DATA_DIR, 'leadership.json'),
+  team: path.join(DATA_DIR, 'team.json'),
 };
 const UPLOAD_DIR = path.join(DATA_DIR, 'uploads');
 const DEFAULT_CEO = {
-  name: 'Mohammad Raihanul Islam', position: 'Founder & CEO', photo: '', bio: '', socials: [],
+  name: 'Mojahidul Islam', position: 'CEO & Founder', photo: '/images/team/mojahidul-islam.jpg', bio: '', socials: [],
   message: 'At MONOHA SOURCING INTERNATIONAL, we believe that every requirement represents an opportunity — an opportunity to create value, build meaningful connections and provide practical solutions. Our goal is to provide reliable sourcing, supply, business and digital support to help businesses and organizations move forward. We remain committed to professional execution, clear communication and long-term collaboration.',
+};
+// Three team slots. The third is left empty until it is filled from /admin.
+const TEAM_SLOTS = 3;
+const DEFAULT_TEAM = [
+  { name: 'Mojahidul Islam', position: 'CEO & Founder', email: 'mojahidul360@monohasourcing.international', photo: '/images/team/mojahidul-islam.jpg' },
+  { name: 'RAYHAN', position: 'Management', email: 'rayhan@monohasourcing.international', photo: '/images/team/rayhan.jpg' },
+  { name: '', position: '', email: '', photo: '' },
+];
+// Once saved from the admin, the stored slots replace the defaults entirely.
+const team = () => {
+  const d = readJSON(STORE.team, null);
+  const src = d && Array.isArray(d.slots) ? d.slots : DEFAULT_TEAM;
+  return Array.from({ length: TEAM_SLOTS }, (_, i) => ({ name: '', position: '', email: '', photo: '', ...(src[i] || {}) }));
 };
 const byOrder = (a, b) => (Number(a.order) || 0) - (Number(b.order) || 0);
 const storeItems = (k) => readJSON(STORE[k], { items: [] }).items || [];
@@ -204,7 +218,7 @@ ${noindex ? '<meta name="robots" content="noindex">' : ''}<meta property="og:typ
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/css/site.css?v=11">
+<link rel="stylesheet" href="/css/site.css?v=12">
 <script type="application/ld+json">${JSON.stringify({
     '@context': 'https://schema.org', '@type': 'Organization', name: site.name, url: SITE_URL, description: site.description,
     logo: SITE_URL + '/images/logo.png', ...(c.email ? { email: c.email } : {}), ...(c.phone ? { telephone: c.phone } : {}),
@@ -255,7 +269,7 @@ ${body}
     <span class="footer-motto">More than sourcing. More than digital.</span>
   </div>
 </footer>
-<script src="/js/site.js?v=11" defer></script>
+<script src="/js/site.js?v=12" defer></script>
 </body>
 </html>`;
 }
@@ -553,7 +567,7 @@ pages['/about'] = (req) => {
   return layout(req, { title: 'About', fullTitle: 'About MONOHA Sourcing International | Sourcing, Supply & Business Solutions', description: 'Learn about MONOHA SOURCING INTERNATIONAL and our approach to sourcing, supplier coordination, supply, business solutions, digital support and project-based collaboration.', body: `
 ${pageHero({ eyebrow: 'About MONOHA', title: a.heroTitle, lead: a.heroLead, crumbs: [['/about', 'About']], artHtml: ABOUT_NET_SVG + `<ul class="ahero-chips">${chips.map((t) => `<li>${esc(t)}</li>`).join('')}</ul>`, cls: 'ahero',
     actions: `<a href="/services" class="btn btn-light">Explore Our Services ${icon('arrow')}</a><a href="#ceo-message" class="btn btn-ghost-light">Message from our CEO</a>` })}
-${subnav('About sections', [['who-we-are', 'Who We Are'], ['how-we-work', 'How We Work'], ['capabilities', 'Core Capabilities'], ['values', 'Values'], ['ceo-message', 'CEO Message']])}
+${subnav('About sections', [['who-we-are', 'Who We Are'], ['how-we-work', 'How We Work'], ['capabilities', 'Core Capabilities'], ['values', 'Values'], ['team', 'Our Team'], ['ceo-message', 'CEO Message']])}
 
 ${section(`<div class="ab-who">
   <div class="reveal"><p class="eyebrow">Who we are</p><h2>More Than Sourcing.<br>More Than Digital.</h2></div>
@@ -576,10 +590,26 @@ ${section(`${headSplit('Core capabilities', 'Six areas of work, one partner.', '
 ${section(`${headSplit('Values', 'How we work with every client.', 'Working principles, without exaggerated claims.')}
 <div class="values">${(a.values || []).map((x) => `<div class="value reveal"><span class="value-ico">${icon('check')}</span><h3>${esc(x.title)}</h3><p>${esc(x.text)}</p></div>`).join('')}</div>`, 'dark', 'values')}
 
+${teamSection(team())}
+
 ${ceoSection(ceo)}
 
 ${ctaBand({ eyebrow: 'Next step', title: "Have a Requirement? Let's Discuss It.", text: 'Tell us what you need. Our team will review the requirement and identify the appropriate way to support you.' })}` });
 };
+
+// Team cards. Empty slots are skipped, so the section hides when all are empty.
+function teamSection(list) {
+  const people = list.filter((p) => p.name);
+  if (!people.length) return '';
+  const initials = (n) => String(n).split(/\s+/).filter(Boolean).map((w) => w[0]).slice(0, 2).join('').toUpperCase();
+  return section(`${headSplit('Our team', 'The people behind MONOHA.', 'Reach the right person directly by email.')}
+<div class="team">${people.map((p) => `
+  <figure class="team-card reveal">
+    <div class="team-photo">${p.photo ? `<img src="${esc(p.photo)}" alt="${esc(p.name)}" loading="lazy" width="720" height="792">` : `<span class="ceo-mono" aria-hidden="true">${esc(initials(p.name))}</span>`}</div>
+    <figcaption><strong>${esc(p.name)}</strong>${p.position ? `<span>${esc(p.position)}</span>` : ''}
+      ${p.email ? `<a href="mailto:${esc(p.email)}">${icon('mail')}<span>${esc(p.email).replace('@', '@<wbr>')}</span></a>` : ''}</figcaption>
+  </figure>`).join('')}</div>`, 'soft', 'team');
+}
 
 // The CEO block: a portrait card on the left, the message on the right.
 function ceoSection(p) {
@@ -1079,7 +1109,7 @@ app.get('/services/:slug', (req, res, next) => (OLD_SERVICES[req.params.slug] ? 
 app.get('/insights/:slug', articlePage);
 app.get('/careers/:slug', jobPage);
 app.get('/programs/:slug', programPage);
-require('./admin')(app, { STORE, UPLOAD_DIR, DATA_DIR, readJSON, esc, slugify, leadership, DEFAULT_CEO, notFound });
+require('./admin')(app, { STORE, UPLOAD_DIR, DATA_DIR, readJSON, esc, slugify, leadership, DEFAULT_CEO, team, TEAM_SLOTS, notFound });
 
 app.get('/robots.txt', (req, res) => res.type('text/plain').send(`User-agent: *\nAllow: /\nSitemap: ${SITE_URL}/sitemap.xml\n`));
 app.get('/sitemap.xml', (req, res) => {

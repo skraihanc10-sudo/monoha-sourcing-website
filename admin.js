@@ -17,7 +17,7 @@ const COOKIE = 'monoha_admin';
 const SESSION_MS = 12 * 60 * 60 * 1000;
 const MAX_IMAGE = 2 * 1024 * 1024;
 
-module.exports = function mountAdmin(app, { STORE, UPLOAD_DIR, readJSON, esc, slugify, leadership, notFound }) {
+module.exports = function mountAdmin(app, { STORE, UPLOAD_DIR, readJSON, esc, slugify, leadership, team, TEAM_SLOTS, notFound }) {
   const enabled = Boolean(ADMIN_PASSWORD && SESSION_SECRET);
   const sign = (v) => crypto.createHmac('sha256', SESSION_SECRET).update(v).digest('hex');
   const same = (a, b) => { const x = Buffer.from(String(a)); const y = Buffer.from(String(b)); return x.length === y.length && crypto.timingSafeEqual(x, y); };
@@ -77,7 +77,7 @@ module.exports = function mountAdmin(app, { STORE, UPLOAD_DIR, readJSON, esc, sl
   // ---- data
   const t = (v, n) => String(v == null ? '' : v).trim().slice(0, n);
   const url = (v) => { const s = t(v, 500); return /^https?:\/\//i.test(s) ? s : ''; };
-  const img = (v) => { const s = t(v, 300); return /^\/uploads\/[\w.-]+$/.test(s) ? s : ''; };
+  const img = (v) => { const s = t(v, 300); return /^\/(uploads|images\/team)\/[\w.-]+$/.test(s) ? s : ''; };
   const date = (v) => (/^\d{4}-\d{2}-\d{2}$/.test(String(v || '')) ? String(v) : '');
   const CLEAN = {
     partners: (b) => ({ name: t(b.name, 120), logo: img(b.logo), description: t(b.description, 600), website: url(b.website), category: t(b.category, 80), project: t(b.project, 600), order: Number(b.order) || 0, active: Boolean(b.active) }),
@@ -87,7 +87,7 @@ module.exports = function mountAdmin(app, { STORE, UPLOAD_DIR, readJSON, esc, sl
   const load = (k) => readJSON(STORE[k], { items: [] });
   const save = (k, d) => { fs.mkdirSync(path.dirname(STORE[k]), { recursive: true }); const tmp = STORE[k] + '.tmp'; fs.writeFileSync(tmp, JSON.stringify(d, null, 2)); fs.renameSync(tmp, STORE[k]); };
 
-  app.get('/admin/api/data', guard, (req, res) => res.json({ partners: load('partners').items || [], programs: load('programs').items || [], leadership: leadership() }));
+  app.get('/admin/api/data', guard, (req, res) => res.json({ partners: load('partners').items || [], programs: load('programs').items || [], leadership: leadership(), team: team() }));
 
   app.post('/admin/api/:kind', guard, json, (req, res, next) => {
     const k = req.params.kind;
@@ -117,6 +117,18 @@ module.exports = function mountAdmin(app, { STORE, UPLOAD_DIR, readJSON, esc, sl
     d.items = (d.items || []).filter((x) => x.id !== req.params.id);
     save(k, d);
     res.json({ ok: true, items: d.items });
+  });
+
+  app.put('/admin/api/team', guard, json, (req, res) => {
+    const src = Array.isArray((req.body || {}).slots) ? req.body.slots : [];
+    const slots = Array.from({ length: TEAM_SLOTS }, (_, i) => {
+      const b = src[i] || {};
+      const email = t(b.email, 160);
+      return { name: t(b.name, 120), position: t(b.position, 120), email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? email : '', photo: img(b.photo) };
+    });
+    fs.mkdirSync(path.dirname(STORE.team), { recursive: true });
+    fs.writeFileSync(STORE.team, JSON.stringify({ slots }, null, 2));
+    res.json({ ok: true, team: team() });
   });
 
   app.put('/admin/api/leadership', guard, json, (req, res) => {
@@ -196,7 +208,11 @@ function field(f,v){var id='f-'+f[0],t=f[2]||'text';
  if(t==='image')return '<div><label for="'+id+'-file">'+h(f[1])+' <span class="muted">PNG, JPG or WebP, up to 2 MB</span></label><input type="hidden" name="'+f[0]+'" value="'+h(v)+'"><input type="file" id="'+id+'-file" accept="image/png,image/jpeg,image/webp" data-for="'+f[0]+'">'+(v?'<img class="ad-prev" src="'+h(v)+'" alt=""><button type="button" class="ad-btn sm ghost" data-clear="'+f[0]+'">Remove image</button>':'')+'</div>';
  return '<div><label for="'+id+'">'+h(f[1])+'</label><input id="'+id+'" name="'+f[0]+'" type="'+t+'" value="'+h(v)+'"'+(f[3]?' required':'')+'></div>';}
 function render(){
- var tabs='<div class="ad-tabs" role="tablist">'+[['partners','Partners'],['programs','Programs'],['leadership','CEO profile']].map(function(x){return '<button type="button" role="tab" data-tab="'+x[0]+'" aria-selected="'+(tab===x[0])+'">'+x[1]+'</button>';}).join('')+'</div>';
+ var tabs='<div class="ad-tabs" role="tablist">'+[['partners','Partners'],['programs','Programs'],['team','Team'],['leadership','CEO profile']].map(function(x){return '<button type="button" role="tab" data-tab="'+x[0]+'" aria-selected="'+(tab===x[0])+'">'+x[1]+'</button>';}).join('')+'</div>';
+ if(tab==='team'){
+  app.innerHTML=tabs+'<div class="ad-card"><h2>Team</h2><p class="muted">Three slots. Leave a name blank to hide that slot on the About page.</p><form class="ad-form" id="form">'+(D.team||[]).map(function(p,i){return '<fieldset style="border:1px solid #dde3ee;border-radius:10px;padding:14px;display:grid;gap:12px"><legend>Slot '+(i+1)+'</legend>'+field(['name'+i,'Name'],p.name)+field(['position'+i,'Position'],p.position)+field(['email'+i,'Email','email'],p.email)+field(['photo'+i,'Photo','image'],p.photo)+'</fieldset>';}).join('')
+  +'<div class="ad-actions"><button class="ad-btn" type="submit">Save team</button></div><p class="ad-err" role="alert"></p><p class="ad-ok" role="status"></p></form></div>';
+  return bind();}
  if(tab==='leadership'){var L=D.leadership,so=(L.socials||[]).concat([{},{},{}]).slice(0,3);
   app.innerHTML=tabs+'<div class="ad-card"><h2>CEO profile</h2><form class="ad-form" id="form">'+field(['name','Name','text',1],L.name)+field(['position','Position'],L.position)+field(['photo','Photo','image'],L.photo)+field(['message','Message','area'],L.message)+field(['bio','Short bio (optional)','area'],L.bio)
   +'<p class="muted" style="margin:0">Social links (optional)</p>'+so.map(function(s,i){return '<div class="ad-row"><input aria-label="Social label '+(i+1)+'" name="sl'+i+'" placeholder="LinkedIn" value="'+h(s.label)+'"><input aria-label="Social URL '+(i+1)+'" name="su'+i+'" type="url" placeholder="https://" value="'+h(s.url)+'"></div>';}).join('')
@@ -218,6 +234,7 @@ function bind(){
  form.querySelectorAll('input[type=file]').forEach(function(inp){inp.onchange=function(){var f=inp.files[0];if(!f)return;if(f.size>2097152){err.textContent='Images must be 2 MB or smaller.';inp.value='';return;}
   var r=new FileReader();r.onload=function(){err.textContent='';ok.textContent='Uploading…';post('/admin/api/upload',{data:String(r.result).split(',')[1]}).then(function(j){form.elements[inp.dataset.for].value=j.url;ok.textContent='Image uploaded. Save to apply.';var p=inp.parentNode.querySelector('.ad-prev');if(!p){p=document.createElement('img');p.className='ad-prev';p.alt='';inp.after(p);}p.src=j.url;}).catch(function(e){ok.textContent='';err.textContent=e.message;inp.value='';});};r.readAsDataURL(f);};});
  form.onsubmit=function(e){e.preventDefault();err.textContent='';ok.textContent='';var o=collect(form);
+  if(tab==='team'){var sl=(D.team||[]).map(function(_,i){return {name:o['name'+i],position:o['position'+i],email:o['email'+i],photo:o['photo'+i]};});post('/admin/api/team',{slots:sl},'PUT').then(function(j){D.team=j.team;render();document.querySelector('.ad-ok').textContent='Saved.';}).catch(function(x){err.textContent=x.message;});return;}
   if(tab==='leadership'){o.socials=[0,1,2].map(function(i){return {label:o['sl'+i],url:o['su'+i]};});post('/admin/api/leadership',o,'PUT').then(function(j){D.leadership=j.leadership;render();document.querySelector('.ad-ok').textContent='Saved.';}).catch(function(x){err.textContent=x.message;});return;}
   if(edit)o.id=edit;post('/admin/api/'+tab,o).then(function(j){D[tab]=j.items;edit=null;render();document.querySelector('.ad-ok').textContent='Saved.';}).catch(function(x){err.textContent=x.message;});};}
 fetch('/admin/api/data',{credentials:'same-origin'}).then(function(r){if(r.status===401){location.reload();throw 0;}return r.json();}).then(function(j){D=j;render();}).catch(function(e){if(e)app.textContent='Could not load data.';});
