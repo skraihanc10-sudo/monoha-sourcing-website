@@ -1,37 +1,39 @@
 {
-  "_rev": 6,
+  "_rev": 7,
   "_note": "Six capability categories, not a fixed list. \"for\" is the short who-it-is-for line. \"process\": \"sourcing\" uses site.sourcingProcess, otherwise site.process. No guarantees, statistics, clients or certifications.",
   "services": [
     {
       "slug": "business-sourcing",
-      "area": "Sourcing & Business Solutions",
+      "area": "Sourcing, Supply & Business Solutions",
       "icon": "globe",
-      "title": "Sourcing & Business Solutions",
-      "summary": "International and product sourcing, supplier search, supply-related support, business coordination and operational support, kept structured from the first brief to follow-up.",
+      "title": "Sourcing, Supply & Business Solutions",
+      "summary": "Connecting requirements with suitable suppliers and sourcing options: supplier identification, product and material sourcing, supplier and supply coordination, business coordination and follow-up.",
       "process": "sourcing",
       "body": [
-        "Some requirements are about finding the right product, supplier or partner. Others are about keeping several parties moving in the same direction. Both need the same things: a clear brief, careful research and someone who follows up.",
-        "We take the requirement, research the options, coordinate the people involved and report back with what is confirmed and what is still open. Where a requirement crosses several areas or is operational rather than sourcing, we assess what it needs and support its execution in the same structured way."
+        "Sourcing and supply are at the core of MONOHA. Some requirements are about finding a suitable supplier, product or material. Others are about keeping suppliers, businesses and partners moving in the same direction. Both need the same things: a clear brief, careful research and consistent follow-up.",
+        "We support businesses and organizations with practical sourcing and supplier coordination: matching the requirement to suitable sourcing options, communicating with suppliers, coordinating supply and following the requirement through each stage. Where a requirement is operational rather than sourcing, we support it in the same structured way."
       ],
       "points": [
+        "Supplier Identification",
+        "Product & Material Sourcing",
+        "Supplier Coordination",
+        "Requirement Matching",
+        "Supply Coordination",
         "International Sourcing",
-        "Product & Supplier Sourcing",
-        "Supply-related Support",
-        "Project-based Sourcing",
         "Business Coordination",
-        "Operational Support"
+        "Follow-up & Operational Support"
       ],
       "audience": [
-        "Businesses that need a product, material or supplier found and compared",
-        "Teams managing several external parties on one requirement",
-        "International partners working with businesses in Bangladesh, and the reverse",
-        "Businesses with an operational requirement that does not fit a single category"
+        "Businesses and brands that need a product, material or supplier found and compared",
+        "Organizations, institutions and project partners with supply requirements",
+        "Teams coordinating several suppliers or parties on one requirement",
+        "International partners working with businesses in Bangladesh, and the reverse"
       ],
       "handle": [
         "Clarifying the requirement: specification, quantity, standard and timeline",
-        "Researching markets and identifying suitable suppliers or partners",
-        "Requesting and organising quotations, samples and information",
-        "Coordinating communication and keeping a record of what is agreed",
+        "Researching markets and identifying suitable suppliers and sourcing options",
+        "Matching options to the requirement and organising quotations and samples",
+        "Communicating with suppliers and coordinating supply",
         "Following up until the requirement is closed"
       ],
       "approach": "We treat every requirement as a small project: written down, researched, coordinated and reviewed. You make the decisions; we make sure you have what you need to make them.",
@@ -59,7 +61,7 @@
           "a": "That is common. Describe it in the request form and choose \"Other / Custom Requirement\". We will review it and tell you honestly whether and how we can help."
         }
       ],
-      "for": "Businesses and organizations with sourcing, supply, coordination or operational requirements."
+      "for": "Businesses, brands, organizations, institutions and project partners with sourcing, supply or coordination requirements."
     },
     {
       "slug": "digital-online-solutions",

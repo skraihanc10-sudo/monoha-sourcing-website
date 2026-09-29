@@ -1,16 +1,23 @@
 {
-  "_rev": 6,
+  "_rev": 7,
   "name": "MONOHA SOURCING INTERNATIONAL",
   "short": "Monoha",
-  "tagline": "Connecting Business Requirements With Practical Solutions.",
-  "intro": "From sourcing and business coordination to digital presence, content, websites and promotion, MONOHA brings the right expertise and execution together around each business need.",
-  "description": "MONOHA SOURCING INTERNATIONAL helps businesses and organizations build, improve, operate and grow their presence through practical business, digital, sourcing and operational solutions.",
+  "tagline": "Sourcing, Supply, Business Solutions and Digital Support.",
+  "intro": "Connecting businesses and organizations with practical sourcing, supply, business and digital solutions through a structured professional approach.",
+  "description": "MONOHA SOURCING INTERNATIONAL is a sourcing and supply-focused organization that also provides business, digital, content, marketing, SEO and project support, built around the requirements of each business and organization.",
   "contact": {
-    "address": "",
-    "email": "",
+    "address": "Kalur Dokan, Koheliya South, 2nd Floor, Cox's Bazar Sadar, Cox's Bazar, Bangladesh",
+    "email": "support@monohasourcing.international",
     "phone": "",
     "website": "",
-    "hours": ""
+    "hours": "",
+    "addressLines": [
+      "Kalur Dokan, Koheliya South",
+      "2nd Floor",
+      "Cox's Bazar Sadar",
+      "Cox's Bazar, Bangladesh"
+    ],
+    "mapQuery": "Koheliya, Cox's Bazar Sadar, Cox's Bazar, Bangladesh"
   },
   "social": {
     "facebook": "",
@@ -19,10 +26,10 @@
     "youtube": ""
   },
   "trust": [
+    "Sourcing & Supply",
     "Requirement-Focused",
     "Right Expertise",
     "Structured Process",
-    "Professional Communication",
     "Long-Term Support"
   ],
   "why": [
@@ -175,7 +182,7 @@
     }
   ],
   "about": {
-    "who": "MONOHA SOURCING INTERNATIONAL works across sourcing, business support, digital solutions, content, marketing, SEO, project coordination and institutional collaborations. Our work is shaped around the specific requirements of each client and organization.",
+    "who": "MONOHA SOURCING INTERNATIONAL is a professional business and sourcing organization working across sourcing, supplier coordination, supply support, business solutions, digital services and project-based requirements.",
     "story": "A business rarely has only one kind of requirement. It may need a supplier found, a website built, content produced and a campaign supported, often at the same time. Monoha exists to understand those requirements, identify what each one needs and bring the right people together to handle it professionally.",
     "mission": "Our mission is to help businesses meet their requirements through reliable processes, the right expertise, professional communication and practical solutions.",
     "vision": "To be a trusted business and digital solutions partner that businesses return to for each new requirement, built on professionalism and long-term relationships.",
@@ -209,14 +216,241 @@
     "leadership": [],
     "whoMore": "We have worked on business and digital requirements for several years, including long-term working relationships with the businesses we support. We bring together business understanding, research, specialised expertise, digital execution, coordination and ongoing support.",
     "approach": "Every requirement moves through the same sequence, whether it is a website, a content plan, a campaign or a supply requirement. It keeps the work predictable for clients and accountable for us.",
-    "partnerships": "Alongside business and digital solutions, MONOHA works with NGOs, development organizations, institutions and project partners through collaborations and project-based engagements. Our role can vary depending on the requirement, from sourcing and supply support to coordination, digital execution and other operational services."
+    "partnerships": "Alongside business and digital solutions, MONOHA works with NGOs, development organizations, institutions and project partners through collaborations and project-based engagements. Our role can vary depending on the requirement, from sourcing and supply support to coordination, digital execution and other operational services.",
+    "heroTitle": "Built Around Requirements. Connected to Opportunities.",
+    "heroLead": "MONOHA SOURCING INTERNATIONAL works across sourcing, supply, business solutions and digital support to help businesses and organizations move their requirements forward through structured and professional execution.",
+    "whoParas": [
+      "MONOHA SOURCING INTERNATIONAL is a professional business and sourcing organization working across sourcing, supplier coordination, supply support, business solutions, digital services and project-based requirements.",
+      "Every organization has different requirements. Some need a supplier. Some need sourcing support. Some need a website or digital presence. Others require content, marketing, SEO, coordination or ongoing operational support.",
+      "MONOHA brings the relevant capabilities together around those requirements."
+    ],
+    "capabilities": [
+      {
+        "title": "Sourcing & Supply",
+        "core": true,
+        "href": "/services/business-sourcing",
+        "items": [
+          "Product sourcing",
+          "Supplier sourcing",
+          "Material sourcing",
+          "Supplier coordination",
+          "Supply support",
+          "Sourcing projects"
+        ]
+      },
+      {
+        "title": "Business Solutions",
+        "href": "/services/business-sourcing",
+        "items": [
+          "Business coordination",
+          "Operational support",
+          "Requirement management",
+          "Project support",
+          "Business-focused solutions"
+        ]
+      },
+      {
+        "title": "Digital & Online",
+        "href": "/services/digital-online-solutions",
+        "items": [
+          "Website development",
+          "Website deployment",
+          "Website maintenance",
+          "Digital presence",
+          "Online business support"
+        ]
+      },
+      {
+        "title": "Content, Marketing & Social",
+        "href": "/services/content-creative",
+        "items": [
+          "Content creation",
+          "Video editing",
+          "Creative design",
+          "Social media",
+          "Promotion",
+          "Audience targeting",
+          "Digital marketing"
+        ]
+      },
+      {
+        "title": "SEO & Online Visibility",
+        "href": "/services/seo-digital-visibility",
+        "items": [
+          "SEO",
+          "Content optimization",
+          "Website optimization",
+          "Search visibility",
+          "Ongoing SEO support"
+        ]
+      },
+      {
+        "title": "Projects & Partnerships",
+        "href": "/services/partnerships-development",
+        "items": [
+          "NGO & development projects",
+          "Institutional support",
+          "Project coordination",
+          "Partner collaboration",
+          "Project-based requirements"
+        ]
+      }
+    ],
+    "sourcing": {
+      "title": "Connecting Requirements With the Right Supply",
+      "text": "At the core of MONOHA is a practical sourcing approach: understand the requirement, identify suitable sourcing options, coordinate with relevant suppliers and follow the requirement through the necessary stages.",
+      "steps": [
+        {
+          "title": "Requirement",
+          "text": "Specification, quantity, standard and timeline, written down and agreed."
+        },
+        {
+          "title": "Research",
+          "text": "Markets and sourcing options studied before anything is recommended."
+        },
+        {
+          "title": "Supplier / Source Identification",
+          "text": "Suitable suppliers and sources identified and compared against the requirement."
+        },
+        {
+          "title": "Coordination",
+          "text": "Communication, quotations and samples coordinated with the relevant suppliers."
+        },
+        {
+          "title": "Follow-Up",
+          "text": "Open items followed up and agreements recorded."
+        },
+        {
+          "title": "Supply / Delivery Support",
+          "text": "The supply and delivery stages supported through to completion."
+        }
+      ],
+      "with": [
+        "Suppliers",
+        "Manufacturers",
+        "Businesses",
+        "Brands",
+        "Organizations",
+        "Institutions",
+        "Project partners",
+        "NGOs & development organizations"
+      ]
+    },
+    "operate": {
+      "title": "One Requirement. The Right Expertise.",
+      "text": "Different requirements need different expertise. MONOHA works with relevant people and capabilities according to the nature of each project, rather than selling fixed packages.",
+      "nodes": [
+        "Sourcing",
+        "Supply",
+        "Business",
+        "Digital",
+        "Content",
+        "Marketing",
+        "SEO",
+        "Project Support"
+      ]
+    },
+    "approachSteps": [
+      {
+        "title": "Understand",
+        "text": "Understand the requirement, scope, expectations and timeline."
+      },
+      {
+        "title": "Research",
+        "text": "Research available options, suppliers, markets, platforms or relevant solutions."
+      },
+      {
+        "title": "Plan",
+        "text": "Define the appropriate approach and coordinate the required resources."
+      },
+      {
+        "title": "Execute",
+        "text": "Carry out the agreed sourcing, digital, content, marketing, project or operational work."
+      },
+      {
+        "title": "Coordinate",
+        "text": "Keep communication and relevant parties organized throughout the process."
+      },
+      {
+        "title": "Review",
+        "text": "Review the work against the agreed requirement."
+      },
+      {
+        "title": "Deliver & Follow Through",
+        "text": "Complete the agreed work and remain available for relevant follow-up."
+      }
+    ],
+    "bridge": {
+      "title": "Physical Supply Meets Digital Capability",
+      "text": "Modern businesses often need more than a supplier. They need a reliable online presence, effective communication, content, visibility and ongoing support. MONOHA combines sourcing and business capabilities with digital and online services where the requirement calls for it.",
+      "physical": [
+        "Supplier",
+        "Product",
+        "Business"
+      ],
+      "digital": [
+        "Website",
+        "Content",
+        "Marketing",
+        "SEO",
+        "Audience"
+      ]
+    },
+    "projects": {
+      "title": "Working Across Projects & Partnerships",
+      "text": "MONOHA also works through project-based collaborations and partnerships with NGOs, development organizations, institutions and other organizations where sourcing, supply, coordination, digital or operational support is required.",
+      "ways": [
+        {
+          "title": "Direct engagement",
+          "text": "Working directly with an organization on a defined requirement."
+        },
+        {
+          "title": "Partnerships & collaborations",
+          "text": "Contributing sourcing, supply, digital or operational capability alongside partners."
+        },
+        {
+          "title": "Project-based assignments",
+          "text": "Supporting a specific project within its scope, specifications and procedures."
+        }
+      ]
+    },
+    "longTermBlock": {
+      "title": "Built for Projects. Available for the Long Term.",
+      "text": "Some requirements are completed as individual projects. Others require continuous coordination and support. MONOHA works with clients through both project-based and longer-term engagements, depending on the nature of the requirement."
+    },
+    "whyPoints": [
+      {
+        "title": "Requirement-Focused",
+        "text": "We begin with the actual requirement rather than a fixed solution."
+      },
+      {
+        "title": "Sourcing & Supplier Coordination",
+        "text": "We support sourcing requirements through structured research and coordination."
+      },
+      {
+        "title": "Multi-Capability Support",
+        "text": "Relevant sourcing, business, digital and project capabilities can work around one requirement."
+      },
+      {
+        "title": "Structured Execution",
+        "text": "Work moves through defined stages with clear coordination."
+      },
+      {
+        "title": "Professional Communication",
+        "text": "Requirements, updates and responsibilities remain organized throughout the work."
+      },
+      {
+        "title": "Long-Term Perspective",
+        "text": "Where ongoing support is required, MONOHA can continue beyond the initial project."
+      }
+    ]
   },
   "clients": [],
   "testimonials": [],
   "areas": [
     {
-      "title": "Business & Sourcing",
-      "text": "Sourcing, supply, business coordination and operational support.",
+      "title": "Sourcing & Supply",
+      "text": "Supplier identification, product and material sourcing, and supplier and supply coordination.",
       "href": "/services/business-sourcing"
     },
     {
@@ -330,5 +564,6 @@
       ],
       "comms": "A closing summary, and a point of contact for what comes next."
     }
-  ]
+  ],
+  "identity": "Sourcing • Supply • Business Solutions • Digital Support"
 }
