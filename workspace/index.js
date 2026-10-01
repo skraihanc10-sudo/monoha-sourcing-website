@@ -21,7 +21,9 @@ const COOKIE = 'monoha_ws';
 const SESSION_MS = 7 * 24 * 60 * 60 * 1000;
 const MAX_FILE = 10 * 1024 * 1024;
 const TZ = 'Asia/Dhaka';
-const ASSET_V = '2';
+const ASSET_V = '3';
+// Fingerprint machine attendance is on hold until FINGERPRINT=1 is set in Coolify.
+const FINGERPRINT = process.env.FINGERPRINT === '1';
 
 const ROLES = [['SUPER_ADMIN', 'Super admin'], ['ADMIN', 'Admin'], ['MANAGER', 'Manager'], ['TEAM_LEAD', 'Team lead'], ['EMPLOYEE', 'Employee']];
 const RANK = { EMPLOYEE: 1, TEAM_LEAD: 2, MANAGER: 3, ADMIN: 4, SUPER_ADMIN: 5 };
@@ -34,7 +36,7 @@ const label = (list, k) => (list.find((x) => x[0] === k) || [k, k])[1];
 const MSG = {
   saved: 'Saved.', created: 'Created.', deleted: 'Deleted.', moved: 'Status updated.', approved: 'Task approved and marked done.',
   revision: 'Sent back for revision.', commented: 'Comment added.', checkin: 'Checked in.', checkout: 'Checked out.',
-  uploaded: 'Marked as uploaded.', stepback: 'Moved one step back.', fixed: 'Attendance corrected.',
+  uploaded: 'Marked as uploaded.', stepback: 'Moved one step back.', fixed: 'Attendance corrected.', posted: 'Announcement posted to everyone.',
   password: 'Password changed.', reset: 'Password reset. The employee must change it at next sign-in.', read: 'All notifications marked as read.',
 };
 
@@ -45,6 +47,7 @@ module.exports = function mountWorkspace(app, { DATA_DIR, esc }) {
   const one = (sql, ...a) => q(sql).get(...a);
   const all = (sql, ...a) => q(sql).all(...a);
   const run = (sql, ...a) => q(sql).run(...a);
+  const q2 = (sql, params) => q(sql).all(params);
   const tx = (fn) => { db.exec('BEGIN'); try { const r = fn(); db.exec('COMMIT'); return r; } catch (e) { db.exec('ROLLBACK'); throw e; } };
 
   // ---------------------------------------------------------------- helpers
@@ -106,7 +109,8 @@ module.exports = function mountWorkspace(app, { DATA_DIR, esc }) {
   // Managers and above open everything. Everyone else opens what the admin ticked on
   // their profile; before anything is ticked, their role's defaults apply.
   // Anyone given daily upload work gets Video uploads with it.
-  const MODULES = [['tasks', 'Tasks'], ['uploads', 'Video uploads'], ['projects', 'Projects'], ['attendance', 'Attendance'], ['employees', 'Employee directory']];
+  const MODULES = [['tasks', 'Tasks'], ['uploads', 'Video uploads'], ['projects', 'Projects'], ['attendance', 'Attendance'], ['employees', 'Employee directory'],
+    ['inbox', 'Inbox & job applications'], ['reports', 'Reports']];
   const defaultModules = (u) => (rank(u) >= RANK.MANAGER ? MODULES.map((m) => m[0]) : ['tasks', 'projects', 'attendance', 'employees']);
   const parseModules = (u) => { try { const m = JSON.parse(u.modules || 'null'); return Array.isArray(m) ? m : null; } catch (e) { return null; } };
   const hasUploadWork = (u) => Boolean(one("SELECT 1 FROM schedules WHERE assignee_id = ? AND active = 1 UNION SELECT 1 FROM tasks WHERE assignee_id = ? AND kind = 'UPLOAD' AND status != 'DONE' LIMIT 1", u.id, u.id));
@@ -117,7 +121,7 @@ module.exports = function mountWorkspace(app, { DATA_DIR, esc }) {
   };
   const setting = (k, d = '') => { const r = one('SELECT value FROM settings WHERE key = ?', k); return r ? r.value : d; };
   const setSetting = (k, v) => run('INSERT INTO settings (key, value) VALUES (?,?) ON CONFLICT(key) DO UPDATE SET value = excluded.value', k, String(v));
-  const deviceMode = () => setting('attendance_mode', 'MANUAL') === 'DEVICE';
+  const deviceMode = () => FINGERPRINT && setting('attendance_mode', 'MANUAL') === 'DEVICE';
 
   // ---------------------------------------------------------------- sessions
   const readCookie = (req) => {
@@ -181,10 +185,12 @@ module.exports = function mountWorkspace(app, { DATA_DIR, esc }) {
 
   // ---------------------------------------------------------------- page shell
   const NAV = [
-    ['/team/dashboard', 'Dashboard', 'grid'], ['/team/tasks', 'Tasks', 'check', (u) => hasModule(u, 'tasks')],
+    ['/team/dashboard', 'Dashboard', 'grid'], ['/team/announcements', 'Announcements', 'megaphone'], ['/team/calendar', 'Calendar', 'calendar'],
+    ['/team/tasks', 'Tasks', 'check', (u) => hasModule(u, 'tasks')],
     ['/team/uploads', 'Video uploads', 'video', (u) => hasModule(u, 'uploads')], ['/team/projects', 'Projects', 'folder', (u) => hasModule(u, 'projects')],
     ['/team/attendance', 'Attendance', 'clock', (u) => hasModule(u, 'attendance')], ['/team/notifications', 'Notifications', 'bell'],
-    ['/team/employees', 'Employees', 'users', (u) => hasModule(u, 'employees')],
+    ['/team/inbox', 'Inbox', 'inbox', (u) => hasModule(u, 'inbox')], ['/team/reports', 'Reports', 'chart', (u) => hasModule(u, 'reports')],
+    ['/team/employees', 'Employees', 'users', (u) => hasModule(u, 'employees')], ['/team/website', 'Website', 'globe', isAdmin],
     ['/team/audit', 'Audit log', 'shield', isAdmin],
   ];
   const ICON = {
@@ -197,6 +203,11 @@ module.exports = function mountWorkspace(app, { DATA_DIR, esc }) {
     shield: '<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/>',
     out: '<path d="M15 4h4a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-4M10 17l5-5-5-5M15 12H3"/>',
     video: '<rect x="3" y="6" width="13" height="12" rx="2"/><path d="M16 10l5-3v10l-5-3z"/>',
+    megaphone: '<path d="M3 11v2a1 1 0 0 0 1 1h3l6 4V6L7 10H4a1 1 0 0 0-1 1z"/><path d="M17 9a4 4 0 0 1 0 6"/>',
+    calendar: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+    inbox: '<path d="M3 13l3-8h12l3 8v6a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M3 13h5l1 3h6l1-3h5"/>',
+    chart: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+    globe: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>',
   };
   const icon = (n) => `<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICON[n]}</svg>`;
 
@@ -205,6 +216,7 @@ module.exports = function mountWorkspace(app, { DATA_DIR, esc }) {
     const m = MSG[req.query && req.query.m];
     const nav = u && !bare ? `<aside class="ws-side">
   <a class="ws-brand" href="/team/dashboard"><img src="/images/logo.png" alt="" width="34" height="34"><span>MONOHA<small>Workspace</small></span></a>
+  <form class="ws-search" action="/team/search" role="search"><label class="sr-only" for="ws-q">Search</label><input type="search" name="q" id="ws-q" placeholder="Search tasks, people, applications…" value="${esc(t(req.query && req.query.q, 80))}"></form>
   <nav aria-label="Workspace">${NAV.filter((n) => !n[3] || n[3](u)).map(([href, name, ic]) => `<a href="${href}"${active === href ? ' aria-current="page"' : ''}>${icon(ic)}<span>${name}</span>${href === '/team/notifications' && req.unread ? `<b class="ws-dot">${req.unread}</b>` : ''}</a>`).join('')}</nav>
   <div class="ws-me"><span class="ws-av">${esc(initials(u.name))}</span><div><strong>${esc(u.name)}</strong><small>${esc(u.emp_id)} · ${esc(label(ROLES, u.role))}</small></div>
     <form method="post" action="/team/logout"><input type="hidden" name="_csrf" value="${esc(req.csrf)}"><button class="ws-icon-btn" title="Sign out" aria-label="Sign out">${icon('out')}</button></form></div>
@@ -366,6 +378,7 @@ ${nav}<main class="ws-main" id="main">${m ? `<p class="ws-flash" role="status">$
 
     send(req, res, 'Dashboard', `${head(`${hello}, ${u.name.split(/\s+/)[0]}`, esc(fmtDay(d)) + ' · ' + esc(u.position || label(ROLES, u.role)),
       rank(u) >= RANK.EMPLOYEE ? '<a class="ws-btn" href="/team/tasks/new">New task</a>' : '')}
+${dashAnnouncements()}
 <div class="ws-grid-dash">
   <section class="ws-card ws-att">
     <h2>Today’s attendance</h2>
@@ -430,7 +443,7 @@ ${hasModule(u, 'uploads') ? uploadsToday(u) : ''}
     const mine = all('SELECT * FROM attendance WHERE user_id = ? ORDER BY day DESC LIMIT 31', u.id);
     const board = seesAll(u) ? all(`SELECT u.id, u.name, u.emp_id, u.position, a.check_in, a.check_out, a.source FROM users u
       LEFT JOIN attendance a ON a.user_id = u.id AND a.day = ? WHERE u.active = 1 ORDER BY (a.check_in IS NULL), u.name`, day) : null;
-    send(req, res, 'Attendance', `${head('Attendance', 'Times are shown in Bangladesh time (GMT+6).' + (deviceMode() ? ' Recorded by the fingerprint machine.' : ''), isAdmin(u) ? '<a class="ws-btn ws-btn-ghost" href="/team/attendance/devices">Fingerprint machines</a>' : '')}
+    send(req, res, 'Attendance', `${head('Attendance', 'Times are shown in Bangladesh time (GMT+6).' + (deviceMode() ? ' Recorded by the fingerprint machine.' : ''), isAdmin(u) && FINGERPRINT ? '<a class="ws-btn ws-btn-ghost" href="/team/attendance/devices">Fingerprint machines</a>' : '')}
 <div class="ws-cols">
   <section class="ws-card ws-att"><h2>Today · ${esc(fmtDay(d))}</h2>${attendanceBlock(req, one('SELECT * FROM attendance WHERE user_id = ? AND day = ?', u.id, d))}</section>
   <section class="ws-card"><h2>My last 31 days</h2>
@@ -917,8 +930,8 @@ ${isAdmin(u) ? `<td>${canManageUser(u, r) ? `<a href="/team/employees/${r.id}">M
     <input type="hidden" name="modules_set" value="1">
     <div class="ws-checkgrid">${MODULES.map(([k, l]) => `<label class="ws-check-row"><input type="checkbox" name="modules" value="${k}"${(parseModules(r) || defaultModules(r)).includes(k) ? ' checked' : ''}> ${l}</label>`).join('')}</div>
     <small>Dashboard and notifications are always there. Managers and admins open everything. Anyone given a daily upload schedule gets Video uploads automatically.</small></fieldset>
-  <label>Fingerprint machine ID<input name="device_pin" id="device_pin" inputmode="numeric" maxlength="20" value="${esc(r.device_pin || '')}" placeholder="e.g. 7">
-    <small>The user number this person has on the fingerprint machine. Their punches are matched to them by it.</small></label>
+  ${FINGERPRINT ? `<label>Fingerprint machine ID<input name="device_pin" id="device_pin" inputmode="numeric" maxlength="20" value="${esc(r.device_pin || '')}" placeholder="e.g. 7">
+    <small>The user number this person has on the fingerprint machine. Their punches are matched to them by it.</small></label>` : ''}
   ${r.id ? `<label class="ws-check-row"><input type="checkbox" name="active" id="active" value="1"${r.active ? ' checked' : ''}> Active (can sign in)</label>`
     : '<label>Temporary password<input type="text" name="password" id="password" required minlength="10" autocomplete="off"><small>Share it with the employee privately. They must change it when they first sign in.</small></label>'}
   ${req.query.e ? `<p class="ws-err" role="alert">${esc(t(req.query.e, 200))}</p>` : ''}
@@ -929,7 +942,7 @@ ${isAdmin(u) ? `<td>${canManageUser(u, r) ? `<a href="/team/employees/${r.id}">M
       joined_on: isDate(b.joined_on) ? b.joined_on : '', role: pick(assignableRoles(req.user), b.role, 'EMPLOYEE'),
       // Only a form that showed the checkboxes sets access; otherwise the role's defaults stay.
       modules: b.modules_set === '1' ? JSON.stringify([].concat(b.modules || []).filter((k) => MODULES.some((m) => m[0] === k))) : null,
-      device_pin: t(b.device_pin, 20).replace(/\D/g, '') };
+      device_pin: FINGERPRINT ? t(b.device_pin, 20).replace(/\D/g, '') : null };
     if (!f.name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email)) return [null, 'Enter a name and a valid email.'];
     return [f, ''];
   };
@@ -941,7 +954,8 @@ ${isAdmin(u) ? `<td>${canManageUser(u, r) ? `<a href="/team/employees/${r.id}">M
   const superCount = () => one("SELECT COUNT(*) AS n FROM users WHERE role = 'SUPER_ADMIN' AND active = 1").n;
 
   app.get('/team/employees/new', auth, need(isAdmin), (req, res) =>
-    send(req, res, 'Add employee', `${head('Add employee', `The employee ID will be ${esc(nextEmpId())}.`)}<div class="ws-card ws-narrow">${empForm(req, {}, '/team/employees', 'Add employee')}</div>`, { active: '/team/employees' }));
+    send(req, res, 'Add employee', `${head('Add employee', `The employee ID will be ${esc(nextEmpId())}.`)}<div class="ws-card ws-narrow">${empForm(req,
+      { name: t(req.query.name, 120), email: t(req.query.email, 160), phone: t(req.query.phone, 40), position: t(req.query.position, 120) }, '/team/employees', 'Add employee')}</div>`, { active: '/team/employees' }));
 
   app.post('/team/employees', auth, need(isAdmin), (req, res) => {
     const [f, e] = readEmp(req); const pw = String(req.body.password || '');
@@ -950,6 +964,7 @@ ${isAdmin(u) ? `<td>${canManageUser(u, r) ? `<a href="/team/employees/${r.id}">M
     if (pwProblem(pw)) return err(pwProblem(pw));
     if (one('SELECT 1 FROM users WHERE email = ?', f.email)) return err('An employee with this email already exists.');
     if (f.device_pin && one('SELECT 1 FROM users WHERE device_pin = ?', f.device_pin)) return err('Another employee already has this fingerprint machine ID.');
+    if (f.device_pin === null) f.device_pin = '';
     const empId = nextEmpId();
     const r = run('INSERT INTO users (emp_id, name, email, phone, position, department, role, password_hash, must_change_pw, joined_on, modules, device_pin) VALUES (?,?,?,?,?,?,?,?,1,?,?,?)',
       empId, f.name, f.email, f.phone, f.position, f.department, f.role, hashPw(pw), f.joined_on, f.modules, f.device_pin);
@@ -975,6 +990,7 @@ ${isAdmin(u) ? `<td>${canManageUser(u, r) ? `<a href="/team/employees/${r.id}">M
     if (r.role === 'SUPER_ADMIN' && (f.role !== 'SUPER_ADMIN' || !active) && superCount() <= 1) return err('There must always be at least one active Super admin.');
     if (one('SELECT 1 FROM users WHERE email = ? AND id != ?', f.email, r.id)) return err('Another employee already uses this email.');
     if (f.device_pin && one('SELECT 1 FROM users WHERE device_pin = ? AND id != ?', f.device_pin, r.id)) return err('Another employee already has this fingerprint machine ID.');
+    if (f.device_pin === null) f.device_pin = r.device_pin;
     run('UPDATE users SET name = ?, email = ?, phone = ?, position = ?, department = ?, role = ?, joined_on = ?, active = ?, modules = ?, device_pin = ? WHERE id = ?',
       f.name, f.email, f.phone, f.position, f.department, f.role, f.joined_on, active, f.modules, f.device_pin, r.id);
     if (f.device_pin !== r.device_pin) applyPunches();
@@ -1309,6 +1325,7 @@ ${e}
     return one('SELECT * FROM devices WHERE serial = ?', sn);
   };
   const serialOf = (req) => t(req.query.SN, 40).replace(/[^\w.-]/g, '');
+  app.use('/iclock', (req, res, next) => (FINGERPRINT ? next() : res.status(404).type('text/plain').send('Not found')));
   app.use('/iclock', (req, res, next) => { res.set('Cache-Control', 'no-store'); next(); }, express.text({ type: '*/*', limit: '5mb' }));
   app.get('/iclock/cdata', (req, res) => {
     const sn = serialOf(req);
@@ -1339,7 +1356,7 @@ ${e}
   app.get('/iclock/getrequest', (req, res) => { const sn = serialOf(req); if (sn) seen(sn); res.type('text/plain').send('OK'); });
   app.post('/iclock/devicecmd', (req, res) => res.type('text/plain').send('OK'));
 
-  app.get('/team/attendance/devices', auth, need(isAdmin), (req, res) => {
+  app.get('/team/attendance/devices', auth, need((u) => FINGERPRINT && isAdmin(u)), (req, res) => {
     const devices = all('SELECT d.*, (SELECT COUNT(*) FROM punches p WHERE p.device_serial = d.serial) AS punches FROM devices d ORDER BY d.approved DESC, d.created_at DESC');
     const loose = all(`SELECT pin, COUNT(*) AS n, MAX(at) AS last FROM punches WHERE user_id IS NULL
       AND device_serial IN (SELECT serial FROM devices WHERE approved = 1) GROUP BY pin ORDER BY last DESC LIMIT 50`);
@@ -1388,13 +1405,13 @@ ${loose.length ? `<section class="ws-card"><h2>Machine users not linked to an em
 </div>`, { active: '/team/attendance' });
   });
 
-  app.post('/team/attendance/mode', auth, need(isAdmin), (req, res) => {
+  app.post('/team/attendance/mode', auth, need((u) => FINGERPRINT && isAdmin(u)), (req, res) => {
     const mode = req.body.mode === 'DEVICE' ? 'DEVICE' : 'MANUAL';
     setSetting('attendance_mode', mode);
     audit(req, 'attendance_mode', 'settings', null, mode);
     back(res, '/team/attendance/devices', 'saved');
   });
-  app.post('/team/attendance/devices/:id', auth, need(isAdmin), (req, res) => {
+  app.post('/team/attendance/devices/:id', auth, need((u) => FINGERPRINT && isAdmin(u)), (req, res) => {
     const d = int(req.params.id) && one('SELECT * FROM devices WHERE id = ?', int(req.params.id));
     if (!d) return fail(req, res, 404, 'Machine not found.');
     const action = String(req.body.action || 'save');
@@ -1435,6 +1452,294 @@ ${head(`Correct attendance · ${p.name}`, `${esc(p.emp_id)} · ${esc(fmtDay(day)
     else run("INSERT INTO attendance (user_id, day, check_in, check_out, source, note) VALUES (?,?,?,?,'ADMIN',?)", uid, day, tm(req.body.in), tm(req.body.out), note);
     audit(req, 'attendance_fixed', 'user', uid, `${day} ${req.body.in || '-'}–${req.body.out || '-'}: ${note}`);
     back(res, `/team/attendance?day=${day}`, 'fixed');
+  });
+
+  // ================================================================ ANNOUNCEMENTS
+  // Managers and above post; everyone reads them on the dashboard and is
+  // notified. Pinned ones stay at the top.
+  function dashAnnouncements() {
+    const list = all('SELECT a.*, u.name FROM announcements a LEFT JOIN users u ON u.id = a.created_by ORDER BY a.pinned DESC, a.id DESC LIMIT 3');
+    if (!list.length) return '';
+    return `<section class="ws-card ws-ann-strip"><div class="ws-card-head"><h2>Announcements</h2><a href="/team/announcements">All announcements</a></div>
+      ${list.map((a) => `<article class="ws-ann${a.pinned ? ' is-pinned' : ''}"><strong>${a.pinned ? '📌 ' : ''}${esc(a.title)}</strong>${a.body ? `<p>${nl(a.body.length > 220 ? a.body.slice(0, 220) + '…' : a.body)}</p>` : ''}<small>${esc(a.name || '')} · ${esc(fmtWhen(a.created_at))}</small></article>`).join('')}</section>`;
+  }
+  app.get('/team/announcements', auth, (req, res) => {
+    const u = req.user;
+    const list = all('SELECT a.*, u.name FROM announcements a LEFT JOIN users u ON u.id = a.created_by ORDER BY a.pinned DESC, a.id DESC LIMIT 100');
+    send(req, res, 'Announcements', `${head('Announcements', 'News, rules and reminders for the whole team.')}
+${seesAll(u) ? `<section class="ws-card ws-narrow"><h2>Post an announcement</h2><form method="post" action="/team/announcements" class="ws-form">${csrfField(req)}
+  <label>Title<input name="title" id="an-title" required maxlength="160"></label>
+  <label>Message<textarea name="body" id="an-body" rows="4" maxlength="4000"></textarea></label>
+  <label class="ws-check-row"><input type="checkbox" name="pinned" id="an-pin" value="1"> Pin it to the top</label>
+  <div class="ws-actions"><button class="ws-btn" type="submit">Post to everyone</button></div></form></section>` : ''}
+${list.length ? list.map((a) => `<article class="ws-card ws-ann${a.pinned ? ' is-pinned' : ''}">
+  <div class="ws-card-head"><h2>${a.pinned ? '📌 ' : ''}${esc(a.title)}</h2>${seesAll(u) ? `<div class="ws-actions">
+    <form method="post" action="/team/announcements/${a.id}/pin">${csrfField(req)}<button class="ws-link-btn" style="color:var(--royal)" type="submit">${a.pinned ? 'Unpin' : 'Pin'}</button></form>
+    <form method="post" action="/team/announcements/${a.id}/delete" data-confirm="Delete this announcement?">${csrfField(req)}<button class="ws-link-btn" type="submit">Delete</button></form></div>` : ''}</div>
+  ${a.body ? `<p class="ws-prose">${nl(a.body)}</p>` : ''}<p class="muted small" style="margin:8px 0 0">${esc(a.name || '')} · ${esc(fmtWhen(a.created_at))}</p></article>`).join('')
+  : '<div class="ws-card ws-empty"><h2>No announcements yet</h2></div>'}`, { active: '/team/announcements' });
+  });
+  app.post('/team/announcements', auth, need(seesAll), (req, res) => {
+    const title = t(req.body.title, 160); const body = t(req.body.body, 4000);
+    if (!title) return back(res, '/team/announcements');
+    const r = run('INSERT INTO announcements (title, body, pinned, created_by) VALUES (?,?,?,?)', title, body, req.body.pinned === '1' ? 1 : 0, req.user.id);
+    for (const p of all('SELECT id FROM users WHERE active = 1')) notify(req, p.id, `Announcement: ${title}`, '/team/announcements');
+    audit(req, 'announcement_posted', 'announcement', Number(r.lastInsertRowid), title);
+    back(res, '/team/announcements', 'posted');
+  });
+  app.post('/team/announcements/:id/pin', auth, need(seesAll), (req, res) => {
+    run('UPDATE announcements SET pinned = 1 - pinned WHERE id = ?', int(req.params.id));
+    back(res, '/team/announcements', 'saved');
+  });
+  app.post('/team/announcements/:id/delete', auth, need(seesAll), (req, res) => {
+    run('DELETE FROM announcements WHERE id = ?', int(req.params.id));
+    audit(req, 'announcement_deleted', 'announcement', int(req.params.id));
+    back(res, '/team/announcements', 'deleted');
+  });
+
+  // ================================================================ CALENDAR
+  // One month, Saturday first. Holidays, meetings and events (added by
+  // managers), plus task, upload and project deadlines from the Workspace.
+  const EVENT_KINDS = [['EVENT', 'Event'], ['MEETING', 'Meeting'], ['HOLIDAY', 'Holiday'], ['DEADLINE', 'Deadline']];
+  app.get('/team/calendar', auth, (req, res) => {
+    const u = req.user; const d = today();
+    const m = /^\d{4}-\d{2}$/.test(String(req.query.m || '')) ? req.query.m : d.slice(0, 7);
+    const [y, mo] = m.split('-').map(Number);
+    const first = `${m}-01`; const days = new Date(Date.UTC(y, mo, 0)).getUTCDate(); const last = `${m}-${String(days).padStart(2, '0')}`;
+    const shift = (k) => { const x = new Date(Date.UTC(y, mo - 1 + k, 1)); return `${x.getUTCFullYear()}-${String(x.getUTCMonth() + 1).padStart(2, '0')}`; };
+    const events = all('SELECT * FROM events WHERE day BETWEEN ? AND ? ORDER BY day, time', first, last);
+    const everyone = seesAll(u);
+    const tasks = hasModule(u, 'tasks') ? all(`SELECT t.id, t.title, t.due_date, t.status FROM tasks t WHERE t.parent_id IS NULL AND t.kind != 'UPLOAD'
+      AND t.due_date BETWEEN ? AND ? ${everyone ? '' : 'AND t.assignee_id = ?'} ORDER BY t.due_date`, first, last, ...(everyone ? [] : [u.id])) : [];
+    const ups = hasModule(u, 'uploads') ? all(`SELECT due_date, COUNT(*) AS n, SUM(status = 'DONE') AS ok, SUM(status IN ('REVIEW','DONE')) AS up FROM tasks
+      WHERE kind = 'UPLOAD' AND due_date BETWEEN ? AND ? ${everyone ? '' : 'AND assignee_id = ?'} GROUP BY due_date`, first, last, ...(everyone ? [] : [u.id])) : [];
+    const projects = hasModule(u, 'projects') ? all("SELECT id, name, due_date FROM projects WHERE due_date BETWEEN ? AND ? AND status != 'COMPLETED'", first, last) : [];
+    const lead = (new Date(Date.UTC(y, mo - 1, 1)).getUTCDay() + 1) % 7; // Saturday = 0
+    const cells = [];
+    for (let i = 0; i < lead; i++) cells.push('<div class="cal-cell is-blank" aria-hidden="true"></div>');
+    for (let i = 1; i <= days; i++) {
+      const day = `${m}-${String(i).padStart(2, '0')}`;
+      const ev = events.filter((e) => e.day === day);
+      const tk = tasks.filter((x) => x.due_date === day);
+      const up = ups.find((x) => x.due_date === day);
+      const pj = projects.filter((x) => x.due_date === day);
+      const holiday = ev.some((e) => e.kind === 'HOLIDAY');
+      const items = [
+        ...ev.map((e) => `<li class="cal-ev k-${e.kind.toLowerCase()}" title="${esc(e.notes)}">${e.time ? `<b>${esc(e.time)}</b> ` : ''}${esc(e.title)}${everyone ? `<form method="post" action="/team/calendar/events/${e.id}/delete" data-confirm="Delete this event?">${csrfField(req)}<input type="hidden" name="m" value="${m}"><button class="cal-x" type="submit" aria-label="Delete ${esc(e.title)}">×</button></form>` : ''}</li>`),
+        ...pj.map((p) => `<li class="cal-ev k-deadline"><a href="/team/projects/${p.id}">Project due: ${esc(p.name)}</a></li>`),
+        ...tk.slice(0, 3).map((x) => `<li class="cal-task${x.status === 'DONE' ? ' is-done' : ''}"><a href="/team/tasks/${x.id}">${esc(x.title)}</a></li>`),
+        tk.length > 3 ? `<li class="cal-more"><a href="/team/tasks?who=${everyone ? 'all' : 'me'}">+${tk.length - 3} more tasks</a></li>` : '',
+        up ? `<li class="cal-up"><a href="/team/uploads?day=${day}">🎬 ${up.up}/${up.n} uploaded${up.ok ? ` · ${up.ok} checked` : ''}</a></li>` : '',
+      ].join('');
+      cells.push(`<div class="cal-cell${day === d ? ' is-today' : ''}${holiday ? ' is-holiday' : ''}"><span class="cal-n"><span class="cal-dow">${['Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri'][(lead + i - 1) % 7]}, </span>${i}</span>${items ? `<ul>${items}</ul>` : ''}</div>`);
+    }
+    const monthName = new Date(Date.UTC(y, mo - 1, 1)).toLocaleDateString('en-GB', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+    send(req, res, 'Calendar', `${head(monthName, 'Holidays, meetings and every deadline in one place.', `<div class="ws-seg"><a href="?m=${shift(-1)}">‹ Previous</a><a href="?m=${d.slice(0, 7)}">Today</a><a href="?m=${shift(1)}">Next ›</a></div>`)}
+<div class="cal" role="grid" aria-label="${esc(monthName)}">${['Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri'].map((x) => `<div class="cal-head">${x}</div>`).join('')}${cells.join('')}</div>
+${everyone ? `<section class="ws-card ws-narrow"><h2>Add to the calendar</h2><form method="post" action="/team/calendar/events" class="ws-form">${csrfField(req)}
+  <div class="ws-row"><label>Title<input name="title" id="ev-title" required maxlength="160" placeholder="e.g. Weekly meeting, Eid holiday"></label>
+    <label>Type<select name="kind" id="ev-kind">${options(EVENT_KINDS, 'EVENT')}</select></label></div>
+  <div class="ws-row"><label>Date<input type="date" name="day" id="ev-day" required value="${m === d.slice(0, 7) ? d : first}"></label>
+    <label>Time (optional)<input type="time" name="time" id="ev-time"></label></div>
+  <label>Notes (optional)<input name="notes" id="ev-notes" maxlength="300"></label>
+  <label class="ws-check-row"><input type="checkbox" name="notify" id="ev-notify" value="1"> Tell everyone</label>
+  <div class="ws-actions"><button class="ws-btn" type="submit">Add</button></div></form></section>` : ''}`, { active: '/team/calendar' });
+  });
+  app.post('/team/calendar/events', auth, need(seesAll), (req, res) => {
+    const title = t(req.body.title, 160); const day = isDate(req.body.day) ? req.body.day : '';
+    if (!title || !day) return back(res, '/team/calendar');
+    const time = /^\d{2}:\d{2}$/.test(String(req.body.time || '')) ? req.body.time : '';
+    const kind = pick(EVENT_KINDS, req.body.kind, 'EVENT');
+    const r = run('INSERT INTO events (title, day, time, kind, notes, created_by) VALUES (?,?,?,?,?,?)', title, day, time, kind, t(req.body.notes, 300), req.user.id);
+    if (req.body.notify === '1') for (const p of all('SELECT id FROM users WHERE active = 1')) notify(req, p.id, `${label(EVENT_KINDS, kind)} on ${fmtDay(day)}${time ? ' at ' + time : ''}: ${title}`, `/team/calendar?m=${day.slice(0, 7)}`);
+    audit(req, 'event_added', 'event', Number(r.lastInsertRowid), `${day} ${title}`);
+    back(res, `/team/calendar?m=${day.slice(0, 7)}`, 'created');
+  });
+  app.post('/team/calendar/events/:id/delete', auth, need(seesAll), (req, res) => {
+    run('DELETE FROM events WHERE id = ?', int(req.params.id));
+    audit(req, 'event_deleted', 'event', int(req.params.id));
+    const m = /^\d{4}-\d{2}$/.test(String(req.body.m || '')) ? req.body.m : '';
+    back(res, '/team/calendar' + (m ? '?m=' + m : ''), 'deleted');
+  });
+
+  // ================================================================ INBOX (website messages and job applications)
+  // Everything the website's forms receive, with a follow-up stage and a note
+  // for each. The messages themselves stay where the website saves them.
+  const INQUIRY_FILE = path.join(DATA_DIR, 'inquiries.json');
+  const ATTACH_DIR = path.join(DATA_DIR, 'attachments');
+  const STAGES = {
+    career: [['NEW', 'New'], ['SHORTLISTED', 'Shortlisted'], ['INTERVIEW', 'Interview'], ['HIRED', 'Hired'], ['REJECTED', 'Not selected']],
+    request: [['NEW', 'New'], ['CONTACTED', 'Contacted'], ['QUOTED', 'Quoted'], ['WON', 'Won'], ['CLOSED', 'Closed']],
+    contact: [['NEW', 'New'], ['REPLIED', 'Replied'], ['CLOSED', 'Closed']],
+  };
+  const TABS = [['career', 'Job applications'], ['request', 'Service requests'], ['contact', 'Contact messages']];
+  const inquiries = () => { try { const d = JSON.parse(fs.readFileSync(INQUIRY_FILE, 'utf8')); return Array.isArray(d.inquiries) ? d.inquiries : []; } catch (e) { return []; } };
+  const stageOf = (id) => one('SELECT * FROM inbox_status WHERE inquiry_id = ?', id) || { stage: 'NEW', note: '' };
+  const stageChip = (kind, s) => chip('stg', s, label(STAGES[kind] || STAGES.contact, s));
+  const waLink = (phone) => { const d = String(phone || '').replace(/\D/g, ''); return d.length >= 10 ? `https://wa.me/${d.startsWith('0') ? '88' + d : d}` : ''; };
+
+  app.get('/team/inbox', auth, need((u) => hasModule(u, 'inbox')), (req, res) => {
+    const tab = TABS.some((x) => x[0] === req.query.tab) ? req.query.tab : 'career';
+    const stage = t(req.query.stage, 20);
+    const all_ = inquiries();
+    const statuses = new Map(all('SELECT inquiry_id, stage FROM inbox_status').map((r) => [r.inquiry_id, r.stage]));
+    const counts = Object.fromEntries(TABS.map(([k]) => [k, all_.filter((x) => x.kind === k && (statuses.get(x.id) || 'NEW') === 'NEW').length]));
+    const rows = all_.filter((x) => x.kind === tab).filter((x) => !stage || (statuses.get(x.id) || 'NEW') === stage);
+    send(req, res, 'Inbox', `${head('Inbox', 'Everything sent through the website’s forms, with where each one stands.')}
+<div class="ws-seg ws-tabs" role="tablist">${TABS.map(([k, l]) => `<a href="?tab=${k}"${k === tab ? ' aria-current="page"' : ''}>${l}${counts[k] ? ` <b class="ws-dot">${counts[k]}</b>` : ''}</a>`).join('')}</div>
+<div class="ws-seg">${[['', 'All'], ...STAGES[tab]].map(([k, l]) => `<a href="?tab=${tab}${k ? '&stage=' + k : ''}"${k === stage ? ' aria-current="page"' : ''}>${l}</a>`).join('')}</div>
+${rows.length ? `<div class="ws-table-wrap ws-card flush"><table class="ws-table"><thead><tr><th>Received</th><th>Name</th><th>${tab === 'career' ? 'Applying for' : tab === 'request' ? 'Service' : 'Subject'}</th><th>Contact</th><th>Stage</th></tr></thead><tbody>
+${rows.map((x) => `<tr><td class="num">${esc(fmtWhen(x.at))}</td><td><a href="/team/inbox/${esc(x.id)}"><strong>${esc(x.name)}</strong></a>${x.company ? `<br><span class="muted">${esc(x.company)}</span>` : ''}</td>
+<td>${esc(tab === 'career' ? x.position || 'General application' : tab === 'request' ? x.service : x.subject || (x.message || '').slice(0, 60))}</td>
+<td>${esc(x.email)}${x.phone ? `<br><span class="muted">${esc(x.phone)}</span>` : ''}</td><td>${stageChip(tab, statuses.get(x.id) || 'NEW')}</td></tr>`).join('')}
+</tbody></table></div>` : `<div class="ws-card ws-empty"><h2>Nothing here</h2><p class="muted">New ${tab === 'career' ? 'applications from the Careers page' : 'messages from the website'} appear here as soon as they are sent.</p></div>`}`, { active: '/team/inbox' });
+  });
+
+  app.get('/team/inbox/:id', auth, need((u) => hasModule(u, 'inbox')), (req, res) => {
+    const x = inquiries().find((q) => q.id === req.params.id);
+    if (!x) return fail(req, res, 404, 'Message not found.');
+    const st = stageOf(x.id);
+    const stages = STAGES[x.kind] || STAGES.contact;
+    const f = (k, l) => (x[k] ? `<p class="ws-kv"><span>${l}</span><strong>${/^https?:\/\//.test(x[k]) ? `<a href="${esc(x[k])}" target="_blank" rel="noopener">${esc(x[k])}</a>` : esc(x[k])}</strong></p>` : '');
+    const wa = waLink(x.phone);
+    const hire = x.kind === 'career' && isAdmin(req.user)
+      ? `<a class="ws-btn ws-btn-ghost" href="/team/employees/new?${new URLSearchParams({ name: x.name, email: x.email, phone: x.phone || '', position: x.position || '' })}">Add as employee</a>` : '';
+    send(req, res, x.name, `<nav class="ws-crumbs" aria-label="Breadcrumb"><a href="/team/inbox?tab=${esc(x.kind)}">Inbox</a></nav>
+${head(x.name, `${esc(label(TABS, x.kind))} · ${esc(fmtWhen(x.at))} · ${stageChip(x.kind, st.stage)}`,
+  `<a class="ws-btn ws-btn-ghost" href="mailto:${esc(x.email)}">Email</a>${wa ? `<a class="ws-btn ws-btn-ghost" href="${wa}" target="_blank" rel="noopener">WhatsApp</a>` : ''}${hire}`)}
+<div class="ws-detail"><div class="ws-detail-main">
+  <section class="ws-card">${f('email', 'Email')}${f('phone', 'Phone')}${f('company', 'Company')}${f('country', 'Country')}${f('position', 'Applying for')}${f('occupation', 'Occupation')}${f('area', 'Area')}
+    ${f('facebook', 'Facebook')}${f('linkedin', 'LinkedIn')}${f('service', 'Service')}${f('requirementType', 'Requirement type')}${f('budget', 'Budget')}${f('timeline', 'Timeline')}${f('subject', 'Subject')}</section>
+  ${x.requirement || x.message ? `<section class="ws-card"><h2>${x.kind === 'career' ? 'About them' : 'Message'}</h2><p class="ws-prose">${nl(x.requirement || x.message)}</p></section>` : ''}
+</div><aside class="ws-detail-side">
+  ${['cv', 'photo', 'attachment'].some((k) => x[k]) ? `<section class="ws-card"><h2>Files</h2><ul class="ws-files">${['cv', 'photo', 'attachment'].filter((k) => x[k]).map((k) => `<li><a href="/team/inbox/${esc(x.id)}/file/${k}">${{ cv: 'CV (PDF)', photo: 'Photo', attachment: 'Attachment' }[k]}</a></li>`).join('')}</ul></section>` : ''}
+  <section class="ws-card"><h2>Follow-up</h2><form method="post" action="/team/inbox/${esc(x.id)}" class="ws-form">${csrfField(req)}
+    <label>Stage<select name="stage" id="stage">${options(stages, st.stage)}</select></label>
+    <label>Note (only the team sees it)<textarea name="note" id="note" rows="4" maxlength="2000">${esc(st.note)}</textarea></label>
+    <button class="ws-btn" type="submit">Save</button></form>
+    ${st.updated_at ? `<p class="muted small" style="margin:8px 0 0">Last updated ${esc(fmtWhen(st.updated_at))}</p>` : ''}</section>
+</aside></div>`, { active: '/team/inbox' });
+  });
+  app.post('/team/inbox/:id', auth, need((u) => hasModule(u, 'inbox')), (req, res) => {
+    const x = inquiries().find((q) => q.id === req.params.id);
+    if (!x) return fail(req, res, 404, 'Message not found.');
+    const stage = pick(STAGES[x.kind] || STAGES.contact, req.body.stage, 'NEW');
+    run(`INSERT INTO inbox_status (inquiry_id, stage, note, updated_by, updated_at) VALUES (?,?,?,?,datetime('now'))
+      ON CONFLICT(inquiry_id) DO UPDATE SET stage = excluded.stage, note = excluded.note, updated_by = excluded.updated_by, updated_at = excluded.updated_at`,
+      x.id, stage, t(req.body.note, 2000), req.user.id);
+    audit(req, 'inbox_stage', 'inquiry', null, `${x.id} → ${stage}`);
+    back(res, `/team/inbox/${encodeURIComponent(x.id)}`, 'saved');
+  });
+  app.get('/team/inbox/:id/file/:key', auth, need((u) => hasModule(u, 'inbox')), (req, res) => {
+    const x = inquiries().find((q) => q.id === req.params.id);
+    const key = ['cv', 'photo', 'attachment'].includes(req.params.key) ? req.params.key : '';
+    const stored = x && key && x[key] ? path.basename(String(x[key])) : '';
+    const p = stored && path.join(ATTACH_DIR, stored);
+    if (!p || !fs.existsSync(p)) return fail(req, res, 404, 'File not found.');
+    res.set('Content-Security-Policy', "default-src 'none'; sandbox");
+    res.download(p, stored.replace(/^INQ-[A-Z0-9]+-\w+-/, ''), { headers: { 'Content-Type': 'application/octet-stream' } });
+  });
+
+  // ================================================================ REPORTS
+  // Per person, for any date range: tasks, uploads and attendance. Each
+  // table downloads as a CSV that opens in Excel.
+  const minutesOf = (iso) => { const p = fmtTime(iso).split(':'); return Number(p[0]) * 60 + Number(p[1]); };
+  const hhmm = (m) => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(Math.round(m % 60)).padStart(2, '0')}`;
+  function reportData(from, to) {
+    const people = all('SELECT id, name, emp_id FROM users WHERE active = 1 ORDER BY name');
+    const now = today();
+    const tasks = people.map((p) => {
+      const r = one(`SELECT SUM(status = 'DONE' AND substr(approved_at, 1, 10) BETWEEN ? AND ?) AS done,
+        SUM(status != 'DONE') AS open, SUM(status != 'DONE' AND due_date != '' AND due_date < ?) AS late
+        FROM tasks WHERE assignee_id = ? AND kind != 'UPLOAD' AND parent_id IS NULL`, from, to, now, p.id);
+      return { ...p, done: r.done || 0, open: r.open || 0, late: r.late || 0 };
+    }).filter((x) => x.done || x.open);
+    const uploads = people.map((p) => {
+      const r = one(`SELECT COUNT(*) AS n, SUM(status IN ('REVIEW','DONE')) AS up, SUM(status = 'DONE') AS ok,
+        SUM(status NOT IN ('REVIEW','DONE') AND due_date < ?) AS missed FROM tasks WHERE kind = 'UPLOAD' AND assignee_id = ? AND due_date BETWEEN ? AND ?`, now, p.id, from, to);
+      return { ...p, n: r.n || 0, up: r.up || 0, ok: r.ok || 0, missed: r.missed || 0 };
+    }).filter((x) => x.n);
+    const attendance = people.map((p) => {
+      const rows = all('SELECT check_in, check_out FROM attendance WHERE user_id = ? AND day BETWEEN ? AND ? AND check_in IS NOT NULL', p.id, from, to);
+      const ins = rows.map((r) => minutesOf(r.check_in));
+      const hrs = rows.filter((r) => r.check_out).reduce((s, r) => s + (toDate(r.check_out) - toDate(r.check_in)) / 36e5, 0);
+      return { ...p, days: rows.length, avgIn: ins.length ? hhmm(ins.reduce((a, b) => a + b, 0) / ins.length) : '', hours: hrs.toFixed(1) };
+    });
+    return { tasks, uploads, attendance };
+  }
+  const rangeOf = (q) => {
+    const d = today();
+    const to = isDate(q.to) ? q.to : d;
+    const from = isDate(q.from) ? q.from : `${d.slice(0, 7)}-01`;
+    return from <= to ? [from, to] : [to, from];
+  };
+  app.get('/team/reports', auth, need((u) => hasModule(u, 'reports')), (req, res) => {
+    const [from, to] = rangeOf(req.query);
+    const r = reportData(from, to);
+    const qs = `from=${from}&to=${to}`;
+    const table = (title, type, headRow, rows, empty) => `<section class="ws-card"><div class="ws-card-head"><h2>${title}</h2><a href="/team/reports.csv?type=${type}&${qs}">Download CSV</a></div>
+      ${rows.length ? `<div class="ws-table-wrap"><table class="ws-table"><thead><tr>${headRow.map((h, i) => `<th${i > 1 ? ' class="num"' : ''}>${h}</th>`).join('')}</tr></thead><tbody>${rows.join('')}</tbody></table></div>` : `<p class="muted">${empty}</p>`}</section>`;
+    const n = (v, cls = '') => `<td class="num${cls}">${v}</td>`;
+    send(req, res, 'Reports', `${head('Reports', `${esc(fmtDay(from))} – ${esc(fmtDay(to))}`, `<form method="get" class="ws-inline">
+  <label class="sr-only" for="from">From</label><input type="date" name="from" id="from" value="${from}"><label class="sr-only" for="to">To</label><input type="date" name="to" id="to" value="${to}">
+  <button class="ws-btn ws-btn-ghost" type="submit">Show</button></form>`)}
+${table('Video uploads', 'uploads', ['Employee', 'ID', 'Due', 'Uploaded', 'Checked', 'Missed'], r.uploads.map((x) => `<tr><td><strong>${esc(x.name)}</strong></td><td>${esc(x.emp_id)}</td>${n(x.n)}${n(x.up)}${n(x.ok)}${n(x.missed, x.missed ? ' is-bad' : '')}</tr>`), 'No upload tasks in this period.')}
+${table('Tasks', 'tasks', ['Employee', 'ID', 'Done in period', 'Open now', 'Overdue now'], r.tasks.map((x) => `<tr><td><strong>${esc(x.name)}</strong></td><td>${esc(x.emp_id)}</td>${n(x.done)}${n(x.open)}${n(x.late, x.late ? ' is-bad' : '')}</tr>`), 'No tasks in this period.')}
+${table('Attendance', 'attendance', ['Employee', 'ID', 'Days present', 'Average in', 'Hours'], r.attendance.map((x) => `<tr><td><strong>${esc(x.name)}</strong></td><td>${esc(x.emp_id)}</td>${n(x.days)}${n(x.avgIn || '—')}${n(x.hours)}</tr>`), 'Nobody yet.')}`, { active: '/team/reports' });
+  });
+  app.get('/team/reports.csv', auth, need((u) => hasModule(u, 'reports')), (req, res) => {
+    const [from, to] = rangeOf(req.query);
+    const r = reportData(from, to);
+    const type = ['tasks', 'uploads', 'attendance'].includes(req.query.type) ? req.query.type : 'uploads';
+    const cols = { uploads: [['name', 'Employee'], ['emp_id', 'ID'], ['n', 'Due'], ['up', 'Uploaded'], ['ok', 'Checked'], ['missed', 'Missed']],
+      tasks: [['name', 'Employee'], ['emp_id', 'ID'], ['done', 'Done in period'], ['open', 'Open now'], ['late', 'Overdue now']],
+      attendance: [['name', 'Employee'], ['emp_id', 'ID'], ['days', 'Days present'], ['avgIn', 'Average in'], ['hours', 'Hours']] }[type];
+    const cell = (v) => { const s = String(v == null ? '' : v); return /[",\n]/.test(s) || /^[=+\-@]/.test(s) ? `"${s.replace(/^([=+\-@])/, "'$1").replace(/"/g, '""')}"` : s; };
+    const csv = '\uFEFF' + [cols.map((c) => c[1]).join(','), ...r[type].map((x) => cols.map((c) => cell(x[c[0]])).join(','))].join('\r\n');
+    audit(req, 'report_downloaded', 'report', null, `${type} ${from}–${to}`);
+    res.set('Content-Disposition', `attachment; filename="monoha-${type}-${from}-to-${to}.csv"`).type('text/csv').send(csv);
+  });
+
+  // ================================================================ SEARCH
+  app.get('/team/search', auth, (req, res) => {
+    const u = req.user; const q = t(req.query.q, 80);
+    const like = '%' + q.replace(/[%_]/g, '') + '%';
+    const sections = [];
+    if (q.length >= 2) {
+      if (hasModule(u, 'tasks') || hasModule(u, 'uploads')) {
+        const rows = q2(`${TASK_SELECT} WHERE (t.title LIKE $q OR t.description LIKE $q) ${seesAll(u) ? '' : 'AND ' + VISIBLE} ORDER BY t.id DESC LIMIT 20`, seesAll(u) ? { $q: like } : { $q: like, $me: u.id });
+        sections.push(['Tasks', rows.map((x) => `<li><a href="/team/tasks/${x.id}"><strong>${esc(x.title)}</strong><span class="muted">${esc(x.project || x.channel || '')} · ${esc(x.assignee || 'Unassigned')}</span></a><span class="ws-meta">${statusChip(x.status)}</span></li>`)]);
+      }
+      if (hasModule(u, 'projects')) {
+        const rows = all(`SELECT id, name, status FROM projects WHERE (name LIKE ? OR description LIKE ?) ${seesAll(u) ? '' : 'AND (lead_id = ? OR id IN (SELECT project_id FROM project_members WHERE user_id = ?))'} LIMIT 10`, like, like, ...(seesAll(u) ? [] : [u.id, u.id]));
+        sections.push(['Projects', rows.map((p) => `<li><a href="/team/projects/${p.id}"><strong>${esc(p.name)}</strong></a><span class="ws-meta">${chip('ps', p.status, label(PSTATUS, p.status))}</span></li>`)]);
+      }
+      if (hasModule(u, 'employees')) {
+        const rows = all('SELECT id, name, emp_id, position, email FROM users WHERE active = 1 AND (name LIKE ? OR emp_id LIKE ? OR email LIKE ? OR position LIKE ? OR phone LIKE ?) LIMIT 10', like, like, like, like, like);
+        sections.push(['People', rows.map((p) => `<li><span><strong>${esc(p.name)}</strong> <span class="muted">${esc(p.emp_id)} · ${esc(p.position)}</span></span><span class="ws-meta"><a href="mailto:${esc(p.email)}">${esc(p.email)}</a></span></li>`)]);
+      }
+      if (hasModule(u, 'inbox')) {
+        const ql = q.toLowerCase();
+        const rows = inquiries().filter((x) => [x.name, x.email, x.phone, x.company, x.position, x.service, x.id].some((v) => String(v || '').toLowerCase().includes(ql))).slice(0, 10);
+        sections.push(['Inbox', rows.map((x) => `<li><a href="/team/inbox/${esc(x.id)}"><strong>${esc(x.name)}</strong><span class="muted">${esc(label(TABS, x.kind))} · ${esc(x.position || x.service || x.email)}</span></a><span class="ws-meta">${esc(fmtWhen(x.at))}</span></li>`)]);
+      }
+      const ann = all('SELECT id, title FROM announcements WHERE title LIKE ? OR body LIKE ? ORDER BY id DESC LIMIT 5', like, like);
+      sections.push(['Announcements', ann.map((a) => `<li><a href="/team/announcements"><strong>${esc(a.title)}</strong></a></li>`)]);
+    }
+    const found = sections.filter(([, r]) => r.length);
+    send(req, res, 'Search', `${head(q ? `Search: ${q}` : 'Search')}
+<form method="get" class="ws-filters" role="search"><label class="grow"><span>Search everything</span><input type="search" name="q" id="q" value="${esc(q)}" placeholder="Task, person, applicant, phone number…" autofocus></label><button class="ws-btn" type="submit">Search</button></form>
+${q.length < 2 ? '<p class="muted">Type at least two letters.</p>' : found.length ? found.map(([title, rows]) => `<section class="ws-card"><h2>${title}</h2><ul class="ws-list">${rows.join('')}</ul></section>`).join('') : '<div class="ws-card ws-empty"><h2>Nothing found</h2></div>'}`, {});
+  });
+
+  // ================================================================ WEBSITE
+  // The public site's Team, Partners, Programs and CEO profile are edited in
+  // /admin. An admin signed in here goes straight in.
+  app.get('/team/website', auth, need(isAdmin), (req, res) => {
+    if (!app.locals.grantAdmin) return fail(req, res, 404, 'The website admin is switched off. Set ADMIN_PASSWORD and SESSION_SECRET in Coolify.');
+    app.locals.grantAdmin(req, res);
+    audit(req, 'website_admin_opened');
+    res.redirect(303, '/admin');
   });
 
   app.all('/team/*', auth, (req, res) => fail(req, res, 404, 'Page not found.'));

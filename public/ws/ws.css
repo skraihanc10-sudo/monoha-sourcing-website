@@ -290,3 +290,54 @@ input[type=file] { padding: 7px; background: var(--bg); }
   .ws-up, .ws-up-strip { grid-template-columns: 1fr; }
   .ws-steps li { font-size: 11px; padding-left: 26px; }
 }
+
+/* ---- search, announcements, calendar, inbox */
+.ws-search input { background: rgba(255, 255, 255, .08); border-color: rgba(255, 255, 255, .14); color: #fff; font-size: 13px; padding: 8px 11px; }
+.ws-search input::placeholder { color: #93A3C2; }
+.ws-search input:focus { background: rgba(255, 255, 255, .14); box-shadow: none; border-color: var(--cyan); }
+.ws-ann-strip { display: grid; gap: 4px; }
+.ws-ann { border-left: 3px solid var(--line); padding: 4px 0 4px 12px; }
+.ws-ann.is-pinned { border-left-color: var(--cyan); }
+.ws-ann p { margin: 2px 0; }
+.ws-ann small { color: var(--muted); font-size: 12px; }
+article.ws-card.ws-ann { border-left-width: 4px; padding-left: 20px; }
+.ws-tabs { flex-wrap: wrap; }
+.ws-tabs a { display: inline-flex; gap: 6px; align-items: center; }
+.ws-tabs .ws-dot { background: var(--cyan); color: var(--navy); font-size: 11px; padding: 0 6px; border-radius: 9px; }
+.stg-new { background: var(--info-bg); color: var(--info); }
+.stg-shortlisted, .stg-contacted, .stg-replied { background: var(--violet-bg); color: var(--violet); }
+.stg-interview, .stg-quoted { background: var(--warn-bg); color: var(--warn); }
+.stg-hired, .stg-won { background: var(--ok-bg); color: var(--ok); }
+.stg-rejected, .stg-closed { background: var(--grey-bg); color: #3F4D66; }
+.cal { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+.cal-head { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; padding: 0 6px; }
+.cal-cell { background: var(--card); border: 1px solid var(--line); border-radius: 10px; min-height: 108px; padding: 6px 7px; min-width: 0; }
+.cal-cell.is-blank { background: transparent; border-color: transparent; }
+.cal-cell.is-today { border-color: var(--royal); box-shadow: inset 0 0 0 1px var(--royal); }
+.cal-cell.is-holiday { background: var(--bad-bg); }
+.cal-n { font-weight: 800; font-size: 13px; color: var(--navy); }
+.cal-dow { display: none; }
+.cal-cell ul { list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 3px; }
+.cal-cell li { font-size: 11.5px; line-height: 1.35; border-radius: 5px; padding: 2px 5px; overflow-wrap: anywhere; position: relative; }
+.cal-cell li a { color: inherit; }
+.cal-ev { background: var(--info-bg); color: var(--info); font-weight: 600; }
+.cal-ev.k-holiday { background: var(--bad); color: #fff; }
+.cal-ev.k-meeting { background: var(--violet-bg); color: var(--violet); }
+.cal-ev.k-deadline { background: var(--warn-bg); color: var(--warn); }
+.cal-task { background: var(--grey-bg); color: var(--ink); }
+.cal-task.is-done { text-decoration: line-through; color: var(--muted); }
+.cal-up { background: var(--ok-bg); color: var(--ok); font-weight: 600; }
+.cal-more { color: var(--muted); }
+.cal-x { position: absolute; right: 2px; top: 0; background: none; border: 0; color: inherit; cursor: pointer; font-size: 13px; opacity: .6; padding: 0 3px; }
+.cal-ev form { display: inline; }
+td.is-bad { color: var(--bad); font-weight: 700; }
+@media (max-width: 860px) {
+  .cal { grid-template-columns: 1fr; }
+  .cal-head, .cal-cell.is-blank { display: none; }
+  .cal-cell { min-height: 0; }
+  .cal-cell:not(:has(ul)) { display: none; }
+  .cal-cell.is-today { display: block; }
+  .cal-dow { display: inline; }
+}
+.ws-seg { flex-wrap: wrap; max-width: 100%; }
+@media (min-width: 861px) { .ws-side nav { overflow-y: auto; min-height: 0; flex: 1 1 auto; } }

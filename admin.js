@@ -56,6 +56,9 @@ module.exports = function mountAdmin(app, { STORE, UPLOAD_DIR, readJSON, esc, sl
   };
 
   app.get('/admin', (req, res) => res.type('html').send(page(authed(req))));
+  // The Workspace's Website button: an admin already signed in there gets an
+  // admin session here without typing the password again.
+  app.locals.grantAdmin = (req, res) => { const ts = String(Date.now()); setCookie(req, res, `${ts}.${sign(ts)}`, SESSION_MS / 1000); };
   app.get('/admin/app.js', (req, res) => res.type('application/javascript').send(CLIENT));
 
   app.post('/admin/login', json, (req, res) => {
