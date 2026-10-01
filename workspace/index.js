@@ -21,7 +21,7 @@ const COOKIE = 'monoha_ws';
 const SESSION_MS = 7 * 24 * 60 * 60 * 1000;
 const MAX_FILE = 10 * 1024 * 1024;
 const TZ = 'Asia/Dhaka';
-const ASSET_V = '1';
+const ASSET_V = '2';
 
 const ROLES = [['SUPER_ADMIN', 'Super admin'], ['ADMIN', 'Admin'], ['MANAGER', 'Manager'], ['TEAM_LEAD', 'Team lead'], ['EMPLOYEE', 'Employee']];
 const RANK = { EMPLOYEE: 1, TEAM_LEAD: 2, MANAGER: 3, ADMIN: 4, SUPER_ADMIN: 5 };
@@ -34,6 +34,7 @@ const label = (list, k) => (list.find((x) => x[0] === k) || [k, k])[1];
 const MSG = {
   saved: 'Saved.', created: 'Created.', deleted: 'Deleted.', moved: 'Status updated.', approved: 'Task approved and marked done.',
   revision: 'Sent back for revision.', commented: 'Comment added.', checkin: 'Checked in.', checkout: 'Checked out.',
+  uploaded: 'Marked as uploaded.', stepback: 'Moved one step back.', fixed: 'Attendance corrected.',
   password: 'Password changed.', reset: 'Password reset. The employee must change it at next sign-in.', read: 'All notifications marked as read.',
 };
 
@@ -101,6 +102,23 @@ module.exports = function mountWorkspace(app, { DATA_DIR, esc }) {
     OR t.project_id IN (SELECT project_id FROM project_members WHERE user_id = $me)
     OR t.project_id IN (SELECT id FROM projects WHERE lead_id = $me))`;
 
+  // ---------------------------------------------------------------- per-employee access
+  // Managers and above open everything. Everyone else opens what the admin ticked on
+  // their profile; before anything is ticked, their role's defaults apply.
+  // Anyone given daily upload work gets Video uploads with it.
+  const MODULES = [['tasks', 'Tasks'], ['uploads', 'Video uploads'], ['projects', 'Projects'], ['attendance', 'Attendance'], ['employees', 'Employee directory']];
+  const defaultModules = (u) => (rank(u) >= RANK.MANAGER ? MODULES.map((m) => m[0]) : ['tasks', 'projects', 'attendance', 'employees']);
+  const parseModules = (u) => { try { const m = JSON.parse(u.modules || 'null'); return Array.isArray(m) ? m : null; } catch (e) { return null; } };
+  const hasUploadWork = (u) => Boolean(one("SELECT 1 FROM schedules WHERE assignee_id = ? AND active = 1 UNION SELECT 1 FROM tasks WHERE assignee_id = ? AND kind = 'UPLOAD' AND status != 'DONE' LIMIT 1", u.id, u.id));
+  const hasModule = (u, m) => {
+    if (seesAll(u)) return true;  // managers and above supervise, so they open everything
+    if ((parseModules(u) || defaultModules(u)).includes(m)) return true;
+    return m === 'uploads' && hasUploadWork(u);
+  };
+  const setting = (k, d = '') => { const r = one('SELECT value FROM settings WHERE key = ?', k); return r ? r.value : d; };
+  const setSetting = (k, v) => run('INSERT INTO settings (key, value) VALUES (?,?) ON CONFLICT(key) DO UPDATE SET value = excluded.value', k, String(v));
+  const deviceMode = () => setting('attendance_mode', 'MANUAL') === 'DEVICE';
+
   // ---------------------------------------------------------------- sessions
   const readCookie = (req) => {
     const m = (req.headers.cookie || '').split(/;\s*/).find((c) => c.startsWith(COOKIE + '='));
@@ -163,8 +181,10 @@ module.exports = function mountWorkspace(app, { DATA_DIR, esc }) {
 
   // ---------------------------------------------------------------- page shell
   const NAV = [
-    ['/team/dashboard', 'Dashboard', 'grid'], ['/team/tasks', 'Tasks', 'check'], ['/team/projects', 'Projects', 'folder'],
-    ['/team/attendance', 'Attendance', 'clock'], ['/team/notifications', 'Notifications', 'bell'], ['/team/employees', 'Employees', 'users'],
+    ['/team/dashboard', 'Dashboard', 'grid'], ['/team/tasks', 'Tasks', 'check', (u) => hasModule(u, 'tasks')],
+    ['/team/uploads', 'Video uploads', 'video', (u) => hasModule(u, 'uploads')], ['/team/projects', 'Projects', 'folder', (u) => hasModule(u, 'projects')],
+    ['/team/attendance', 'Attendance', 'clock', (u) => hasModule(u, 'attendance')], ['/team/notifications', 'Notifications', 'bell'],
+    ['/team/employees', 'Employees', 'users', (u) => hasModule(u, 'employees')],
     ['/team/audit', 'Audit log', 'shield', isAdmin],
   ];
   const ICON = {
@@ -176,6 +196,7 @@ module.exports = function mountWorkspace(app, { DATA_DIR, esc }) {
     users: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6.5 6.5 0 0 1 3.5 6"/>',
     shield: '<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/>',
     out: '<path d="M15 4h4a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-4M10 17l5-5-5-5M15 12H3"/>',
+    video: '<rect x="3" y="6" width="13" height="12" rx="2"/><path d="M16 10l5-3v10l-5-3z"/>',
   };
   const icon = (n) => `<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICON[n]}</svg>`;
 
@@ -357,6 +378,7 @@ ${nav}<main class="ws-main" id="main">${m ? `<p class="ws-flash" role="status">$
     ${stat(counts.revision, 'Needs revision', '/team/tasks?who=me&status=REVISION', counts.revision ? ' is-warn' : '')}
   </section>
 </div>
+${hasModule(u, 'uploads') ? uploadsToday(u) : ''}
 <div class="ws-cols">
   <section class="ws-card"><div class="ws-card-head"><h2>My next tasks</h2><a href="/team/tasks?who=me">All my tasks</a></div>
     ${mine.length ? `<ul class="ws-list">${mine.map((x) => `<li><a href="/team/tasks/${x.id}"><strong>${esc(x.title)}</strong><span class="muted">${esc(x.project || 'No project')}</span></a><span class="ws-meta">${statusChip(x.status)}${due(x.due_date)}</span></li>`).join('')}</ul>`
@@ -375,6 +397,10 @@ ${nav}<main class="ws-main" id="main">${m ? `<p class="ws-flash" role="status">$
 
   // ---------------------------------------------------------------- attendance
   function attendanceBlock(req, att) {
+    if (deviceMode()) {
+      if (!att || !att.check_in) return '<p class="muted">No fingerprint yet today. Attendance comes from the fingerprint machine at the office.</p>';
+      return `<p class="ws-kv"><span>In</span><strong>${fmtTime(att.check_in)}</strong></p>${att.check_out ? `<p class="ws-kv"><span>Out (last punch)</span><strong>${fmtTime(att.check_out)}</strong></p>` : ''}<p class="muted small">${att.source === 'ADMIN' ? 'Corrected by an admin.' : 'From the fingerprint machine.'}</p>`;
+    }
     const form = (action, text, cls = '') => `<form method="post" action="/team/attendance/${action}">${csrfField(req)}<button class="ws-btn${cls}" type="submit">${text}</button></form>`;
     if (!att || !att.check_in) return `<p class="muted">You have not checked in yet today.</p>${form('in', 'Check in')}`;
     if (!att.check_out) return `<p class="ws-kv"><span>Checked in</span><strong>${fmtTime(att.check_in)}</strong></p>${form('out', 'Check out', ' ws-btn-ghost')}`;
@@ -384,25 +410,27 @@ ${nav}<main class="ws-main" id="main">${m ? `<p class="ws-flash" role="status">$
   const hours = (a) => (a.check_in && a.check_out ? ((toDate(a.check_out) - toDate(a.check_in)) / 36e5).toFixed(1) + ' h' : '');
 
   app.post('/team/attendance/in', auth, (req, res) => {
+    if (deviceMode()) return fail(req, res, 403, 'Attendance is recorded by the fingerprint machine.');
     const d = today();
     const a = one('SELECT * FROM attendance WHERE user_id = ? AND day = ?', req.user.id, d);
     if (!a) { run('INSERT INTO attendance (user_id, day, check_in) VALUES (?,?,?)', req.user.id, d, new Date().toISOString()); audit(req, 'check_in', 'attendance', null, d); }
     back(res, fromPage(req), 'checkin');
   });
   app.post('/team/attendance/out', auth, (req, res) => {
+    if (deviceMode()) return fail(req, res, 403, 'Attendance is recorded by the fingerprint machine.');
     const d = today();
     const r = run('UPDATE attendance SET check_out = ? WHERE user_id = ? AND day = ? AND check_in IS NOT NULL AND check_out IS NULL', new Date().toISOString(), req.user.id, d);
     if (r.changes) audit(req, 'check_out', 'attendance', null, d);
     back(res, fromPage(req), 'checkout');
   });
 
-  app.get('/team/attendance', auth, (req, res) => {
+  app.get('/team/attendance', auth, need((u) => hasModule(u, 'attendance')), (req, res) => {
     const u = req.user; const d = today();
     const day = isDate(req.query.day) ? req.query.day : d;
     const mine = all('SELECT * FROM attendance WHERE user_id = ? ORDER BY day DESC LIMIT 31', u.id);
-    const board = seesAll(u) ? all(`SELECT u.id, u.name, u.emp_id, u.position, a.check_in, a.check_out FROM users u
+    const board = seesAll(u) ? all(`SELECT u.id, u.name, u.emp_id, u.position, a.check_in, a.check_out, a.source FROM users u
       LEFT JOIN attendance a ON a.user_id = u.id AND a.day = ? WHERE u.active = 1 ORDER BY (a.check_in IS NULL), u.name`, day) : null;
-    send(req, res, 'Attendance', `${head('Attendance', 'Times are shown in Bangladesh time (GMT+6).')}
+    send(req, res, 'Attendance', `${head('Attendance', 'Times are shown in Bangladesh time (GMT+6).' + (deviceMode() ? ' Recorded by the fingerprint machine.' : ''), isAdmin(u) ? '<a class="ws-btn ws-btn-ghost" href="/team/attendance/devices">Fingerprint machines</a>' : '')}
 <div class="ws-cols">
   <section class="ws-card ws-att"><h2>Today · ${esc(fmtDay(d))}</h2>${attendanceBlock(req, one('SELECT * FROM attendance WHERE user_id = ? AND day = ?', u.id, d))}</section>
   <section class="ws-card"><h2>My last 31 days</h2>
@@ -412,8 +440,9 @@ ${nav}<main class="ws-main" id="main">${m ? `<p class="ws-flash" role="status">$
 </div>
 ${board ? `<section class="ws-card"><div class="ws-card-head"><h2>Team on ${esc(fmtDay(day))}</h2>
   <form method="get" class="ws-inline"><label class="sr-only" for="day">Date</label><input type="date" name="day" id="day" value="${day}" max="${d}"><button class="ws-btn ws-btn-ghost" type="submit">Show</button></form></div>
-  <div class="ws-table-wrap"><table class="ws-table"><thead><tr><th>Employee</th><th>ID</th><th>In</th><th>Out</th><th>Hours</th></tr></thead><tbody>
-  ${board.map((a) => `<tr><td><strong>${esc(a.name)}</strong><br><span class="muted">${esc(a.position)}</span></td><td>${esc(a.emp_id)}</td><td>${a.check_in ? fmtTime(a.check_in) : '<span class="chip st-revision">Not checked in</span>'}</td><td>${fmtTime(a.check_out)}</td><td>${hours(a)}</td></tr>`).join('')}
+  <div class="ws-table-wrap"><table class="ws-table"><thead><tr><th>Employee</th><th>ID</th><th>In</th><th>Out</th><th>Hours</th><th>From</th>${isAdmin(u) ? '<th><span class="sr-only">Fix</span></th>' : ''}</tr></thead><tbody>
+  ${board.map((a) => `<tr><td><strong>${esc(a.name)}</strong><br><span class="muted">${esc(a.position)}</span></td><td>${esc(a.emp_id)}</td><td>${a.check_in ? fmtTime(a.check_in) : '<span class="chip st-revision">Not checked in</span>'}</td><td>${fmtTime(a.check_out)}</td><td>${hours(a)}</td>
+  <td class="muted">${a.check_in ? esc({ DEVICE: 'Machine', ADMIN: 'Admin fix', MANUAL: 'Button' }[a.source] || '') : ''}</td>${isAdmin(u) ? `<td><a href="/team/attendance/fix?user=${a.id}&day=${day}">Fix</a></td>` : ''}</tr>`).join('')}
   </tbody></table></div></section>` : ''}`, { active: '/team/attendance' });
   });
 
@@ -430,10 +459,11 @@ ${board ? `<section class="ws-card"><div class="ws-card-head"><h2>Team on ${esc(
   });
 
   // ---------------------------------------------------------------- tasks
-  const TASK_SELECT = `SELECT t.*, p.name AS project, a.name AS assignee, c.name AS creator,
+  const TASK_SELECT = `SELECT t.*, p.name AS project, a.name AS assignee, c.name AS creator, ch.name AS channel, ch.url AS channel_url,
     (SELECT COUNT(*) FROM tasks s WHERE s.parent_id = t.id) AS subs, (SELECT COUNT(*) FROM tasks s WHERE s.parent_id = t.id AND s.status = 'DONE') AS subs_done,
     (SELECT COUNT(*) FROM comments m WHERE m.task_id = t.id) AS comments
-    FROM tasks t LEFT JOIN projects p ON p.id = t.project_id LEFT JOIN users a ON a.id = t.assignee_id LEFT JOIN users c ON c.id = t.created_by`;
+    FROM tasks t LEFT JOIN projects p ON p.id = t.project_id LEFT JOIN users a ON a.id = t.assignee_id LEFT JOIN users c ON c.id = t.created_by
+    LEFT JOIN channels ch ON ch.id = t.channel_id`;
   const getTask = (id) => (int(id) ? one(TASK_SELECT + ' WHERE t.id = ?', int(id)) : null);
   const loadTask = (req, res, next) => {
     const x = getTask(req.params.id);
@@ -441,7 +471,7 @@ ${board ? `<section class="ws-card"><div class="ws-card-head"><h2>Team on ${esc(
     req.task = x; next();
   };
 
-  app.get('/team/tasks', auth, (req, res) => {
+  app.get('/team/tasks', auth, need((u) => hasModule(u, 'tasks')), (req, res) => {
     const u = req.user;
     const view = req.query.view === 'board' ? 'board' : 'list';
     const f = { who: ['me', 'created', 'all'].includes(req.query.who) ? req.query.who : (seesAll(u) ? 'all' : 'me'), project: int(req.query.project), status: pick(STATUS, req.query.status, ''), q: t(req.query.q, 80) };
@@ -547,9 +577,10 @@ ${filters}${view === 'board' ? board : list}`, { active: '/team/tasks' });
 ${head(x.title, `${statusChip(x.status)} ${prioChip(x.priority)}`, editor ? `<a class="ws-btn ws-btn-ghost" href="/team/tasks/${x.id}?edit=1">Edit</a>${act('delete', '<button class="ws-btn ws-btn-danger" type="submit">Delete</button>', '', ' data-confirm="Delete this task, its subtasks, comments and files?"')}` : '')}
 <div class="ws-detail">
   <div class="ws-detail-main">
-    <section class="ws-card"><h2>Description</h2>${x.description ? `<p class="ws-prose">${nl(x.description)}</p>` : '<p class="muted">No description.</p>'}</section>
+    ${x.kind === 'UPLOAD' ? uploadPanel(req, x) : ''}
+    <section class="ws-card"><h2>${x.kind === 'UPLOAD' ? 'Instructions' : 'Description'}</h2>${x.description ? `<p class="ws-prose">${nl(x.description)}</p>` : '<p class="muted">No description.</p>'}</section>
 
-    ${x.status === 'REVIEW' && approver ? `<section class="ws-card ws-review"><h2>Review this task</h2><p class="muted">${esc(x.assignee || 'The assignee')} marked this ready for review.</p>
+    ${x.status === 'REVIEW' && approver ? `<section class="ws-card ws-review"><h2>${x.kind === 'UPLOAD' ? 'Check this upload' : 'Review this task'}</h2><p class="muted">${x.kind === 'UPLOAD' ? `${esc(x.assignee || 'The assignee')} uploaded it. ${x.video_url ? `<a href="${esc(x.video_url)}" target="_blank" rel="noopener">Open the video ↗</a>` : ''}` : `${esc(x.assignee || 'The assignee')} marked this ready for review.`}</p>
       <div class="ws-review-grid">
       ${act('approve', '<label>Note (optional)<textarea name="note" id="approve-note" rows="2" maxlength="2000"></textarea></label><button class="ws-btn ws-btn-ok" type="submit">Approve and mark done</button>', '', ' class="ws-form"')}
       ${act('revision', '<label>What needs to change?<textarea name="note" id="revision-note" rows="2" required maxlength="2000"></textarea></label><button class="ws-btn ws-btn-warn" type="submit">Request revision</button>', '', ' class="ws-form"')}
@@ -577,7 +608,8 @@ ${head(x.title, `${statusChip(x.status)} ${prioChip(x.priority)}`, editor ? `<a 
       <p class="ws-kv"><span>Created by</span><strong>${esc(x.creator || '—')}</strong></p>
       <p class="ws-kv"><span>Created</span><strong>${esc(fmtWhen(x.created_at))}</strong></p>
       ${x.approved_at ? `<p class="ws-kv"><span>Approved</span><strong>${esc(fmtWhen(x.approved_at))}</strong></p>` : ''}
-      ${moves.length ? act('status', `<label>Move to<select name="status" id="status">${options(moves, '')}</select></label><button class="ws-btn ws-btn-ghost" type="submit">Update status</button>`, '', ' class="ws-form ws-move"') : ''}
+      ${moves.length && x.kind !== 'UPLOAD' ? act('status', `<label>Move to<select name="status" id="status">${options(moves, '')}</select></label><button class="ws-btn ws-btn-ghost" type="submit">Update status</button>`, '', ' class="ws-form ws-move"') : ''}
+      ${canStepBack(u, x) ? act('back', '<button class="ws-btn ws-btn-ghost" type="submit">↩ Step back</button><small class="muted">Pressed by mistake? This moves it back one step.</small>', '', ' class="ws-form ws-move"') : ''}
       ${x.status !== 'REVIEW' && x.status !== 'DONE' && x.assignee_id === u.id && !approver ? '<p class="muted small">When the work is finished, move it to “In review” so it can be approved.</p>' : ''}
     </section>
     <section class="ws-card"><h2>Files</h2>
@@ -616,6 +648,7 @@ ${head(x.title, `${statusChip(x.status)} ${prioChip(x.priority)}`, editor ? `<a 
     const x = req.task; const s = pick(STATUS, req.body.status, '');
     if (!s) return fail(req, res, 400, 'Choose a status.');
     if (!canSetStatus(req.user, x, s)) return fail(req, res, 403, s === 'DONE' || s === 'REVISION' ? 'Only an approver can move a task to Done or Needs revision.' : 'You cannot change this task.');
+    if (x.kind === 'UPLOAD' && s === 'REVIEW' && !x.video_url) return fail(req, res, 400, 'Open the upload task and add the video link first.');
     if (s !== x.status) setStatus(req, x, s);
     if (wantsJson(req)) return res.json({ ok: true });
     back(res, `/team/tasks/${x.id}`, 'moved');
@@ -628,7 +661,7 @@ ${head(x.title, `${statusChip(x.status)} ${prioChip(x.priority)}`, editor ? `<a 
       run('INSERT INTO comments (task_id, user_id, body, kind) VALUES (?,?,?,?)', x.id, req.user.id, t(req.body.note, 2000), 'APPROVED');
       setStatus(req, x, 'DONE');
     });
-    back(res, `/team/tasks/${x.id}`, 'approved');
+    back(res, ret(req, `/team/tasks/${x.id}`), 'approved');
   });
 
   app.post('/team/tasks/:id/revision', auth, loadTask, (req, res) => {
@@ -639,7 +672,7 @@ ${head(x.title, `${statusChip(x.status)} ${prioChip(x.priority)}`, editor ? `<a 
       run('INSERT INTO comments (task_id, user_id, body, kind) VALUES (?,?,?,?)', x.id, req.user.id, note, 'REVISION');
       setStatus(req, x, 'REVISION');
     });
-    back(res, `/team/tasks/${x.id}`, 'revision');
+    back(res, ret(req, `/team/tasks/${x.id}`), 'revision');
   });
 
   app.post('/team/tasks/:id/comments', auth, loadTask, (req, res) => {
@@ -745,7 +778,7 @@ ${head(x.title, `${statusChip(x.status)} ${prioChip(x.priority)}`, editor ? `<a 
     req.project = p; next();
   };
 
-  app.get('/team/projects', auth, (req, res) => {
+  app.get('/team/projects', auth, need((u) => hasModule(u, 'projects')), (req, res) => {
     const u = req.user;
     const rows = all(`SELECT p.*, l.name AS lead,
       (SELECT COUNT(*) FROM tasks t WHERE t.project_id = p.id AND t.parent_id IS NULL) AS total,
@@ -860,7 +893,7 @@ ${head(p.name, `${chip('ps', p.status, label(PSTATUS, p.status))} Lead: ${esc(p.
   });
 
   // ---------------------------------------------------------------- employees
-  app.get('/team/employees', auth, (req, res) => {
+  app.get('/team/employees', auth, need((u) => hasModule(u, 'employees')), (req, res) => {
     const u = req.user;
     const rows = all(`SELECT * FROM users ${isAdmin(u) ? '' : 'WHERE active = 1'} ORDER BY active DESC, emp_id`);
     send(req, res, 'Employees', `${head('Employees', `${rows.filter((r) => r.active).length} active`, isAdmin(u) ? '<a class="ws-btn" href="/team/employees/new">Add employee</a>' : '')}
@@ -880,6 +913,12 @@ ${isAdmin(u) ? `<td>${canManageUser(u, r) ? `<a href="/team/employees/${r.id}">M
     <label>Department<input name="department" id="department" maxlength="120" value="${esc(r.department || '')}"></label></div>
   <label>Role<select name="role" id="role">${options(assignableRoles(req.user), r.role || 'EMPLOYEE')}</select>
     <small>Employee: own tasks. Team lead: assigns and approves in their projects. Manager: all tasks and projects. Admin: also manages employees.</small></label>
+  <fieldset class="ws-fieldset"><legend>What this person can open</legend>
+    <input type="hidden" name="modules_set" value="1">
+    <div class="ws-checkgrid">${MODULES.map(([k, l]) => `<label class="ws-check-row"><input type="checkbox" name="modules" value="${k}"${(parseModules(r) || defaultModules(r)).includes(k) ? ' checked' : ''}> ${l}</label>`).join('')}</div>
+    <small>Dashboard and notifications are always there. Managers and admins open everything. Anyone given a daily upload schedule gets Video uploads automatically.</small></fieldset>
+  <label>Fingerprint machine ID<input name="device_pin" id="device_pin" inputmode="numeric" maxlength="20" value="${esc(r.device_pin || '')}" placeholder="e.g. 7">
+    <small>The user number this person has on the fingerprint machine. Their punches are matched to them by it.</small></label>
   ${r.id ? `<label class="ws-check-row"><input type="checkbox" name="active" id="active" value="1"${r.active ? ' checked' : ''}> Active (can sign in)</label>`
     : '<label>Temporary password<input type="text" name="password" id="password" required minlength="10" autocomplete="off"><small>Share it with the employee privately. They must change it when they first sign in.</small></label>'}
   ${req.query.e ? `<p class="ws-err" role="alert">${esc(t(req.query.e, 200))}</p>` : ''}
@@ -887,7 +926,10 @@ ${isAdmin(u) ? `<td>${canManageUser(u, r) ? `<a href="/team/employees/${r.id}">M
   const readEmp = (req) => {
     const b = req.body;
     const f = { name: t(b.name, 120), email: t(b.email, 160).toLowerCase(), phone: t(b.phone, 40), position: t(b.position, 120), department: t(b.department, 120),
-      joined_on: isDate(b.joined_on) ? b.joined_on : '', role: pick(assignableRoles(req.user), b.role, 'EMPLOYEE') };
+      joined_on: isDate(b.joined_on) ? b.joined_on : '', role: pick(assignableRoles(req.user), b.role, 'EMPLOYEE'),
+      // Only a form that showed the checkboxes sets access; otherwise the role's defaults stay.
+      modules: b.modules_set === '1' ? JSON.stringify([].concat(b.modules || []).filter((k) => MODULES.some((m) => m[0] === k))) : null,
+      device_pin: t(b.device_pin, 20).replace(/\D/g, '') };
     if (!f.name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email)) return [null, 'Enter a name and a valid email.'];
     return [f, ''];
   };
@@ -907,9 +949,11 @@ ${isAdmin(u) ? `<td>${canManageUser(u, r) ? `<a href="/team/employees/${r.id}">M
     if (e) return err(e);
     if (pwProblem(pw)) return err(pwProblem(pw));
     if (one('SELECT 1 FROM users WHERE email = ?', f.email)) return err('An employee with this email already exists.');
+    if (f.device_pin && one('SELECT 1 FROM users WHERE device_pin = ?', f.device_pin)) return err('Another employee already has this fingerprint machine ID.');
     const empId = nextEmpId();
-    const r = run('INSERT INTO users (emp_id, name, email, phone, position, department, role, password_hash, must_change_pw, joined_on) VALUES (?,?,?,?,?,?,?,?,1,?)',
-      empId, f.name, f.email, f.phone, f.position, f.department, f.role, hashPw(pw), f.joined_on);
+    const r = run('INSERT INTO users (emp_id, name, email, phone, position, department, role, password_hash, must_change_pw, joined_on, modules, device_pin) VALUES (?,?,?,?,?,?,?,?,1,?,?,?)',
+      empId, f.name, f.email, f.phone, f.position, f.department, f.role, hashPw(pw), f.joined_on, f.modules, f.device_pin);
+    if (f.device_pin) applyPunches();
     audit(req, 'employee_created', 'user', Number(r.lastInsertRowid), `${empId} ${f.email} ${f.role}`);
     back(res, '/team/employees', 'created');
   });
@@ -930,8 +974,10 @@ ${isAdmin(u) ? `<td>${canManageUser(u, r) ? `<a href="/team/employees/${r.id}">M
     if (r.id === req.user.id && (!active || f.role !== r.role)) return err('You cannot change your own role or deactivate yourself.');
     if (r.role === 'SUPER_ADMIN' && (f.role !== 'SUPER_ADMIN' || !active) && superCount() <= 1) return err('There must always be at least one active Super admin.');
     if (one('SELECT 1 FROM users WHERE email = ? AND id != ?', f.email, r.id)) return err('Another employee already uses this email.');
-    run('UPDATE users SET name = ?, email = ?, phone = ?, position = ?, department = ?, role = ?, joined_on = ?, active = ? WHERE id = ?',
-      f.name, f.email, f.phone, f.position, f.department, f.role, f.joined_on, active, r.id);
+    if (f.device_pin && one('SELECT 1 FROM users WHERE device_pin = ? AND id != ?', f.device_pin, r.id)) return err('Another employee already has this fingerprint machine ID.');
+    run('UPDATE users SET name = ?, email = ?, phone = ?, position = ?, department = ?, role = ?, joined_on = ?, active = ?, modules = ?, device_pin = ? WHERE id = ?',
+      f.name, f.email, f.phone, f.position, f.department, f.role, f.joined_on, active, f.modules, f.device_pin, r.id);
+    if (f.device_pin !== r.device_pin) applyPunches();
     if (!active) run('DELETE FROM sessions WHERE user_id = ?', r.id);
     audit(req, 'employee_updated', 'user', r.id, `${r.emp_id} role=${f.role} active=${active}`);
     back(res, `/team/employees/${r.id}`, 'saved');
@@ -956,6 +1002,439 @@ ${isAdmin(u) ? `<td>${canManageUser(u, r) ? `<a href="/team/employees/${r.id}">M
 ${rows.slice(0, per).map((a) => `<tr><td class="num">${esc(fmtWhen(a.created_at))}</td><td>${esc(a.name || '—')}</td><td><code>${esc(a.action)}</code></td><td>${a.entity ? esc(a.entity + (a.entity_id ? ' #' + a.entity_id : '')) : ''}</td><td>${esc(a.detail)}</td><td class="num muted">${esc(a.ip)}</td></tr>`).join('')}
 </tbody></table></div>
 <p class="ws-pager">${page > 1 ? `<a href="?page=${page - 1}">Newer</a>` : ''}${more ? `<a href="?page=${page + 1}">Older</a>` : ''}</p>`, { active: '/team/audit' });
+  });
+
+  // ================================================================ VIDEO UPLOADS
+  //
+  // Channels and pages are kept here with their links. A daily schedule per
+  // channel makes that day's upload tasks on its own, for one person. An
+  // upload moves in three steps - To upload, Uploaded (with the video's
+  // link), Checked - and any step can be undone with Step back.
+
+  const PLATFORMS = [['FACEBOOK', 'Facebook page'], ['YOUTUBE', 'YouTube channel'], ['TIKTOK', 'TikTok'], ['INSTAGRAM', 'Instagram'], ['OTHER', 'Other']];
+  const DAYS = [['6', 'Sat'], ['0', 'Sun'], ['1', 'Mon'], ['2', 'Tue'], ['3', 'Wed'], ['4', 'Thu'], ['5', 'Fri']];
+  const cleanUrl = (v) => { const s = t(v, 500); return /^https?:\/\/\S+$/i.test(s) ? s : ''; };
+  const weekday = (d) => String(new Date(d + 'T00:00:00Z').getUTCDay());
+  const ret = (req, d) => { const b = String((req.body && req.body._back) || ''); return b.startsWith('/team/') ? safeNext(b) : d; };
+  const UPLOAD_STEP = { TODO: 'To upload', IN_PROGRESS: 'To upload', REVISION: 'Upload again', REVIEW: 'Uploaded · to check', DONE: 'Checked' };
+  const uploadChip = (s) => chip('st', s, UPLOAD_STEP[s] || s);
+  const PREV = { DONE: 'REVIEW', REVIEW: 'TODO', REVISION: 'REVIEW', IN_PROGRESS: 'TODO' };
+  const canStepBack = (u, x) => Boolean(PREV[x.status]) && (['DONE', 'REVISION'].includes(x.status)
+    ? canApprove(u, x) : canEditTask(u, x) || x.assignee_id === u.id || canApprove(u, x));
+
+  /** Makes the day's upload tasks. Safe to run any number of times: a unique
+   *  index on (schedule, day, slot) keeps exactly one task per slot. */
+  function runSchedules(day = today()) {
+    const rows = all('SELECT s.*, c.name AS channel FROM schedules s JOIN channels c ON c.id = s.channel_id WHERE s.active = 1 AND c.active = 1');
+    let made = 0;
+    for (const s of rows) {
+      if (!String(s.days).includes(weekday(day))) continue;
+      const n = Math.min(Math.max(s.per_day, 1), 20);
+      for (let slot = 1; slot <= n; slot++) {
+        const title = `${s.title || 'Upload video'} — ${s.channel}${n > 1 ? ` (${slot}/${n})` : ''}`;
+        const r = run(`INSERT OR IGNORE INTO tasks (kind, channel_id, schedule_id, slot, title, description, priority, assignee_id, created_by, due_date)
+          VALUES ('UPLOAD',?,?,?,?,?,?,?,?,?)`, s.channel_id, s.id, slot, title, s.description, s.priority, s.assignee_id, s.created_by, day);
+        if (r.changes) {
+          made++;
+          if (s.assignee_id) run('INSERT INTO notifications (user_id, text, link) VALUES (?,?,?)', s.assignee_id, `Today’s upload: ${title}`, `/team/tasks/${r.lastInsertRowid}`);
+        }
+      }
+    }
+    return made;
+  }
+  try { runSchedules(); } catch (e) { console.error('[schedules]', e.message); }
+  setInterval(() => { try { runSchedules(); } catch (e) { console.error('[schedules]', e.message); } }, 10 * 60 * 1000).unref();
+
+  const stepOf = (s) => (s === 'DONE' ? 3 : s === 'REVIEW' ? 2 : 1);
+  const steps = (s) => `<ol class="ws-steps" aria-label="Upload steps">${['To upload', 'Uploaded', 'Checked'].map((l, i) =>
+    `<li class="${stepOf(s) > i + 1 || s === 'DONE' ? 'is-done' : stepOf(s) === i + 1 ? 'is-now' : ''}">${l}</li>`).join('')}</ol>`;
+  const channelLink = (x) => (x.channel_url ? `<a href="${esc(x.channel_url)}" target="_blank" rel="noopener">${esc(x.channel || 'Open')} ↗</a>` : esc(x.channel || '—'));
+
+  /** The upload box on an upload task's own page. */
+  function uploadPanel(req, x) {
+    const u = req.user;
+    const doer = x.assignee_id === u.id || canEditTask(u, x);
+    const open = ['TODO', 'IN_PROGRESS', 'REVISION'].includes(x.status);
+    return `<section class="ws-card ws-upload">
+      <div class="ws-card-head"><h2>Video upload</h2>${uploadChip(x.status)}</div>
+      ${steps(x.status)}
+      <p class="ws-kv"><span>Channel / page</span><strong>${channelLink(x)}</strong></p>
+      ${x.video_url ? `<p class="ws-kv"><span>Uploaded video</span><strong><a href="${esc(x.video_url)}" target="_blank" rel="noopener">Open video ↗</a></strong></p>` : ''}
+      ${x.uploaded_at ? `<p class="ws-kv"><span>Uploaded at</span><strong>${esc(fmtWhen(x.uploaded_at))}</strong></p>` : ''}
+      ${open && doer ? `<form method="post" action="/team/tasks/${x.id}/uploaded" class="ws-form ws-move">${csrfField(req)}
+        <label>Link to the uploaded video<input type="url" name="video_url" id="video_url" required placeholder="https://" value="${esc(x.video_url)}"></label>
+        <button class="ws-btn" type="submit">Mark as uploaded</button></form>` : ''}
+    </section>`;
+  }
+
+  /** The dashboard card: today's uploads at a glance. */
+  function uploadsToday(u) {
+    const d = today();
+    try { runSchedules(d); } catch (e) { /* the page still loads */ }
+    const mine = seesAll(u) ? '' : 'AND t.assignee_id = ?';
+    const rows = all(`SELECT t.status FROM tasks t WHERE t.kind = 'UPLOAD' AND t.due_date = ? ${mine}`, d, ...(seesAll(u) ? [] : [u.id]));
+    if (!rows.length) return '';
+    const up = rows.filter((r) => ['REVIEW', 'DONE'].includes(r.status)).length;
+    const ok = rows.filter((r) => r.status === 'DONE').length;
+    return `<section class="ws-card ws-up-strip"><div><h2>Today’s video uploads</h2>
+      <p class="muted">${up} of ${rows.length} uploaded · ${ok} checked</p></div>
+      <div class="ws-bar" role="img" aria-label="${up} of ${rows.length} uploaded"><i style="width:${Math.round((up / rows.length) * 100)}%"></i></div>
+      <a class="ws-btn" href="/team/uploads">${seesAll(u) ? 'Check uploads' : 'Open my uploads'}</a></section>`;
+  }
+
+  app.get('/team/uploads', auth, need((u) => hasModule(u, 'uploads')), (req, res) => {
+    const u = req.user; const d = today();
+    const day = isDate(req.query.day) ? req.query.day : d;
+    if (day === d) runSchedules(d);
+    const everyone = seesAll(u);
+    const rows = all(`SELECT t.*, a.name AS assignee, ch.name AS channel, ch.url AS channel_url, ch.platform FROM tasks t
+      LEFT JOIN users a ON a.id = t.assignee_id LEFT JOIN channels ch ON ch.id = t.channel_id
+      WHERE t.kind = 'UPLOAD' AND t.due_date = ? ${everyone ? '' : 'AND (t.assignee_id = ? OR t.created_by = ?)'}
+      ORDER BY ch.name, t.slot, t.id`, day, ...(everyone ? [] : [u.id, u.id]));
+    const late = all(`SELECT t.id, t.title, t.due_date, a.name AS assignee FROM tasks t LEFT JOIN users a ON a.id = t.assignee_id
+      WHERE t.kind = 'UPLOAD' AND t.status NOT IN ('DONE') AND t.due_date < ? ${everyone ? '' : 'AND t.assignee_id = ?'} ORDER BY t.due_date DESC LIMIT 30`, day, ...(everyone ? [] : [u.id]));
+    const here = `/team/uploads${day !== d ? '?day=' + day : ''}`;
+    const backField = `<input type="hidden" name="_back" value="${esc(here)}">`;
+    const form = (x, path, body, attrs = '') => `<form method="post" action="/team/tasks/${x.id}/${path}"${attrs}>${csrfField(req)}${backField}${body}</form>`;
+    const up = rows.filter((r) => ['REVIEW', 'DONE'].includes(r.status)).length;
+    const ok = rows.filter((r) => r.status === 'DONE').length;
+
+    const actions = (x) => {
+      const out = [];
+      const doer = x.assignee_id === u.id || canEditTask(u, x);
+      if (['TODO', 'IN_PROGRESS', 'REVISION'].includes(x.status) && doer) {
+        out.push(form(x, 'uploaded', `<label class="sr-only" for="v${x.id}">Video link</label><input type="url" name="video_url" id="v${x.id}" required placeholder="Paste the video link" value="${esc(x.video_url)}"><button class="ws-btn" type="submit">Uploaded</button>`, ' class="ws-inline"'));
+      }
+      if (x.status === 'REVIEW' && canApprove(u, x)) {
+        out.push(form(x, 'approve', '<button class="ws-btn ws-btn-ok" type="submit">✓ Checked</button>'));
+        out.push(form(x, 'revision', `<label class="sr-only" for="n${x.id}">What is wrong</label><input name="note" id="n${x.id}" required maxlength="500" placeholder="What is wrong?"><button class="ws-btn ws-btn-warn" type="submit">Not OK</button>`, ' class="ws-inline"'));
+      }
+      if (canStepBack(u, x)) out.push(form(x, 'back', '<button class="ws-link-btn ws-back" type="submit" title="Move back one step">↩ Step back</button>'));
+      return out.join('');
+    };
+
+    send(req, res, 'Video uploads', `${head('Video uploads', `${esc(fmtDay(day))} · ${up} of ${rows.length} uploaded · ${ok} checked`,
+      `<form method="get" class="ws-inline"><label class="sr-only" for="day">Date</label><input type="date" name="day" id="day" value="${day}" max="${d}"><button class="ws-btn ws-btn-ghost" type="submit">Show</button></form>
+       ${everyone ? '<a class="ws-btn" href="/team/uploads/setup">Channels &amp; schedule</a>' : ''}`)}
+${rows.length ? `<div class="ws-up-list">${rows.map((x) => `
+  <article class="ws-card ws-up ws-up-${x.status.toLowerCase()}">
+    <div class="ws-up-main">
+      <p class="ws-up-ch">${channelLink(x)}<span class="muted"> · ${esc(label(PLATFORMS, x.platform) || '')}</span></p>
+      <h2><a href="/team/tasks/${x.id}">${esc(x.title)}</a></h2>
+      <p class="ws-meta" style="justify-content:flex-start">${uploadChip(x.status)}<span>${esc(x.assignee || 'Unassigned')}</span>
+        ${x.video_url ? `<a href="${esc(x.video_url)}" target="_blank" rel="noopener">Open video ↗</a>` : ''}${x.uploaded_at ? `<span>${esc(fmtTime(x.uploaded_at))}</span>` : ''}</p>
+      ${steps(x.status)}
+    </div>
+    <div class="ws-up-act">${actions(x)}</div>
+  </article>`).join('')}</div>`
+  : `<div class="ws-card ws-empty"><h2>No uploads for this day</h2><p class="muted">${everyone ? 'Add a channel and a daily schedule under <a href="/team/uploads/setup">Channels &amp; schedule</a>, and the tasks appear here every day on their own.' : 'When the admin gives you daily upload work, it appears here every day.'}</p></div>`}
+${late.length ? `<section class="ws-card"><h2>Still not checked from earlier days</h2><ul class="ws-list">${late.map((x) => `<li><a href="/team/tasks/${x.id}"><strong>${esc(x.title)}</strong><span class="muted">${esc(x.assignee || '')}</span></a><span class="ws-meta">${due(x.due_date)}</span></li>`).join('')}</ul></section>` : ''}`, { active: '/team/uploads' });
+  });
+
+  app.post('/team/tasks/:id/uploaded', auth, loadTask, (req, res) => {
+    const x = req.task; const u = req.user;
+    if (x.kind !== 'UPLOAD') return fail(req, res, 400, 'This is not an upload task.');
+    if (!(x.assignee_id === u.id || canEditTask(u, x))) return fail(req, res, 403, 'Only the person doing this upload can mark it.');
+    const url = cleanUrl(req.body.video_url);
+    if (!url) return fail(req, res, 400, 'Paste the full link to the uploaded video (starting with https://).');
+    run("UPDATE tasks SET video_url = ?, uploaded_at = datetime('now'), status = 'REVIEW', approved_by = NULL, approved_at = NULL, updated_at = datetime('now') WHERE id = ?", url, x.id);
+    audit(req, 'video_uploaded', 'task', x.id, url);
+    new Set([x.created_by, leadOf(x)]).forEach((id) => notify(req, id, `${u.name} uploaded “${x.title}”. Check it.`, `/team/tasks/${x.id}`));
+    back(res, ret(req, `/team/tasks/${x.id}`), 'uploaded');
+  });
+
+  app.post('/team/tasks/:id/back', auth, loadTask, (req, res) => {
+    const x = req.task;
+    if (!canStepBack(req.user, x)) return fail(req, res, 403, 'You cannot move this task back.');
+    let to = PREV[x.status];
+    if (x.kind !== 'UPLOAD' && x.status === 'REVIEW') to = 'IN_PROGRESS';
+    run("UPDATE tasks SET status = ?, approved_by = NULL, approved_at = NULL, updated_at = datetime('now') WHERE id = ?", to, x.id);
+    audit(req, 'task_step_back', 'task', x.id, `${x.status} → ${to}`);
+    if (x.assignee_id) notify(req, x.assignee_id, `${req.user.name} moved “${x.title}” back to ${x.kind === 'UPLOAD' ? UPLOAD_STEP[to] : label(STATUS, to)}`, `/team/tasks/${x.id}`);
+    back(res, ret(req, `/team/tasks/${x.id}`), 'stepback');
+  });
+
+  // ---- channels and schedules (managers and above)
+  app.get('/team/uploads/setup', auth, need(seesAll, 'Only managers and above can set up channels.'), (req, res) => {
+    const channels = all('SELECT c.*, (SELECT COUNT(*) FROM schedules s WHERE s.channel_id = c.id AND s.active = 1) AS sched FROM channels c ORDER BY c.active DESC, c.name');
+    const sched = all(`SELECT s.*, c.name AS channel, a.name AS assignee FROM schedules s JOIN channels c ON c.id = s.channel_id
+      LEFT JOIN users a ON a.id = s.assignee_id ORDER BY s.active DESC, c.name`);
+    const dayChecks = (val, prefix) => `<div class="ws-days">${DAYS.map(([k, l]) => `<label class="ws-check-row"><input type="checkbox" name="days" value="${k}"${String(val).includes(k) ? ' checked' : ''} id="${prefix}-d${k}"> ${l}</label>`).join('')}</div>`;
+    const dayText = (v) => (String(v).length === 7 ? 'Every day' : DAYS.filter(([k]) => String(v).includes(k)).map((x) => x[1]).join(', ') || 'No days');
+    const e = req.query.e ? `<p class="ws-err" role="alert">${esc(t(req.query.e, 200))}</p>` : '';
+
+    send(req, res, 'Channels & schedule', `<nav class="ws-crumbs" aria-label="Breadcrumb"><a href="/team/uploads">Video uploads</a></nav>
+${head('Channels & schedule', 'Keep every page and channel here with its link, then say who uploads to it and on which days. The tasks are created every morning on their own.')}
+${e}
+<section class="ws-card"><div class="ws-card-head"><h2>Channels and pages</h2></div>
+  ${channels.length ? `<div class="ws-table-wrap"><table class="ws-table"><thead><tr><th>Name</th><th>Where</th><th>Link</th><th>Schedules</th><th>Status</th><th></th></tr></thead><tbody>
+  ${channels.map((c) => `<tr class="${c.active ? '' : 'is-off'}"><td><strong>${esc(c.name)}</strong>${c.notes ? `<br><span class="muted">${esc(c.notes)}</span>` : ''}</td><td>${esc(label(PLATFORMS, c.platform))}</td>
+    <td>${c.url ? `<a href="${esc(c.url)}" target="_blank" rel="noopener">Open ↗</a>` : '—'}</td><td>${c.sched}</td><td>${c.active ? '<span class="chip st-done">Active</span>' : '<span class="chip st-todo">Paused</span>'}</td>
+    <td><a href="/team/uploads/channels/${c.id}">Edit</a></td></tr>`).join('')}</tbody></table></div>` : '<p class="muted">No channels yet. Add the first one below.</p>'}
+  <form method="post" action="/team/uploads/channels" class="ws-form ws-move">${csrfField(req)}
+    <h3 class="ws-h3">Add a channel or page</h3>
+    <div class="ws-row"><label>Name<input name="name" id="ch-name" required maxlength="120" placeholder="e.g. MONOHA Facebook page"></label>
+      <label>Where<select name="platform" id="ch-platform">${options(PLATFORMS, 'FACEBOOK')}</select></label></div>
+    <label>Link<input type="url" name="url" id="ch-url" required placeholder="https://www.facebook.com/…"></label>
+    <label>Notes (optional)<input name="notes" id="ch-notes" maxlength="300" placeholder="e.g. upload by 8 pm, use the brand intro"></label>
+    <div class="ws-actions"><button class="ws-btn" type="submit">Add channel</button></div></form>
+</section>
+
+<section class="ws-card"><div class="ws-card-head"><h2>Daily upload schedule</h2></div>
+  ${sched.length ? `<div class="ws-table-wrap"><table class="ws-table"><thead><tr><th>Channel</th><th>Who uploads</th><th>Days</th><th>Per day</th><th>Status</th><th></th></tr></thead><tbody>
+  ${sched.map((s) => `<tr class="${s.active ? '' : 'is-off'}"><td><strong>${esc(s.channel)}</strong><br><span class="muted">${esc(s.title || 'Upload video')}</span></td><td>${esc(s.assignee || 'Nobody')}</td>
+    <td>${esc(dayText(s.days))}</td><td class="num">${s.per_day}</td><td>${s.active ? '<span class="chip st-done">On</span>' : '<span class="chip st-todo">Off</span>'}</td>
+    <td><a href="/team/uploads/schedules/${s.id}">Edit</a></td></tr>`).join('')}</tbody></table></div>` : '<p class="muted">No schedule yet.</p>'}
+  ${channels.some((c) => c.active) ? `<form method="post" action="/team/uploads/schedules" class="ws-form ws-move">${csrfField(req)}
+    <h3 class="ws-h3">Add a daily upload</h3>
+    <div class="ws-row"><label>Channel<select name="channel_id" id="sc-channel">${options(channels.filter((c) => c.active).map((c) => [c.id, c.name]), '')}</select></label>
+      <label>Who uploads<select name="assignee_id" id="sc-assignee">${userOptions(req.user, '', '')}</select></label></div>
+    <div class="ws-row"><label>Task name<input name="title" id="sc-title" maxlength="120" value="Upload video"></label>
+      <label>Videos per day<input type="number" name="per_day" id="sc-per" min="1" max="20" value="1"></label>
+      <label>Priority<select name="priority" id="sc-prio">${options(PRIORITY, 'MEDIUM')}</select></label></div>
+    <fieldset class="ws-fieldset"><legend>On which days</legend>${dayChecks('0123456', 'new')}</fieldset>
+    <label>Instructions (optional)<textarea name="description" id="sc-desc" rows="3" maxlength="2000" placeholder="What to upload, caption style, deadline…"></textarea></label>
+    <div class="ws-actions"><button class="ws-btn" type="submit">Add schedule</button></div></form>` : ''}
+</section>`, { active: '/team/uploads' });
+  });
+
+  const readChannel = (b) => ({ name: t(b.name, 120), platform: pick(PLATFORMS, b.platform, 'OTHER'), url: cleanUrl(b.url), notes: t(b.notes, 300) });
+  app.post('/team/uploads/channels', auth, need(seesAll), (req, res) => {
+    const c = readChannel(req.body);
+    if (!c.name || !c.url) return back(res, '/team/uploads/setup?e=' + encodeURIComponent('Give the channel a name and its full link (https://…).'));
+    const r = run('INSERT INTO channels (name, platform, url, notes) VALUES (?,?,?,?)', c.name, c.platform, c.url, c.notes);
+    audit(req, 'channel_created', 'channel', Number(r.lastInsertRowid), c.name);
+    back(res, '/team/uploads/setup', 'created');
+  });
+  app.get('/team/uploads/channels/:id', auth, need(seesAll), (req, res) => {
+    const c = int(req.params.id) && one('SELECT * FROM channels WHERE id = ?', int(req.params.id));
+    if (!c) return fail(req, res, 404, 'Channel not found.');
+    send(req, res, c.name, `<nav class="ws-crumbs" aria-label="Breadcrumb"><a href="/team/uploads/setup">Channels &amp; schedule</a></nav>${head(c.name)}
+<div class="ws-card ws-narrow"><form method="post" action="/team/uploads/channels/${c.id}" class="ws-form">${csrfField(req)}
+  <div class="ws-row"><label>Name<input name="name" id="name" required maxlength="120" value="${esc(c.name)}"></label>
+    <label>Where<select name="platform" id="platform">${options(PLATFORMS, c.platform)}</select></label></div>
+  <label>Link<input type="url" name="url" id="url" required value="${esc(c.url)}"></label>
+  <label>Notes<input name="notes" id="notes" maxlength="300" value="${esc(c.notes)}"></label>
+  <label class="ws-check-row"><input type="checkbox" name="active" id="active" value="1"${c.active ? ' checked' : ''}> Active (paused channels make no new tasks)</label>
+  <div class="ws-actions"><button class="ws-btn" type="submit">Save</button><a class="ws-btn ws-btn-ghost" href="/team/uploads/setup">Cancel</a></div></form></div>`, { active: '/team/uploads' });
+  });
+  app.post('/team/uploads/channels/:id', auth, need(seesAll), (req, res) => {
+    const id = int(req.params.id); const c = readChannel(req.body);
+    if (!id || !c.name || !c.url) return back(res, '/team/uploads/setup?e=' + encodeURIComponent('Give the channel a name and its full link.'));
+    run('UPDATE channels SET name = ?, platform = ?, url = ?, notes = ?, active = ? WHERE id = ?', c.name, c.platform, c.url, c.notes, req.body.active === '1' ? 1 : 0, id);
+    audit(req, 'channel_updated', 'channel', id, c.name);
+    back(res, '/team/uploads/setup', 'saved');
+  });
+
+  const readSchedule = (req) => {
+    const b = req.body;
+    const channel = int(b.channel_id) && one('SELECT id FROM channels WHERE id = ?', int(b.channel_id));
+    let assignee = int(b.assignee_id);
+    if (assignee && !one('SELECT 1 FROM users WHERE id = ? AND active = 1', assignee)) assignee = null;
+    const days = [...new Set([].concat(b.days || []).filter((d) => /^[0-6]$/.test(d)))].sort().join('');
+    return { channel_id: channel ? channel.id : null, assignee_id: assignee, title: t(b.title, 120) || 'Upload video', description: t(b.description, 2000),
+      days, per_day: Math.min(Math.max(int(b.per_day) || 1, 1), 20), priority: pick(PRIORITY, b.priority, 'MEDIUM') };
+  };
+  app.post('/team/uploads/schedules', auth, need(seesAll), (req, res) => {
+    const s = readSchedule(req);
+    if (!s.channel_id || !s.assignee_id || !s.days) return back(res, '/team/uploads/setup?e=' + encodeURIComponent('Choose a channel, who uploads, and at least one day.'));
+    const r = run('INSERT INTO schedules (channel_id, assignee_id, title, description, days, per_day, priority, created_by) VALUES (?,?,?,?,?,?,?,?)',
+      s.channel_id, s.assignee_id, s.title, s.description, s.days, s.per_day, s.priority, req.user.id);
+    audit(req, 'schedule_created', 'schedule', Number(r.lastInsertRowid), `channel ${s.channel_id} → user ${s.assignee_id}`);
+    runSchedules();
+    back(res, '/team/uploads/setup', 'created');
+  });
+  app.get('/team/uploads/schedules/:id', auth, need(seesAll), (req, res) => {
+    const s = int(req.params.id) && one('SELECT * FROM schedules WHERE id = ?', int(req.params.id));
+    if (!s) return fail(req, res, 404, 'Schedule not found.');
+    const channels = all('SELECT id, name FROM channels ORDER BY name');
+    send(req, res, 'Edit schedule', `<nav class="ws-crumbs" aria-label="Breadcrumb"><a href="/team/uploads/setup">Channels &amp; schedule</a></nav>${head('Edit schedule', 'Changes apply from the next day’s tasks. Today’s tasks stay as they are.')}
+<div class="ws-card ws-narrow"><form method="post" action="/team/uploads/schedules/${s.id}" class="ws-form">${csrfField(req)}
+  <div class="ws-row"><label>Channel<select name="channel_id" id="channel_id">${options(channels.map((c) => [c.id, c.name]), s.channel_id)}</select></label>
+    <label>Who uploads<select name="assignee_id" id="assignee_id">${userOptions(req.user, s.assignee_id, '')}</select></label></div>
+  <div class="ws-row"><label>Task name<input name="title" id="title" maxlength="120" value="${esc(s.title)}"></label>
+    <label>Videos per day<input type="number" name="per_day" id="per_day" min="1" max="20" value="${s.per_day}"></label>
+    <label>Priority<select name="priority" id="priority">${options(PRIORITY, s.priority)}</select></label></div>
+  <fieldset class="ws-fieldset"><legend>On which days</legend><div class="ws-days">${DAYS.map(([k, l]) => `<label class="ws-check-row"><input type="checkbox" name="days" value="${k}"${String(s.days).includes(k) ? ' checked' : ''}> ${l}</label>`).join('')}</div></fieldset>
+  <label>Instructions<textarea name="description" id="description" rows="3" maxlength="2000">${esc(s.description)}</textarea></label>
+  <label class="ws-check-row"><input type="checkbox" name="active" id="active" value="1"${s.active ? ' checked' : ''}> On (makes tasks every scheduled day)</label>
+  <div class="ws-actions"><button class="ws-btn" type="submit">Save</button><a class="ws-btn ws-btn-ghost" href="/team/uploads/setup">Cancel</a></div></form>
+  <form method="post" action="/team/uploads/schedules/${s.id}/delete" class="ws-move" data-confirm="Delete this schedule? Tasks already made stay.">${csrfField(req)}<button class="ws-btn ws-btn-danger" type="submit">Delete schedule</button></form></div>`, { active: '/team/uploads' });
+  });
+  app.post('/team/uploads/schedules/:id', auth, need(seesAll), (req, res) => {
+    const id = int(req.params.id); const s = readSchedule(req);
+    if (!id || !s.channel_id || !s.assignee_id || !s.days) return back(res, `/team/uploads/setup?e=${encodeURIComponent('Choose a channel, who uploads, and at least one day.')}`);
+    run('UPDATE schedules SET channel_id = ?, assignee_id = ?, title = ?, description = ?, days = ?, per_day = ?, priority = ?, active = ? WHERE id = ?',
+      s.channel_id, s.assignee_id, s.title, s.description, s.days, s.per_day, s.priority, req.body.active === '1' ? 1 : 0, id);
+    audit(req, 'schedule_updated', 'schedule', id, `channel ${s.channel_id} → user ${s.assignee_id}`);
+    runSchedules();
+    back(res, '/team/uploads/setup', 'saved');
+  });
+  app.post('/team/uploads/schedules/:id/delete', auth, need(seesAll), (req, res) => {
+    const id = int(req.params.id);
+    run('DELETE FROM schedules WHERE id = ?', id);
+    audit(req, 'schedule_deleted', 'schedule', id);
+    back(res, '/team/uploads/setup', 'deleted');
+  });
+
+  // ================================================================ FINGERPRINT ATTENDANCE
+  //
+  // The machine (ZKTeco and other "ADMS / Push" devices) sends every punch to
+  // this server over HTTP on its own: /iclock/cdata. A machine is listed the
+  // moment it first calls in, and its punches count only once an admin has
+  // approved its serial number. Punches are matched to employees by the user
+  // number on the machine (Fingerprint machine ID on their profile). The
+  // first punch of the day is In, the last is Out. Nobody types a time in.
+
+  /** Links punches from approved machines to employees and rebuilds those
+   *  days' attendance. A day an admin corrected by hand is left alone. */
+  function applyPunches(sinceDay = '') {
+    tx(() => {
+      run(`UPDATE punches SET user_id = (SELECT id FROM users WHERE users.device_pin = punches.pin AND users.device_pin != '' LIMIT 1)
+        WHERE day >= ? AND device_serial IN (SELECT serial FROM devices WHERE approved = 1)`, sinceDay);
+      const groups = all(`SELECT user_id, day, MIN(at) AS first, MAX(at) AS last, COUNT(*) AS n FROM punches
+        WHERE user_id IS NOT NULL AND day >= ? AND device_serial IN (SELECT serial FROM devices WHERE approved = 1) GROUP BY user_id, day`, sinceDay);
+      for (const g of groups) {
+        const a = one('SELECT * FROM attendance WHERE user_id = ? AND day = ?', g.user_id, g.day);
+        if (a && a.source === 'ADMIN') continue;
+        const out = g.n > 1 ? g.last : null;
+        if (a) run("UPDATE attendance SET check_in = ?, check_out = ?, source = 'DEVICE' WHERE id = ?", g.first, out, a.id);
+        else run("INSERT INTO attendance (user_id, day, check_in, check_out, source) VALUES (?,?,?,?,'DEVICE')", g.user_id, g.day, g.first, out);
+      }
+    });
+  }
+
+  const seen = (sn) => {
+    run("INSERT INTO devices (serial, last_seen) VALUES (?, datetime('now')) ON CONFLICT(serial) DO UPDATE SET last_seen = datetime('now')", sn);
+    return one('SELECT * FROM devices WHERE serial = ?', sn);
+  };
+  const serialOf = (req) => t(req.query.SN, 40).replace(/[^\w.-]/g, '');
+  app.use('/iclock', (req, res, next) => { res.set('Cache-Control', 'no-store'); next(); }, express.text({ type: '*/*', limit: '5mb' }));
+  app.get('/iclock/cdata', (req, res) => {
+    const sn = serialOf(req);
+    if (!sn) return res.status(400).type('text/plain').send('ERROR');
+    seen(sn);
+    res.type('text/plain').send([`GET OPTION FROM: ${sn}`, 'ATTLOGStamp=None', 'OPERLOGStamp=9999', 'ATTPHOTOStamp=None', 'ErrorDelay=30',
+      'Delay=10', 'TransTimes=00:00;14:05', 'TransInterval=1', 'TransFlag=TransData AttLog', 'TimeZone=6', 'Realtime=1', 'Encrypt=None', ''].join('\n'));
+  });
+  app.post('/iclock/cdata', (req, res) => {
+    const sn = serialOf(req);
+    if (!sn) return res.status(400).type('text/plain').send('ERROR');
+    const device = seen(sn);
+    if (String(req.query.table || '').toUpperCase() !== 'ATTLOG') return res.type('text/plain').send('OK');
+    let n = 0; let first = '';
+    for (const line of String(req.body || '').split(/\r?\n/)) {
+      const [pin, when] = line.split('\t');
+      const m = /^(\d{4}-\d{2}-\d{2})[ T](\d{2}:\d{2}:\d{2})$/.exec(String(when || '').trim());
+      const p = String(pin || '').trim().replace(/\D/g, '');
+      if (!p || !m) continue;
+      // The machine keeps Bangladesh time.
+      run('INSERT OR IGNORE INTO punches (device_serial, pin, day, at) VALUES (?,?,?,?)', sn, p, m[1], new Date(`${m[1]}T${m[2]}+06:00`).toISOString());
+      if (!first || m[1] < first) first = m[1];
+      n++;
+    }
+    if (n && device.approved) applyPunches(first);
+    res.type('text/plain').send('OK: ' + n);
+  });
+  app.get('/iclock/getrequest', (req, res) => { const sn = serialOf(req); if (sn) seen(sn); res.type('text/plain').send('OK'); });
+  app.post('/iclock/devicecmd', (req, res) => res.type('text/plain').send('OK'));
+
+  app.get('/team/attendance/devices', auth, need(isAdmin), (req, res) => {
+    const devices = all('SELECT d.*, (SELECT COUNT(*) FROM punches p WHERE p.device_serial = d.serial) AS punches FROM devices d ORDER BY d.approved DESC, d.created_at DESC');
+    const loose = all(`SELECT pin, COUNT(*) AS n, MAX(at) AS last FROM punches WHERE user_id IS NULL
+      AND device_serial IN (SELECT serial FROM devices WHERE approved = 1) GROUP BY pin ORDER BY last DESC LIMIT 50`);
+    const linked = all("SELECT name, emp_id, device_pin FROM users WHERE device_pin != '' ORDER BY CAST(device_pin AS INTEGER)");
+    const host = req.headers.host || 'monohasourcing.international';
+    send(req, res, 'Fingerprint machines', `<nav class="ws-crumbs" aria-label="Breadcrumb"><a href="/team/attendance">Attendance</a></nav>
+${head('Fingerprint machines', 'Attendance comes straight from the machine. Employees cannot type their own time.')}
+<section class="ws-card"><h2>How attendance is recorded</h2>
+  <form method="post" action="/team/attendance/mode" class="ws-form">${csrfField(req)}
+    <label class="ws-check-row"><input type="radio" name="mode" value="DEVICE"${deviceMode() ? ' checked' : ''}> <strong>Fingerprint machine only</strong> — the Check in button is removed</label>
+    <label class="ws-check-row"><input type="radio" name="mode" value="MANUAL"${deviceMode() ? '' : ' checked'}> Check in / out button in the Workspace (until the machine is installed)</label>
+    <div class="ws-actions"><button class="ws-btn" type="submit">Save</button></div></form></section>
+
+<section class="ws-card"><h2>Machines</h2>
+  ${devices.length ? `<div class="ws-table-wrap"><table class="ws-table"><thead><tr><th>Serial number</th><th>Name</th><th>Status</th><th>Last contact</th><th>Punches</th><th></th></tr></thead><tbody>
+  ${devices.map((d) => `<tr><td class="num"><strong>${esc(d.serial)}</strong></td><td>${esc(d.name || '—')}</td>
+    <td>${d.approved ? '<span class="chip st-done">Approved</span>' : '<span class="chip st-revision">Waiting for approval</span>'}</td>
+    <td>${d.last_seen ? esc(fmtWhen(d.last_seen)) : '—'}</td><td class="num">${d.punches}</td>
+    <td><form method="post" action="/team/attendance/devices/${d.id}" class="ws-inline">${csrfField(req)}
+      <label class="sr-only" for="dn${d.id}">Name</label><input name="name" id="dn${d.id}" value="${esc(d.name)}" placeholder="e.g. Office door" maxlength="60">
+      <button class="ws-btn ws-btn-ghost" name="action" value="save" type="submit">Save</button>
+      ${d.approved ? '<button class="ws-btn ws-btn-danger" name="action" value="block" type="submit">Block</button>' : '<button class="ws-btn" name="action" value="approve" type="submit">Approve</button>'}</form></td></tr>`).join('')}
+  </tbody></table></div>` : '<p class="muted">No machine has contacted the server yet. Follow the setup steps below; the machine appears here by its serial number as soon as it connects.</p>'}
+</section>
+
+${loose.length ? `<section class="ws-card"><h2>Machine users not linked to an employee</h2>
+  <p class="muted">Open the employee’s profile and enter this number as their Fingerprint machine ID. Their earlier punches are counted as soon as you save.</p>
+  <div class="ws-table-wrap"><table class="ws-table"><thead><tr><th>Machine user number</th><th>Punches</th><th>Last punch</th></tr></thead><tbody>
+  ${loose.map((l) => `<tr><td class="num"><strong>${esc(l.pin)}</strong></td><td class="num">${l.n}</td><td>${esc(fmtWhen(l.last))}</td></tr>`).join('')}</tbody></table></div></section>` : ''}
+
+<div class="ws-cols">
+<section class="ws-card"><h2>Linked employees</h2>
+  ${linked.length ? `<ul class="ws-list">${linked.map((l) => `<li><span><strong>${esc(l.name)}</strong> <span class="muted">${esc(l.emp_id)}</span></span><span class="ws-meta">Machine ID ${esc(l.device_pin)}</span></li>`).join('')}</ul>` : '<p class="muted">Nobody yet. Set each employee’s Fingerprint machine ID on their profile.</p>'}
+</section>
+<section class="ws-card"><h2>Setting up the machine</h2>
+  <ol class="ws-howto">
+    <li>Connect the machine to the office internet (LAN cable or Wi-Fi).</li>
+    <li>On the machine: <strong>Menu → COMM. → Cloud Server Setting</strong> (on some models <em>ADMS</em>).</li>
+    <li>Server address: <code>${esc(host)}</code> · Port: <code>80</code> · turn <strong>Enable domain name</strong> on, and HTTPS off unless the model supports it.</li>
+    <li>Add every employee on the machine and register their fingerprint. Note each person’s <strong>user number</strong>.</li>
+    <li>Wait a minute: the machine appears above by its serial number. Press <strong>Approve</strong>.</li>
+    <li>Enter each user number as the employee’s <strong>Fingerprint machine ID</strong> here, then choose <strong>Fingerprint machine only</strong> above.</li>
+  </ol>
+  <p class="muted small">The machine’s own clock must be set to Bangladesh time.</p>
+</section>
+</div>`, { active: '/team/attendance' });
+  });
+
+  app.post('/team/attendance/mode', auth, need(isAdmin), (req, res) => {
+    const mode = req.body.mode === 'DEVICE' ? 'DEVICE' : 'MANUAL';
+    setSetting('attendance_mode', mode);
+    audit(req, 'attendance_mode', 'settings', null, mode);
+    back(res, '/team/attendance/devices', 'saved');
+  });
+  app.post('/team/attendance/devices/:id', auth, need(isAdmin), (req, res) => {
+    const d = int(req.params.id) && one('SELECT * FROM devices WHERE id = ?', int(req.params.id));
+    if (!d) return fail(req, res, 404, 'Machine not found.');
+    const action = String(req.body.action || 'save');
+    run('UPDATE devices SET name = ? WHERE id = ?', t(req.body.name, 60), d.id);
+    if (action === 'approve' || action === 'block') {
+      run('UPDATE devices SET approved = ? WHERE id = ?', action === 'approve' ? 1 : 0, d.id);
+      if (action === 'approve') { applyPunches(); if (!deviceMode() && !setting('attendance_mode')) setSetting('attendance_mode', 'DEVICE'); }
+    }
+    audit(req, 'device_' + action, 'device', d.id, d.serial);
+    back(res, '/team/attendance/devices', 'saved');
+  });
+
+  // An admin correction for one person and one day (a missed punch, a
+  // machine fault). Recorded as such, and never overwritten by the machine.
+  app.get('/team/attendance/fix', auth, need(isAdmin), (req, res) => {
+    const p = int(req.query.user) && one('SELECT id, name, emp_id FROM users WHERE id = ?', int(req.query.user));
+    const day = isDate(req.query.day) ? req.query.day : today();
+    if (!p) return fail(req, res, 404, 'Employee not found.');
+    const a = one('SELECT * FROM attendance WHERE user_id = ? AND day = ?', p.id, day) || {};
+    const punches = all('SELECT at FROM punches WHERE user_id = ? AND day = ? ORDER BY at', p.id, day);
+    const hm = (s) => (s ? fmtTime(s) : '');
+    send(req, res, 'Correct attendance', `<nav class="ws-crumbs" aria-label="Breadcrumb"><a href="/team/attendance?day=${day}">Attendance</a></nav>
+${head(`Correct attendance · ${p.name}`, `${esc(p.emp_id)} · ${esc(fmtDay(day))}`)}
+<div class="ws-card ws-narrow">
+  ${punches.length ? `<p class="muted">Machine punches this day: ${punches.map((x) => esc(fmtTime(x.at))).join(', ')}</p>` : '<p class="muted">No machine punches this day.</p>'}
+  <form method="post" action="/team/attendance/fix" class="ws-form">${csrfField(req)}<input type="hidden" name="user" value="${p.id}"><input type="hidden" name="day" value="${day}">
+  <div class="ws-row"><label>In<input type="time" name="in" id="in" value="${hm(a.check_in)}"></label><label>Out<input type="time" name="out" id="out" value="${hm(a.check_out)}"></label></div>
+  <label>Reason<input name="note" id="note" required maxlength="200" placeholder="e.g. machine was off, missed punch"></label>
+  <div class="ws-actions"><button class="ws-btn" type="submit">Save correction</button></div></form></div>`, { active: '/team/attendance' });
+  });
+  app.post('/team/attendance/fix', auth, need(isAdmin), (req, res) => {
+    const uid = int(req.body.user); const day = isDate(req.body.day) ? req.body.day : '';
+    const tm = (v) => (/^\d{2}:\d{2}$/.test(String(v || '')) ? new Date(`${day}T${v}:00+06:00`).toISOString() : null);
+    const note = t(req.body.note, 200);
+    if (!uid || !day || !note) return fail(req, res, 400, 'Choose the times and give a reason.');
+    const a = one('SELECT id FROM attendance WHERE user_id = ? AND day = ?', uid, day);
+    if (a) run("UPDATE attendance SET check_in = ?, check_out = ?, source = 'ADMIN', note = ? WHERE id = ?", tm(req.body.in), tm(req.body.out), note, a.id);
+    else run("INSERT INTO attendance (user_id, day, check_in, check_out, source, note) VALUES (?,?,?,?,'ADMIN',?)", uid, day, tm(req.body.in), tm(req.body.out), note);
+    audit(req, 'attendance_fixed', 'user', uid, `${day} ${req.body.in || '-'}–${req.body.out || '-'}: ${note}`);
+    back(res, `/team/attendance?day=${day}`, 'fixed');
   });
 
   app.all('/team/*', auth, (req, res) => fail(req, res, 404, 'Page not found.'));

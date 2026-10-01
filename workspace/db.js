@@ -110,6 +110,60 @@ const MIGRATIONS = [
      ip TEXT NOT NULL DEFAULT '',
      created_at TEXT NOT NULL DEFAULT (datetime('now'))
    );`,
+
+  // Video uploads, per-employee access, fingerprint attendance.
+  `ALTER TABLE users ADD COLUMN modules TEXT;
+   ALTER TABLE users ADD COLUMN device_pin TEXT NOT NULL DEFAULT '';
+   CREATE TABLE channels (
+     id INTEGER PRIMARY KEY,
+     name TEXT NOT NULL,
+     platform TEXT NOT NULL DEFAULT '',
+     url TEXT NOT NULL DEFAULT '',
+     notes TEXT NOT NULL DEFAULT '',
+     active INTEGER NOT NULL DEFAULT 1,
+     created_at TEXT NOT NULL DEFAULT (datetime('now'))
+   );
+   CREATE TABLE schedules (
+     id INTEGER PRIMARY KEY,
+     channel_id INTEGER NOT NULL REFERENCES channels(id) ON DELETE CASCADE,
+     assignee_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+     title TEXT NOT NULL DEFAULT '',
+     description TEXT NOT NULL DEFAULT '',
+     days TEXT NOT NULL DEFAULT '0123456',
+     per_day INTEGER NOT NULL DEFAULT 1,
+     priority TEXT NOT NULL DEFAULT 'MEDIUM',
+     active INTEGER NOT NULL DEFAULT 1,
+     created_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+     created_at TEXT NOT NULL DEFAULT (datetime('now'))
+   );
+   ALTER TABLE tasks ADD COLUMN kind TEXT NOT NULL DEFAULT 'GENERAL';
+   ALTER TABLE tasks ADD COLUMN channel_id INTEGER REFERENCES channels(id) ON DELETE SET NULL;
+   ALTER TABLE tasks ADD COLUMN schedule_id INTEGER REFERENCES schedules(id) ON DELETE SET NULL;
+   ALTER TABLE tasks ADD COLUMN slot INTEGER NOT NULL DEFAULT 1;
+   ALTER TABLE tasks ADD COLUMN video_url TEXT NOT NULL DEFAULT '';
+   ALTER TABLE tasks ADD COLUMN uploaded_at TEXT;
+   CREATE UNIQUE INDEX tasks_schedule_day ON tasks(schedule_id, due_date, slot) WHERE schedule_id IS NOT NULL;
+   CREATE TABLE devices (
+     id INTEGER PRIMARY KEY,
+     serial TEXT NOT NULL UNIQUE,
+     name TEXT NOT NULL DEFAULT '',
+     approved INTEGER NOT NULL DEFAULT 0,
+     last_seen TEXT,
+     created_at TEXT NOT NULL DEFAULT (datetime('now'))
+   );
+   CREATE TABLE punches (
+     id INTEGER PRIMARY KEY,
+     device_serial TEXT NOT NULL,
+     pin TEXT NOT NULL,
+     day TEXT NOT NULL,
+     at TEXT NOT NULL,
+     user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+     created_at TEXT NOT NULL DEFAULT (datetime('now')),
+     UNIQUE (device_serial, pin, at)
+   );
+   CREATE INDEX punches_user_day ON punches(user_id, day);
+   CREATE TABLE settings (key TEXT PRIMARY KEY, value TEXT NOT NULL DEFAULT '');
+   ALTER TABLE attendance ADD COLUMN source TEXT NOT NULL DEFAULT 'MANUAL';`,
 ];
 
 function open(DATA_DIR) {
