@@ -192,6 +192,16 @@ const MIGRATIONS = [
      updated_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
      updated_at TEXT NOT NULL DEFAULT (datetime('now'))
    );`,
+
+  // When each person last opened each task, so new comments show as new.
+  `CREATE TABLE task_reads (
+     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+     task_id INTEGER NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
+     seen_at TEXT NOT NULL DEFAULT (datetime('now')),
+     last_comment INTEGER NOT NULL DEFAULT 0,
+     last_file INTEGER NOT NULL DEFAULT 0,
+     PRIMARY KEY (user_id, task_id)
+   );`,
 ];
 
 function open(DATA_DIR) {

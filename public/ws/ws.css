@@ -341,3 +341,11 @@ td.is-bad { color: var(--bad); font-weight: 700; }
 }
 .ws-seg { flex-wrap: wrap; max-width: 100%; }
 @media (min-width: 861px) { .ws-side nav { overflow-y: auto; min-height: 0; flex: 1 1 auto; } }
+
+/* ---- new activity on a task */
+.ws-new { display: inline-flex; align-items: center; gap: 3px; font-size: 11.5px; font-weight: 800; color: #fff; background: var(--bad); border-radius: 999px; padding: 1px 8px; margin-left: 6px; white-space: nowrap; vertical-align: middle; }
+.kb-card.has-new { border-color: #F2B8BB; box-shadow: 0 0 0 2px rgba(192, 38, 45, .12); }
+.kb-card .ws-new { margin: 0; justify-self: start; }
+tr.has-new td:first-child { box-shadow: inset 3px 0 0 var(--bad); }
+.ws-thread li.is-new > div { box-shadow: inset 3px 0 0 var(--bad); }
+.ws-thread li.is-new .ws-by::after { content: 'New'; font-size: 10.5px; font-weight: 800; color: #fff; background: var(--bad); border-radius: 999px; padding: 0 7px; }

@@ -21,7 +21,7 @@ const COOKIE = 'monoha_ws';
 const SESSION_MS = 7 * 24 * 60 * 60 * 1000;
 const MAX_FILE = 10 * 1024 * 1024;
 const TZ = 'Asia/Dhaka';
-const ASSET_V = '3';
+const ASSET_V = '4';
 // Fingerprint machine attendance is on hold until FINGERPRINT=1 is set in Coolify.
 const FINGERPRINT = process.env.FINGERPRINT === '1';
 
@@ -472,6 +472,16 @@ ${board ? `<section class="ws-card"><div class="ws-card-head"><h2>Team on ${esc(
   });
 
   // ---------------------------------------------------------------- tasks
+  const involved = (x) => new Set([x.assignee_id, x.created_by, leadOf(x),
+    ...all('SELECT DISTINCT user_id FROM comments WHERE task_id = ? AND user_id IS NOT NULL', x.id).map((r) => r.user_id)].filter(Boolean));
+  /** New comments and files on each task since this person last opened it. */
+  // Counted by id rather than time, so a comment in the same second as the
+  // last visit still counts.
+  const unreadMap = (u) => new Map(all(`SELECT task_id, COUNT(*) AS n FROM (
+      SELECT c.task_id FROM comments c WHERE c.user_id != ? AND c.id > COALESCE((SELECT last_comment FROM task_reads r WHERE r.user_id = ? AND r.task_id = c.task_id), 0)
+      UNION ALL SELECT f.task_id FROM files f WHERE f.user_id != ? AND f.id > COALESCE((SELECT last_file FROM task_reads r WHERE r.user_id = ? AND r.task_id = f.task_id), 0)) x
+    GROUP BY task_id`, u.id, u.id, u.id, u.id).map((r) => [r.task_id, r.n]));
+  const newBadge = (n) => (n ? `<span class="ws-new" title="${n} new since you last opened it">💬 ${n} new</span>` : '');
   const TASK_SELECT = `SELECT t.*, p.name AS project, a.name AS assignee, c.name AS creator, ch.name AS channel, ch.url AS channel_url,
     (SELECT COUNT(*) FROM tasks s WHERE s.parent_id = t.id) AS subs, (SELECT COUNT(*) FROM tasks s WHERE s.parent_id = t.id AND s.status = 'DONE') AS subs_done,
     (SELECT COUNT(*) FROM comments m WHERE m.task_id = t.id) AS comments
@@ -496,6 +506,7 @@ ${board ? `<section class="ws-card"><div class="ws-card-head"><h2>Team on ${esc(
     if (where.some((w) => w.includes('$me'))) p.$me = u.id;
     if (f.status && view === 'list') { where.push('t.status = $status'); p.$status = f.status; }
     if (f.q) { where.push('(t.title LIKE $q OR t.description LIKE $q)'); p.$q = '%' + f.q.replace(/[%_]/g, '') + '%'; }
+    const unread = unreadMap(u);
     const rows = q(`${TASK_SELECT} WHERE ${where.join(' AND ')} ORDER BY t.status = 'DONE', CASE t.priority WHEN 'URGENT' THEN 0 WHEN 'HIGH' THEN 1 WHEN 'MEDIUM' THEN 2 ELSE 3 END, (t.due_date = ''), t.due_date, t.id DESC LIMIT 500`).all(p);
     const qs = (o) => '?' + new URLSearchParams(Object.entries({ view, who: f.who, project: f.project || '', status: f.status, q: f.q, ...o }).filter(([, v]) => v)).toString();
     const projects = seesAll(u) ? all('SELECT id, name FROM projects ORDER BY name') : projectsFor(u);
@@ -509,15 +520,15 @@ ${board ? `<section class="ws-card"><div class="ws-card-head"><h2>Team on ${esc(
 
     const progress = (x) => (x.subs ? `<span class="ws-sub" title="Subtasks done">${x.subs_done}/${x.subs}</span>` : '');
     const list = rows.length ? `<div class="ws-table-wrap"><table class="ws-table ws-tasks"><thead><tr><th>Task</th><th>Assignee</th><th>Status</th><th>Priority</th><th>Due</th></tr></thead><tbody>
-${rows.map((x) => `<tr><td><a href="/team/tasks/${x.id}"><strong>${esc(x.title)}</strong></a><br><span class="muted">${esc(x.project || 'No project')}</span> ${progress(x)}</td>
+${rows.map((x) => `<tr class="${unread.get(x.id) ? 'has-new' : ''}"><td><a href="/team/tasks/${x.id}"><strong>${esc(x.title)}</strong></a> ${newBadge(unread.get(x.id))}<br><span class="muted">${esc(x.project || 'No project')}</span> ${progress(x)}</td>
 <td>${esc(x.assignee || '—')}</td><td>${statusChip(x.status)}</td><td>${prioChip(x.priority)}</td><td>${due(x.due_date, x.status === 'DONE')}</td></tr>`).join('')}</tbody></table></div>`
       : `<div class="ws-card ws-empty"><h2>No tasks here</h2><p class="muted">${f.q || f.status || f.project ? 'Try clearing the filters.' : 'Create the first task to get started.'}</p></div>`;
 
     const board = `<div class="kb" aria-label="Task board">${STATUS.map(([k, l]) => {
       const col = rows.filter((x) => x.status === k);
       return `<section class="kb-col" data-status="${k}"><h2>${statusChip(k)}<span class="kb-count">${col.length}</span></h2><div class="kb-list">
-${col.map((x) => `<article class="kb-card pr-edge-${x.priority.toLowerCase()}" data-id="${x.id}"${canEditTask(u, x) || x.assignee_id === u.id ? ' draggable="true"' : ''}>
-  <a href="/team/tasks/${x.id}">${esc(x.title)}</a>
+${col.map((x) => `<article class="kb-card pr-edge-${x.priority.toLowerCase()}${unread.get(x.id) ? ' has-new' : ''}" data-id="${x.id}"${canEditTask(u, x) || x.assignee_id === u.id ? ' draggable="true"' : ''}>
+  <a href="/team/tasks/${x.id}">${esc(x.title)}</a>${newBadge(unread.get(x.id))}
   <p class="muted">${esc(x.project || 'No project')}</p>
   <div class="kb-foot">${x.assignee ? `<span class="ws-av sm" title="${esc(x.assignee)}">${esc(initials(x.assignee))}</span>` : ''}${prioChip(x.priority)}${x.due_date ? due(x.due_date, k === 'DONE') : ''}${progress(x)}</div>
 </article>`).join('')}</div></section>`;
@@ -573,6 +584,13 @@ ${filters}${view === 'board' ? board : list}`, { active: '/team/tasks' });
 
   app.get('/team/tasks/:id', auth, loadTask, (req, res) => {
     const u = req.user; const x = req.task;
+    const seenBefore = (one('SELECT last_comment FROM task_reads WHERE user_id = ? AND task_id = ?', u.id, x.id) || {}).last_comment || 0;
+    if (req.query.edit !== '1') {
+      const lc = one('SELECT COALESCE(MAX(id), 0) AS n FROM comments WHERE task_id = ?', x.id).n;
+      const lf = one('SELECT COALESCE(MAX(id), 0) AS n FROM files WHERE task_id = ?', x.id).n;
+      run(`INSERT INTO task_reads (user_id, task_id, seen_at, last_comment, last_file) VALUES (?,?,datetime('now'),?,?)
+        ON CONFLICT(user_id, task_id) DO UPDATE SET seen_at = excluded.seen_at, last_comment = excluded.last_comment, last_file = excluded.last_file`, u.id, x.id, lc, lf);
+    }
     const editing = req.query.edit === '1' && canEditTask(u, x);
     if (editing) return send(req, res, 'Edit task', `${head('Edit task')}<div class="ws-card ws-narrow">${taskForm(req, x, `/team/tasks/${x.id}`, 'Save changes')}</div>`, { active: '/team/tasks' });
     const parent = x.parent_id ? one('SELECT id, title FROM tasks WHERE id = ?', x.parent_id) : null;
@@ -605,8 +623,8 @@ ${head(x.title, `${statusChip(x.status)} ${prioChip(x.priority)}`, editor ? `<a 
       ${editor || x.assignee_id === u.id ? act('subtasks', `<label class="sr-only" for="sub-title">New subtask</label><input name="title" id="sub-title" required maxlength="200" placeholder="Add a subtask">
         ${rank(u) >= RANK.TEAM_LEAD ? `<label class="sr-only" for="sub-assignee">Assignee</label><select name="assignee_id" id="sub-assignee">${userOptions(u, x.assignee_id, 'Unassigned')}</select>` : ''}<button class="ws-btn ws-btn-ghost" type="submit">Add</button>`, '', ' class="ws-inline ws-add"') : ''}</section>`}
 
-    <section class="ws-card"><h2>Activity</h2>
-      ${comments.length ? `<ol class="ws-thread">${comments.map((c) => `<li class="k-${c.kind.toLowerCase()}"><span class="ws-av sm">${esc(initials(c.name))}</span><div>
+    <section class="ws-card" id="activity"><h2>Activity</h2>
+      ${comments.length ? `<ol class="ws-thread">${comments.map((c) => `<li class="k-${c.kind.toLowerCase()}${c.user_id !== u.id && c.id > seenBefore ? ' is-new' : ''}"><span class="ws-av sm">${esc(initials(c.name))}</span><div>
         <p class="ws-by"><strong>${esc(c.name || 'Former employee')}</strong>${c.kind === 'APPROVED' ? ' approved this task' : c.kind === 'REVISION' ? ' requested a revision' : ''}<small>${esc(fmtWhen(c.created_at))}</small></p>
         ${c.body ? `<p>${nl(c.body)}</p>` : ''}</div></li>`).join('')}</ol>` : '<p class="muted">No comments yet.</p>'}
       ${act('comments', '<label class="sr-only" for="comment">Comment</label><textarea name="body" id="comment" rows="3" required maxlength="4000" placeholder="Write a comment or update"></textarea><button class="ws-btn" type="submit">Comment</button>', '', ' class="ws-form"')}
@@ -643,6 +661,12 @@ ${head(x.title, `${statusChip(x.status)} ${prioChip(x.priority)}`, editor ? `<a 
     run("UPDATE tasks SET title = ?, description = ?, project_id = ?, assignee_id = ?, priority = ?, due_date = ?, updated_at = datetime('now') WHERE id = ?",
       f.title, f.description, f.project_id, f.assignee_id, f.priority, f.due_date, x.id);
     if (f.assignee_id !== x.assignee_id) notify(req, f.assignee_id, `${req.user.name} assigned you “${f.title}”`, `/team/tasks/${x.id}`);
+    const changed = [f.title !== x.title && 'title', f.description !== x.description && 'details', f.due_date !== x.due_date && 'due date', f.priority !== x.priority && 'priority'].filter(Boolean);
+    if (changed.length) {
+      run('INSERT INTO comments (task_id, user_id, body) VALUES (?,?,?)', x.id, req.user.id, `Updated the ${changed.join(', ')}.`);
+      // The newly assigned person already got "assigned you"; everyone else hears what changed.
+      involved(x).forEach((id) => { if (!(f.assignee_id !== x.assignee_id && id === f.assignee_id)) notify(req, id, `${req.user.name} updated “${f.title}” (${changed.join(', ')})`, `/team/tasks/${x.id}#activity`); });
+    }
     audit(req, 'task_updated', 'task', x.id, f.title);
     back(res, `/team/tasks/${x.id}`, 'saved');
   });
@@ -693,7 +717,7 @@ ${head(x.title, `${statusChip(x.status)} ${prioChip(x.priority)}`, editor ? `<a 
     if (!body) return back(res, `/team/tasks/${x.id}`);
     run('INSERT INTO comments (task_id, user_id, body) VALUES (?,?,?)', x.id, req.user.id, body);
     run("UPDATE tasks SET updated_at = datetime('now') WHERE id = ?", x.id);
-    new Set([x.assignee_id, x.created_by]).forEach((id) => notify(req, id, `${req.user.name} commented on “${x.title}”`, `/team/tasks/${x.id}`));
+    involved(x).forEach((id) => notify(req, id, `${req.user.name} commented on “${x.title}”: ${body.length > 80 ? body.slice(0, 80) + '…' : body}`, `/team/tasks/${x.id}#activity`));
     back(res, `/team/tasks/${x.id}`, 'commented');
   });
 
